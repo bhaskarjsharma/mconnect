@@ -1,8 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'account.dart';
+import 'home.dart';
 
-void main() {
-  runApp(Login());
+void main() async{
+  WidgetsFlutterBinding.ensureInitialized();
+  final prefs = await SharedPreferences.getInstance();
+  final bool isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
+  if(isLoggedIn){
+    runApp(Home());
+  }
+  else{
+    runApp(Login());
+  }
+
 }
 
 /*class MyApp extends StatelessWidget {
