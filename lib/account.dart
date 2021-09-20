@@ -12,18 +12,20 @@ class Login extends StatefulWidget {
 }
 
 class _LoginState extends State<Login> {
+  bool _isLoading = false;
+  var errorMsg;
   final unameController = TextEditingController();
   final pwdController = TextEditingController();
   bool apiCall = false;
+
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter layout demo',
-      home: Scaffold(
-        appBar: AppBar(
-          title: Text('Connect'),
-        ),
-        body: ListView(
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Connect'),
+      ),
+      body: Container(
+        child: _isLoading ? Center(child: CircularProgressIndicator()) : ListView(
           children: <Widget>[
             Container(
               child: Image.asset('images/bcpl_logo.png'),
@@ -54,19 +56,39 @@ class _LoginState extends State<Login> {
               child: ElevatedButton(
                 child: Text('Login'),
                 onPressed: () async{
-                  apiCall = true; // Set state like this
+                  print("Login In...");
+                  setState(() {
+                    _isLoading = true;
+                  });
                   Employee emp = await authenticate(unameController.text,pwdController.text);
                   if(emp != null) {
-                    // obtain shared preferences
-                    final prefs = await SharedPreferences.getInstance();
-                    // set value
-                    prefs.setString('empno', emp.empno);
-                    prefs.setString('name', emp.name);
-                    prefs.setBool('isLoggedIn', true);
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => Home()),
-                    );
+                    if(emp.status){
+                      // obtain shared preferences
+                      final prefs = await SharedPreferences.getInstance();
+                      // set value
+                      prefs.setString('empno', emp.emp_no);
+                      prefs.setString('name', emp.emp_name);
+                      prefs.setBool('isLoggedIn', true);
+                      setState(() {
+                        _isLoading = false;
+                      });
+                      Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (BuildContext context) => Home()), (Route<dynamic> route) => false);
+                    }
+                    else{
+                      setState(() {
+                        _isLoading = false;
+                      });
+                      // showDialog(
+                      //   context: context,
+                      //   builder: (context) {
+                      //     return AlertDialog(
+                      //       // Retrieve the text the that user has entered by using the
+                      //       // TextEditingController.
+                      //       content: Text('Authentication Failed'),
+                      //     );
+                      //   },
+                      // );
+                    }
                   }
                   else{
                     showDialog(
@@ -82,6 +104,14 @@ class _LoginState extends State<Login> {
                   }
                 },
               ),
+
+            ),
+            errorMsg == null? Container(): Text(
+              "${errorMsg}",
+              style: TextStyle(
+                color: Colors.redAccent,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ],
         ),
@@ -96,40 +126,103 @@ class _LoginState extends State<Login> {
     pwdController.dispose();
     super.dispose();
   }
+
+  Future<Employee> authenticate(String uname, String pwd) async{
+    final response = await http.post(
+      Uri.parse('https://connect.bcplindia.co.in/MobileAppAPI/Login'),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode(<String, String>{
+        'username': uname,
+        'password':pwd,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      // If the server did return a 200 OK response,
+      // then parse the JSON.
+      return Employee.fromJson(jsonDecode(response.body));
+    } else {
+      // If the server did not return a 200 OK response,
+      setState(() {
+        _isLoading = false;
+      });
+      errorMsg = response.body;
+      print("The error message is: ${response.body}");
+      throw Exception('Failed to authenticate.');
+    }
+  }
+}
+class AppDrawer extends StatefulWidget {
+  @override
+  State<AppDrawer> createState() => _AppDrawerState();
 }
 
-Future<Employee> authenticate(String uname, String pwd) async{
-  final response = await http.post(
-    Uri.parse('https://connect.bcplindia.co.in/MobileAppAPI/authenticate'),
-    headers: <String, String>{
-      'Content-Type': 'application/json; charset=UTF-8',
-    },
-    body: jsonEncode(<String, String>{
-      'username': uname,
-      'password':pwd,
-    }),
-  );
+class _AppDrawerState extends State<AppDrawer> {
+  late SharedPreferences sharedPreferences;
+  String user = '';
 
-  if (response.statusCode == 201) {
-    // If the server did return a 201 CREATED response,
-    // then parse the JSON.
-    return Employee.fromJson(jsonDecode(response.body));
-  } else {
-    // If the server did not return a 201 CREATED response,
-    // then throw an exception.
-    throw Exception('Failed to authenticate.');
+  void loginStatus() async {
+    sharedPreferences = await SharedPreferences.getInstance();
+    setState(() {
+      user = sharedPreferences.getString('name') ?? '';
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    loginStatus();
+    return Drawer(
+      // Add a ListView to the drawer. This ensures the user can scroll
+      // through the options in the drawer if there isn't enough vertical
+      // space to fit everything.
+      child: ListView(
+        // Important: Remove any padding from the ListView.
+        padding: EdgeInsets.zero,
+        children: [
+          DrawerHeader(
+            decoration: BoxDecoration(
+              color: Colors.blue,
+            ),
+            child: Text(user),
+          ),
+          ListTile(
+            title: const Text('Home'),
+            onTap: () {
+              Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (BuildContext context) => Home()), (Route<dynamic> route) => false);
+            },
+          ),
+          ListTile(
+            title: const Text('Logout'),
+            onTap: () {
+              // Update the state of the app
+              logout();
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> logout() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.clear();
+    Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (BuildContext context) => Login()), (Route<dynamic> route) => false);
   }
 }
 
 class Employee{
-  final String empno;
-  final String name;
+  final bool status;
+  final String emp_no;
+  final String emp_name;
 
-  Employee({required this.empno, required this.name});
+  Employee({required this.status, required this.emp_no, required this.emp_name});
   factory Employee.fromJson(Map<String, dynamic> json) {
     return Employee(
-      empno: json['empno'],
-      name: json['name'],
+      status: json['status'],
+      emp_no: json['emp_no'],
+      emp_name: json['emp_name'],
     );
   }
 }

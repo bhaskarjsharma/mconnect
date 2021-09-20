@@ -4,14 +4,26 @@ import 'account.dart';
 import 'home.dart';
 
 void main() async{
+  var routes = <String, WidgetBuilder>{
+    '/login': (BuildContext context) => Login(),
+    '/home': (BuildContext context) => Home(),
+  };
+
+  // handle exceptions caused by making main async
   WidgetsFlutterBinding.ensureInitialized();
   final prefs = await SharedPreferences.getInstance();
   final bool isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
   if(isLoggedIn){
-    runApp(Home());
+    runApp(MaterialApp(
+      title: "Home",
+      home: Home(),
+    ));
   }
   else{
-    runApp(Login());
+    runApp(MaterialApp(
+      title: "Login",
+      home: Login(),
+    ));
   }
 
 }
