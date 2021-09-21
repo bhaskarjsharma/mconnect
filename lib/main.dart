@@ -4,11 +4,6 @@ import 'account.dart';
 import 'home.dart';
 
 void main() async{
-  var routes = <String, WidgetBuilder>{
-    '/login': (BuildContext context) => Login(),
-    '/home': (BuildContext context) => Home(),
-  };
-
   // handle exceptions caused by making main async
   WidgetsFlutterBinding.ensureInitialized();
   final prefs = await SharedPreferences.getInstance();
@@ -16,6 +11,10 @@ void main() async{
   if(isLoggedIn){
     runApp(MaterialApp(
       title: "Home",
+      theme: ThemeData(
+          appBarTheme: AppBarTheme(
+            backgroundColor: Colors.amberAccent,
+          )),
       home: Home(),
     ));
   }
