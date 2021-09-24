@@ -1,11 +1,15 @@
 
 import 'dart:convert';
 
+
 import 'package:flutter_projects/services/webservice.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'account.dart';
-import 'models/news.dart';
+import 'constants.dart';
+import 'main.dart';
+import 'models/models.dart';
 
 class Home extends StatefulWidget {
   @override
@@ -27,36 +31,21 @@ class _HomeState extends State<Home>  {
       ),
       endDrawer: AppDrawer(),
       body: Container(
+        padding:EdgeInsets.only(top: 10),
+        //decoration: BoxDecoration(color:Colors.amberAccent),
         child: GridView.count(
           crossAxisCount: 3,
-          padding: EdgeInsets.all(3.0), // 3px padding all around
-          scrollDirection: Axis.vertical,
-          children: <Widget>[
-            makeDashboardItem("News & Events",Icons.feed,Colors.blue),
-            makeDashboardItem("People",Icons.people,Colors.pink),
-            makeDashboardItem("Documents",Icons.collections,Colors.green),
-            makeDashboardItem("News & Events",Icons.feed,Colors.blue),
-            makeDashboardItem("People",Icons.people,Colors.pink),
-            makeDashboardItem("Documents",Icons.collections,Colors.green),
-            makeDashboardItem("News & Events",Icons.feed,Colors.blue),
-            makeDashboardItem("People",Icons.people,Colors.pink),
-            makeDashboardItem("Documents",Icons.collections,Colors.green),
-            makeDashboardItem("News & Events",Icons.feed,Colors.blue),
-            makeDashboardItem("People",Icons.people,Colors.pink),
-            makeDashboardItem("Documents",Icons.collections,Colors.green),
-            makeDashboardItem("News & Events",Icons.feed,Colors.blue),
-            makeDashboardItem("People",Icons.people,Colors.pink),
-            makeDashboardItem("Documents",Icons.collections,Colors.green),
-            makeDashboardItem("News & Events",Icons.feed,Colors.blue),
-            makeDashboardItem("People",Icons.people,Colors.pink),
-            makeDashboardItem("Documents",Icons.collections,Colors.green),
-            makeDashboardItem("News & Events",Icons.feed,Colors.blue),
-            makeDashboardItem("People",Icons.people,Colors.pink),
-            makeDashboardItem("Documents",Icons.collections,Colors.green),
-            makeDashboardItem("News & Events",Icons.feed,Colors.blue),
-            makeDashboardItem("People",Icons.people,Colors.pink),
-            makeDashboardItem("Documents",Icons.collections,Colors.green),
+          crossAxisSpacing: 5,
+          mainAxisSpacing: 5,
+          padding: EdgeInsets.all(10.0), // 3px padding all around
 
+          children: <Widget>[
+            makeDashboardItem("News & Events",Icons.feed,Colors.blue,newsRoute),
+            makeDashboardItem("People",Icons.people,Colors.pink,peopleRoute),
+            makeDashboardItem("Documents",Icons.collections,Colors.green,documentsRoute),
+            makeDashboardItem("Leave Quota",Icons.date_range,Colors.orange,leaveQuotaRoute),
+            makeDashboardItem("Holiday List",Icons.today,Colors.brown,holidayListRoute),
+            makeDashboardItem("Documents",Icons.collections,Colors.green,homeRoute),
 
           ],
         ),
@@ -64,20 +53,23 @@ class _HomeState extends State<Home>  {
     );
   }
 
-  Card makeDashboardItem(String title, IconData icon, MaterialColor colour){
+  Card makeDashboardItem(String title, IconData icon, MaterialColor colour, String routeName){
     return Card(
-      elevation: 1.0,
-      margin: EdgeInsets.all(10.0),
-      child: Container(
-        decoration: BoxDecoration(color:Color.fromRGBO(220, 220, 220, 1.0)),
+      //elevation: 1.0,
+      //margin: EdgeInsets.all(10.0),
 
+      child: Container(
+        decoration: BoxDecoration(color:Colors.white10),
+        height:30,
         child: InkWell(
           onTap: (){
-            Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context) => News()));
-
+            //Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context) => News()));
+            Navigator.pushNamed(context, routeName);
           },
           child:Column(
-            children: [
+            children:
+            [
+              SizedBox(height:20),
               Icon(icon,size:40.0,
                 color: colour,
               ),
@@ -92,13 +84,21 @@ class _HomeState extends State<Home>  {
   }
 }
 
-class News extends StatefulWidget {
+class LeaveQuotas extends StatefulWidget {
   @override
-  State<News> createState() => _NewsState();
+  State<LeaveQuotas> createState() => _LeaveQuotaState();
 }
-class _NewsState extends State<News>{
+class _LeaveQuotaState extends State<LeaveQuotas>{
+  late Future<LeaveQuota> _leaveQuotaData;
+  String _empno = '';
 
-  late Future<NewsContent> contentData;
+  @override
+  void initState(){
+    super.initState();
+    //SharedPreferences prefs = SharedPreferences.getInstance() as SharedPreferences;
+    _empno = prefs.getString('empno') ?? '';
+    _leaveQuotaData = fetchLeaveQuota(_empno);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -111,50 +111,61 @@ class _NewsState extends State<News>{
         title: Text('Connect'),
       ),
       endDrawer: AppDrawer(),
-      body: getNews(),
+      body: getQuota(),
     );
   }
-
-  FutureBuilder getNews(){
-    return FutureBuilder<List<NewsContent>>(
-      future: fetchContent(),
-      builder: (BuildContext context, AsyncSnapshot<List<NewsContent>> snapshot){
+  FutureBuilder getQuota(){
+    return FutureBuilder<LeaveQuota>(
+      future: _leaveQuotaData,
+      builder: (BuildContext context, snapshot){
         if (snapshot.hasData) {
-          List<NewsContent>? data = snapshot.data;
-          return _newsData(data);
+          //LeaveQuota? data = snapshot.data;
+          return ListView(
+            padding: EdgeInsets.all(10.0),
+            children: [
+              Container(
+                height: 50,
+                color: Colors.amber[600],
+                child: Center(child: Text('CL : '+ snapshot.data!.quotaCL)),
+              ),
+              Container(
+                height: 50,
+                color: Colors.amber[500],
+                child: Center(child: Text('EL : '+ snapshot.data!.quotaEL)),
+              ),
+              Container(
+                height: 50,
+                color: Colors.amber[100],
+                child: Center(child: Text('HPL : '+ snapshot.data!.quotaHPL)),
+              ),
+              Container(
+                height: 50,
+                color: Colors.amber[500],
+                child: Center(child: Text('RH : '+ snapshot.data!.quotaRH)),
+              ),
+              Container(
+                height: 50,
+                color: Colors.amber[100],
+                child: Center(child: Text('COFF : '+ snapshot.data!.quotaCOFF)),
+              ),
+            ],
+          );
         } else if (snapshot.hasError) {
           return Text("${snapshot.error}");
         }
-        return CircularProgressIndicator();
+        return SizedBox(
+          height: MediaQuery.of(context).size.height / 1.3,
+          child: Center(
+            child: CircularProgressIndicator(),
+          ),
+        );
       },
     );
   }
-
-  ListView _newsData(data) {
-    return ListView.builder(
-        itemCount: data.length,
-        itemBuilder: (context, index) {
-          return Card(
-              child: _tile(data[index].contentTitle, data[index].contentDescription, Icons.article)
-          );
-        }
-    );
-  }
-
-  ListTile _tile(String title, String subtitle, IconData icon) {
-    return ListTile(
-      title: Text(title,
-          style: TextStyle(
-            fontWeight: FontWeight.w500,
-            fontSize: 20,
-          )),
-      subtitle: Text(subtitle),
-      leading: Icon(
-        icon,
-        color: Colors.blue[500],
-      ),
-    );
-  }
-
 }
+
+
+
+
+
 

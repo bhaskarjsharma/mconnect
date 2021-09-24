@@ -1,21 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'account.dart';
+import 'constants.dart';
 import 'home.dart';
+import 'package:flutter_projects/services/Router.dart';
 
+late var prefs;
 void main() async{
   // handle exceptions caused by making main async
   WidgetsFlutterBinding.ensureInitialized();
-  final prefs = await SharedPreferences.getInstance();
+  prefs = await SharedPreferences.getInstance();
   final bool isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
   if(isLoggedIn){
     runApp(MaterialApp(
       title: "Home",
       theme: ThemeData(
           appBarTheme: AppBarTheme(
-            backgroundColor: Colors.amberAccent,
+            backgroundColor: Color.fromRGBO(165, 231, 206, 1.0),
           )),
       home: Home(),
+      onGenerateRoute: NavigationRouter.generateRoute,
+      initialRoute: homeRoute,
     ));
   }
   else{

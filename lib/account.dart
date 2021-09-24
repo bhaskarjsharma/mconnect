@@ -6,6 +6,8 @@ import 'home.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'main.dart';
+
 class Login extends StatefulWidget {
   @override
   State<Login> createState() => _LoginState();
@@ -56,11 +58,13 @@ class _LoginState extends State<Login> {
               child: ElevatedButton(
                 child: Text('Login'),
                 onPressed: () async{
-                  print("Login In...");
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Login In...')),
+                  );
                   setState(() {
                     _isLoading = true;
                   });
-                  Employee emp = await authenticate(unameController.text,pwdController.text);
+                  EmployeeLoginData emp = await authenticate(unameController.text,pwdController.text);
                   if(emp != null) {
                     if(emp.status){
                       // obtain shared preferences
@@ -127,7 +131,7 @@ class _LoginState extends State<Login> {
     super.dispose();
   }
 
-  Future<Employee> authenticate(String uname, String pwd) async{
+  Future<EmployeeLoginData> authenticate(String uname, String pwd) async{
     final response = await http.post(
       Uri.parse('https://connect.bcplindia.co.in/MobileAppAPI/Login'),
       headers: <String, String>{
@@ -142,7 +146,7 @@ class _LoginState extends State<Login> {
     if (response.statusCode == 200) {
       // If the server did return a 200 OK response,
       // then parse the JSON.
-      return Employee.fromJson(jsonDecode(response.body));
+      return EmployeeLoginData.fromJson(jsonDecode(response.body));
     } else {
       // If the server did not return a 200 OK response,
       setState(() {
@@ -161,18 +165,10 @@ class AppDrawer extends StatefulWidget {
 
 class _AppDrawerState extends State<AppDrawer> {
   late SharedPreferences sharedPreferences;
-  String user = '';
-
-  void loginStatus() async {
-    sharedPreferences = await SharedPreferences.getInstance();
-    setState(() {
-      user = sharedPreferences.getString('name') ?? '';
-    });
-  }
+  final String user = prefs.getString('name') ?? '';
 
   @override
   Widget build(BuildContext context) {
-    loginStatus();
     return Drawer(
       // Add a ListView to the drawer. This ensures the user can scroll
       // through the options in the drawer if there isn't enough vertical
@@ -183,9 +179,13 @@ class _AppDrawerState extends State<AppDrawer> {
         children: [
           DrawerHeader(
             decoration: BoxDecoration(
-              color: Colors.blue,
+              color: Color.fromRGBO(165, 231, 206, 1.0),
             ),
-            child: Text(user),
+            child: Text(user,
+                style: TextStyle(
+                  fontWeight: FontWeight.w500,
+                  fontSize: 20,
+                )),
           ),
           ListTile(
             title: const Text('Home'),
@@ -212,14 +212,14 @@ class _AppDrawerState extends State<AppDrawer> {
   }
 }
 
-class Employee{
+class EmployeeLoginData{
   final bool status;
   final String emp_no;
   final String emp_name;
 
-  Employee({required this.status, required this.emp_no, required this.emp_name});
-  factory Employee.fromJson(Map<String, dynamic> json) {
-    return Employee(
+  EmployeeLoginData({required this.status, required this.emp_no, required this.emp_name});
+  factory EmployeeLoginData.fromJson(Map<String, dynamic> json) {
+    return EmployeeLoginData(
       status: json['status'],
       emp_no: json['emp_no'],
       emp_name: json['emp_name'],
