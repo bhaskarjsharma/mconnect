@@ -124,29 +124,59 @@ class _LeaveQuotaState extends State<LeaveQuotas>{
             padding: EdgeInsets.all(10.0),
             children: [
               Container(
-                height: 50,
-                color: Colors.amber[600],
-                child: Center(child: Text('CL : '+ snapshot.data!.quotaCL)),
-              ),
-              Container(
-                height: 50,
-                color: Colors.amber[500],
-                child: Center(child: Text('EL : '+ snapshot.data!.quotaEL)),
-              ),
-              Container(
+                padding: EdgeInsets.all(10.0),
                 height: 50,
                 color: Colors.amber[100],
-                child: Center(child: Text('HPL : '+ snapshot.data!.quotaHPL)),
+                child: Text('CL : '+ snapshot.data!.QuotaCL,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+
+                      fontSize: 20,
+                    )),
+              ),
+              Container(
+                padding: EdgeInsets.all(10.0),
+                height: 50,
+                color: Colors.amber[200],
+                child: Text('EL : '+ snapshot.data!.QuotaEL,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+
+                      fontSize: 20,
+                    )),
               ),
               Container(
                 height: 50,
-                color: Colors.amber[500],
-                child: Center(child: Text('RH : '+ snapshot.data!.quotaRH)),
-              ),
-              Container(
-                height: 50,
+                padding: EdgeInsets.all(10.0),
                 color: Colors.amber[100],
-                child: Center(child: Text('COFF : '+ snapshot.data!.quotaCOFF)),
+                child: Text('HPL : '+ snapshot.data!.QuotaHPL,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+
+                      fontSize: 20,
+                    )),
+              ),
+              Container(
+                height: 50,
+                padding: EdgeInsets.all(10.0),
+                color: Colors.amber[200],
+                child: Text('RH : '+ snapshot.data!.QuotaRH,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+
+                      fontSize: 20,
+                    )),
+              ),
+              Container(
+                height: 50,
+                padding: EdgeInsets.all(10.0),
+                color: Colors.amber[100],
+                child: Text('COFF : '+ snapshot.data!.QuotaCOFF,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+
+                      fontSize: 20,
+                    )),
               ),
             ],
           );

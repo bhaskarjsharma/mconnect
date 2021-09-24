@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_projects/services/webservice.dart';
@@ -43,6 +45,16 @@ class _PeopleState extends State<People>{
 
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
+            Container(
+
+              padding: EdgeInsets.all(10),
+              child: Center(child: Text('Find Employees',
+                  style: TextStyle(
+                fontWeight: FontWeight.w800,
+                fontSize: 20,
+                color: Colors.blue[500],
+              ))) ,
+            ),
             Container(
 
               padding: EdgeInsets.all(10),
@@ -181,12 +193,12 @@ class _PeopleListState extends State<PeopleList>{
         itemCount: data.length,
         itemBuilder: (context, index) {
           return Card(
-              child: createListTilePeople(data,index,data[index].emp_name, data[index].emp_desg + ", " + data[index].emp_discipline, Icons.article)
+              child: createListTilePeople(data,index,data[index].emp_name, data[index].emp_desg + ", " + data[index].emp_discipline)
           );
         }
     );
   }
-  ListTile createListTilePeople(data,index,String title, String subtitle, IconData icon) {
+  ListTile createListTilePeople(data,index,String title, String subtitle) {
     return ListTile(
       onTap: (){
         Navigator.pushNamed(context, peopleDetailsRoute, arguments: PeolpeScreenArguments(
@@ -207,9 +219,10 @@ class _PeopleListState extends State<PeopleList>{
             fontSize: 15,
             color: Colors.blue[500],
           )),
-      leading: Icon(
-        icon,
-        color: Colors.blue[500],
+      leading: CircleAvatar(
+        foregroundColor: Colors.white,
+        backgroundColor: RandomColorModel().getColor(),
+        child: Text(title.substring(0,1).toUpperCase()),
       ),
     );
   }
@@ -299,6 +312,14 @@ class _PeopleDetailsState extends State<PeopleDetails>{
   }
   // void _launchURL(String _url) async =>
   //     await canLaunch(_url) ? await launch(_url) : throw 'Could not launch $_url';
+}
+class RandomColorModel {
+
+  Random random = Random();
+  Color getColor() {
+    return Color.fromARGB(random.nextInt(300), random.nextInt(300),
+        random.nextInt(300), random.nextInt(300));
+  }
 }
 class PeolpeScreenArguments {
   final String empName;

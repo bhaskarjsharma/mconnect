@@ -67,24 +67,24 @@ class Employee{
   }
 }
 class LeaveQuota{
-  final String empno;
-  final String quotaCL;
-  final String quotaEL;
-  final String quotaHPL;
-  final String quotaRH;
-  final String quotaCOFF;
+  final String Pernr;
+  final String QuotaCL;
+  final String QuotaEL;
+  final String QuotaHPL;
+  final String QuotaRH;
+  final String QuotaCOFF;
 
-  LeaveQuota({required this.empno,required this.quotaCL, required this.quotaEL, required this.quotaHPL,
-    required this.quotaRH,required this.quotaCOFF});
+  LeaveQuota({required this.Pernr,required this.QuotaCL, required this.QuotaEL, required this.QuotaHPL,
+    required this.QuotaRH,required this.QuotaCOFF});
 
   factory LeaveQuota.fromJson(Map<String, dynamic> json) {
     return LeaveQuota(
-      empno: json['pernr'],
-      quotaCL: json['QuotaCL'],
-      quotaEL: json['QuotaEL'],
-      quotaHPL: json['QuotaHPL'],
-      quotaRH: json['QuotaRH'],
-      quotaCOFF: json['QuotaCOFF'],
+      Pernr: json['Pernr'],
+      QuotaCL: json['QuotaCL'],
+      QuotaEL: json['QuotaEL'],
+      QuotaHPL: json['QuotaHPL'],
+      QuotaRH: json['QuotaRH'],
+      QuotaCOFF: json['QuotaCOFF'],
     );
   }
 }

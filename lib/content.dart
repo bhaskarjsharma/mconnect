@@ -123,7 +123,7 @@ class _NewsDetailsState extends State<NewsDetails>{
             child: Text(widget.contentTitle,
                 style: TextStyle(
                   fontWeight: FontWeight.w400,
-                  fontSize: 18,
+                  fontSize: 20,
                 )),
           ),
           Container(
@@ -138,7 +138,12 @@ class _NewsDetailsState extends State<NewsDetails>{
           ),
           Container(
             //color: Colors.amber[100],
-            child: Html(data: widget.contentDescription) ,
+            child: Html(data: widget.contentDescription,style: {"body": Style(
+              fontSize: FontSize(18.0),
+              fontWeight: FontWeight.w400,
+              ),
+            },
+            ) ,
           ),
         ],
       ),
