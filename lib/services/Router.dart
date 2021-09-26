@@ -1,6 +1,7 @@
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import '../account.dart';
 import '../constants.dart';
 import '../content.dart';
 import '../home.dart';
@@ -9,6 +10,8 @@ import '../people.dart';
 class NavigationRouter {
   static Route<dynamic> generateRoute(RouteSettings settings) {
     switch (settings.name) {
+      case loginRoute:
+        return MaterialPageRoute(builder: (_) => Login());
       case homeRoute:
         return MaterialPageRoute(builder: (_) => Home());
       case newsRoute:
@@ -23,7 +26,7 @@ class NavigationRouter {
         return MaterialPageRoute(builder: (BuildContext context) => PeopleList(args.empName,args.empUnit,args.empDisc,args.empBldGrp));
       case peopleDetailsRoute:
         final args = settings.arguments as PeolpeScreenArguments;
-        return MaterialPageRoute(builder: (BuildContext context) => PeopleDetails(args.empName,args.empUnit,args.empDisc,
+        return MaterialPageRoute(builder: (BuildContext context) => PeopleDetails(args.empNo,args.empName,args.empUnit,args.empDisc,
             args.empBldGrp,args.empDesg,args.empEmail,args.empMobile,args.empIntercom,args.empIntercomResidence));
         //case documentsRoute:
         //return MaterialPageRoute(builder: (_) => News());

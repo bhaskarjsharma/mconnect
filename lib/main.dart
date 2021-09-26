@@ -27,11 +27,21 @@ void main() async{
     runApp(MaterialApp(
       title: "Login",
       home: Login(),
+      onGenerateRoute: NavigationRouter.generateRoute,
+      initialRoute: loginRoute,
     ));
   }
 
 }
-
+Widget divider(){
+  return Divider(
+  color:Colors.grey,
+  thickness:1,
+  height:20,
+  indent:10,
+  endIndent:10,
+  );
+}
 /*class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
 

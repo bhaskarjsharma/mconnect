@@ -164,7 +164,6 @@ class AppDrawer extends StatefulWidget {
 }
 
 class _AppDrawerState extends State<AppDrawer> {
-  late SharedPreferences sharedPreferences;
   final String user = prefs.getString('name') ?? '';
 
   @override
@@ -181,11 +180,23 @@ class _AppDrawerState extends State<AppDrawer> {
             decoration: BoxDecoration(
               color: Color.fromRGBO(165, 231, 206, 1.0),
             ),
-            child: Text(user,
-                style: TextStyle(
-                  fontWeight: FontWeight.w500,
-                  fontSize: 20,
-                )),
+            child: Stack(
+              alignment: const Alignment(0.0, 1),
+                children: [
+                  CircleAvatar(
+                    backgroundImage: AssetImage('images/bcpl_logo.png'),
+                    radius: 60,
+                  ),
+                  Container(
+                    decoration: const BoxDecoration(
+                      color: Colors.black45,
+                    ),
+                    child: Text(user, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white,
+                    ),
+                    ),
+                  ),
+                ],
+            ),
           ),
           ListTile(
             title: const Text('Home'),
