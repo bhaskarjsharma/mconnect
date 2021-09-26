@@ -3,7 +3,8 @@ import 'dart:math';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_projects/services/webservice.dart';
-
+import 'package:url_launcher/url_launcher.dart';
+import 'package:share_plus/share_plus.dart';
 import 'account.dart';
 import 'constants.dart';
 import 'home.dart';
@@ -18,9 +19,9 @@ class _PeopleState extends State<People>{
 
   final _formKey = GlobalKey<FormState>();
   final empNameContrl = TextEditingController();
-  final empUnitControl = TextEditingController();
-  final empDiscControl = TextEditingController();
-  final empBloodGrpControl = TextEditingController();
+  String _empUnit = '';
+  String _empDisc = '';
+  String _empBldGrp = '';
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +31,7 @@ class _PeopleState extends State<People>{
           width: 40,
           child: Image.asset('images/bcpl_logo.png'),
         ),
-        title: Text('Connect'),
+        title: Text('Connect - People'),
       ),
       endDrawer: AppDrawer(),
       body: PeopleFinderForm(),
@@ -76,32 +77,114 @@ class _PeopleState extends State<People>{
             ),
             Container(
               padding: EdgeInsets.all(10),
-              child:TextFormField(
-                controller: empUnitControl,
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(),
-                  labelText: 'Employee Unit',
+              child: DropdownButton<String>(
+                value: _empUnit,
+                style: TextStyle(color: Colors.black),
+                hint: Text(
+                  "Unit (Optional)",
+                  style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600),
                 ),
+                items: <String>[
+                  '',
+                  'Civil',
+                  'C&P',
+                  'Company Secretary',
+                  'IT',
+                  'Law',
+                  'Marketing',
+                  'Security',
+                ].map<DropdownMenuItem<String>>((String value) {
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Text(value),
+                  );
+                }).toList(),
+
+                onChanged: (String? newValue) {
+                  setState(() {
+                    _empUnit = newValue!;
+                  });
+                },
+              ),
+
+              // child:TextFormField(
+              //   controller: empUnitControl,
+              //   decoration: InputDecoration(
+              //     border: OutlineInputBorder(),
+              //     labelText: 'Employee Unit',
+              //   ),
+              // ),
+            ),
+            Container(
+              padding: EdgeInsets.all(10),
+              child: DropdownButton<String>(
+                value: _empDisc,
+                style: TextStyle(color: Colors.black),
+                items: <String>[
+                  '',
+                  'Civil',
+                  'C&P',
+                  'Company Secretary',
+                  'IT',
+                  'Law',
+                  'Marketing',
+                  'Security',
+                ].map<DropdownMenuItem<String>>((String value) {
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Text(value),
+                  );
+                }).toList(),
+                hint: Text(
+                  "Discipline (Optional)",
+                  style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600),
+                ),
+                onChanged: (String? newValue) {
+                  setState(() {
+                    _empDisc = newValue!;
+                  });
+                },
               ),
             ),
             Container(
               padding: EdgeInsets.all(10),
-              child: TextFormField(
-                controller: empDiscControl,
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(),
-                  labelText: 'Employee Discipline',
+              child: DropdownButton<String>(
+                value: _empBldGrp,
+                style: TextStyle(color: Colors.black),
+                items: <String>[
+                  '',
+                  'A-',
+                  'A+',
+                  'AB-',
+                  'AB+',
+                  'B-',
+                  'B+',
+                  'O-',
+                  'O+',
+                ].map<DropdownMenuItem<String>>((String value) {
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Text(value),
+                  );
+                }).toList(),
+                hint: Text(
+                  "Blood Group (Optional)",
+                  style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600),
                 ),
-              ),
-            ),
-            Container(
-              padding: EdgeInsets.all(10),
-              child: TextFormField(
-                controller: empBloodGrpControl,
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(),
-                  labelText: 'Employee Blood Group',
-                ),
+                onChanged: (String? newValue) {
+                  setState(() {
+                    _empBldGrp = newValue!;
+                  });
+                },
               ),
             ),
             Container(
@@ -109,7 +192,7 @@ class _PeopleState extends State<People>{
               child: Center( child: ElevatedButton(
                 onPressed: () {
                   Navigator.pushNamed(context, peopleListRoute, arguments: PeolpeScreenArguments(
-                      '',empNameContrl.text,empUnitControl.text,empDiscControl.text,empBloodGrpControl.text,
+                      '',empNameContrl.text,_empUnit,_empDisc,_empBldGrp,
                     '','','','',''
                   ),);
                   //Navigator.pushNamed(context, peopleRoute, arguments: 'Data from home');
@@ -163,7 +246,7 @@ class _PeopleListState extends State<PeopleList>{
           width: 40,
           child: Image.asset('images/bcpl_logo.png'),
         ),
-        title: Text('Connect'),
+        title: Text('Connect - People'),
       ),
       endDrawer: AppDrawer(),
       body: getPeople(),
@@ -183,7 +266,19 @@ class _PeopleListState extends State<PeopleList>{
         return SizedBox(
           height: MediaQuery.of(context).size.height / 1.3,
           child: Center(
-            child: CircularProgressIndicator(),
+            child: Column(
+              children: <Widget>[
+                CircularProgressIndicator(),
+                Container(
+                  padding: EdgeInsets.all(10),
+                  child:Text('Fetching Data. Please Wait...',style: TextStyle(
+                    fontWeight: FontWeight.w500,
+                    fontSize: 18,
+                  ),),
+                ),
+              ],
+            ),
+
           ),
         );
       },
@@ -201,7 +296,7 @@ class _PeopleListState extends State<PeopleList>{
   }
   ListTile createListTilePeople(data,index,String title, String subtitle) {
     return ListTile(
-      onTap: (){
+      onTap: () async{
         Navigator.pushNamed(context, peopleDetailsRoute, arguments: PeolpeScreenArguments(
             data[index].emp_no ?? '',data[index].emp_name ?? '',data[index].emp_unit ?? '',data[index].emp_discipline ?? '',data[index].emp_bloodgroup ?? '',
             data[index].emp_desg ?? '',data[index].emp_email ?? '',data[index].emp_mobileNo ?? '',data[index].emp_intercom ?? '',
@@ -222,7 +317,7 @@ class _PeopleListState extends State<PeopleList>{
           )),
       leading: CircleAvatar(
           backgroundColor: RandomColorModel().getColor(),
-        backgroundImage: this._loadImageError ? null : NetworkImage(''),
+        backgroundImage: this._loadImageError ? null : NetworkImage("https://connect.bcplindia.co.in/MobileAppAPI/imageFile?empno="+data[index].emp_no),
         onBackgroundImageError: this._loadImageError ? null : (dynamic exception, StackTrace? stackTrace){
             this.setState((){
               this._loadImageError = true;
@@ -264,16 +359,16 @@ class _PeopleDetailsState extends State<PeopleDetails>{
           width: 40,
           child: Image.asset('images/bcpl_logo.png'),
         ),
-        title: Text('Connect'),
+        title: Text('Connect - People'),
       ),
       endDrawer: AppDrawer(),
       body: ListView(
         //padding: EdgeInsets.all(10.0),
         children: [
-          imageSection(widget.empNo),
+          imageSection(),
           //divider(),
           nameSection(),
-          buttonSection,
+          buttonSection(),
           descSection("Unit",widget.empUnit,Icons.business),
           descSection("Email",widget.empEmail.toLowerCase(),Icons.email),
           doubleDisp("Intercom (O)","Intercom (R)",widget.empIntercom,widget.empIntercomResidence,Icons.call),
@@ -282,24 +377,21 @@ class _PeopleDetailsState extends State<PeopleDetails>{
     );
   }
 
-  Widget imageSection(String empno) {
+  Widget imageSection() {
     return Card(
         elevation:0,
       child: Container(
         padding:EdgeInsets.all(8),
-        child: CircleAvatar(
-            radius: 70.0,
-            backgroundColor: Colors.lime,
-            backgroundImage: this._loadImageError ? null : NetworkImage('https://connect.bcplindia.co.in/Home/image?empno=1219'),
-            onBackgroundImageError: this._loadImageError ? null : (dynamic exception, StackTrace? stackTrace){
-              this.setState((){
-                this._loadImageError = true;
-              });
-            },
-            child:this._loadImageError? Text(widget.empName.substring(0,1).toUpperCase(),style: TextStyle(
-              color: Colors.black,
-            )) : null
-        ),
+        height:200,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          border: Border.all(color: Colors.black12),
+          image: DecorationImage (
+            image: NetworkImage("https://connect.bcplindia.co.in/MobileAppAPI/imageFile?empno="+widget.empNo),
+            fit: BoxFit.contain,
+
+          )
+        )
       ),
     );
   }
@@ -393,25 +485,50 @@ class _PeopleDetailsState extends State<PeopleDetails>{
       ],
     );
   }
-  Widget buttonSection = Container(
+  Widget buttonSection(){
+    return Container(
       padding:EdgeInsets.all(15.0),
       child:
       Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          _buildButtonColumn(Colors.redAccent,Icons.call,'Call'),
-          _buildButtonColumn(Colors.green,Icons.chat,'Message'),
-          _buildButtonColumn(Colors.blue,Icons.share,'Share'),
-          _buildButtonColumn(Colors.deepOrangeAccent,Icons.email,'Mail'),
+          _buildButtonColumn(Colors.redAccent,Icons.call,'Call',widget.empMobile,"tell"),
+          _buildButtonColumn(Colors.green,Icons.chat,'Message',widget.empMobile,"sms"),
+          _buildButtonColumn(Colors.blue,Icons.share,'Share',widget.empName+ " : "+widget.empMobile,"share"),
+          _buildButtonColumn(Colors.deepOrangeAccent,Icons.email,'Mail',widget.empEmail,"mail"),
         ],
       ),
-  );
+    );
+  }
 
   // void _launchURL(String _url) async =>
   //     await canLaunch(_url) ? await launch(_url) : throw 'Could not launch $_url';
 }
-Column _buildButtonColumn(Color color, IconData icon, String label) {
-  return Column(
+InkWell _buildButtonColumn(Color color, IconData icon, String label,String data,String launcherType) {
+  return InkWell(
+    onTap: () async{
+      String url='';
+      if(launcherType == "tell" || launcherType == "sms" || launcherType == "mail"){
+        if(launcherType == "tell"){
+          url = "tel:"+data;
+        }
+        else if(launcherType == "sms"){
+          url = "sms:"+data;
+        }
+        else if(launcherType == "mail"){
+          url = "mailto:"+data;
+        }
+        if (await canLaunch(url)) {
+          await launch(url);
+        } else {
+          throw "Can't open launcher.";
+        }
+      }
+      else if(launcherType == "share"){
+        Share.share("Contact: "+data);
+      }
+    },
+    child: Column(
     mainAxisSize: MainAxisSize.min,
     mainAxisAlignment: MainAxisAlignment.center,
     children: [
@@ -428,16 +545,10 @@ Column _buildButtonColumn(Color color, IconData icon, String label) {
         ),
       ),
     ],
+  ),
   );
 }
-class RandomColorModel {
 
-  Random random = Random();
-  Color getColor() {
-    return Color.fromARGB(random.nextInt(300), random.nextInt(300),
-        random.nextInt(300), random.nextInt(300));
-  }
-}
 class PeolpeScreenArguments {
   final String empNo;
   final String empName;

@@ -64,3 +64,25 @@ Future<LeaveQuota> fetchLeaveQuota(String empno) async{
     throw Exception('Failed to retrieve data.');
   }
 }
+
+Future<List<Document>> fetchDocuments(String docName, String docType) async{
+  final response = await http.post(
+    Uri.parse('https://connect.bcplindia.co.in/MobileAppAPI/DocumentList'),
+    headers: <String, String>{
+      'Content-Type': 'application/json; charset=UTF-8',
+    },
+    body: jsonEncode(<String, String>{
+      'docName': docName,
+      'docType': docType,
+    }),
+  );
+
+  if (response.statusCode == 200) {
+    List jsonResponse = jsonDecode(response.body);
+    return jsonResponse.map((docs) => Document.fromJson(docs)).toList();
+
+  } else {
+    print("The error message is: ${response.body}");
+    throw Exception('Failed to retrieve data.');
+  }
+}

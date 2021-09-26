@@ -24,100 +24,121 @@ class _LoginState extends State<Login> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Connect'),
+        leading: Container(
+          width: 40,
+          child: Image.asset('images/bcpl_logo.png'),
+        ),
+        title: Text(
+          'Connect',
+          style: Theme.of(context).textTheme.headline1,
+        ),
       ),
-      body: Container(
-        child: _isLoading ? Center(child: CircularProgressIndicator()) : ListView(
+      body: Center(
+        child: _isLoading ? SingleChildScrollView(child: Column(
           children: <Widget>[
-            Container(
-              child: Image.asset('images/bcpl_logo.png'),
-            ),
+            CircularProgressIndicator(),
             Container(
               padding: EdgeInsets.all(10),
-              child: TextField(
-                controller: unameController,
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(),
-                  labelText: 'User Name',
-                ),
-              ),
-            ),
-            Container(
-              padding: EdgeInsets.all(10),
-              child: TextField(
-                controller: pwdController,
-                obscureText: true,
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(),
-                  labelText: 'Password',
-                ),
-              ),
-            ),
-            Container(
-              padding: EdgeInsets.all(10),
-              child: ElevatedButton(
-                child: Text('Login'),
-                onPressed: () async{
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Login In...')),
-                  );
-                  setState(() {
-                    _isLoading = true;
-                  });
-                  EmployeeLoginData emp = await authenticate(unameController.text,pwdController.text);
-                  if(emp != null) {
-                    if(emp.status){
-                      // obtain shared preferences
-                      final prefs = await SharedPreferences.getInstance();
-                      // set value
-                      prefs.setString('empno', emp.emp_no);
-                      prefs.setString('name', emp.emp_name);
-                      prefs.setBool('isLoggedIn', true);
-                      setState(() {
-                        _isLoading = false;
-                      });
-                      Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (BuildContext context) => Home()), (Route<dynamic> route) => false);
-                    }
-                    else{
-                      setState(() {
-                        _isLoading = false;
-                      });
-                      // showDialog(
-                      //   context: context,
-                      //   builder: (context) {
-                      //     return AlertDialog(
-                      //       // Retrieve the text the that user has entered by using the
-                      //       // TextEditingController.
-                      //       content: Text('Authentication Failed'),
-                      //     );
-                      //   },
-                      // );
-                    }
-                  }
-                  else{
-                    showDialog(
-                      context: context,
-                      builder: (context) {
-                        return AlertDialog(
-                          // Retrieve the text the that user has entered by using the
-                          // TextEditingController.
-                          content: Text('Authentication Failed'),
-                        );
-                      },
-                    );
-                  }
-                },
-              ),
-
-            ),
-            errorMsg == null? Container(): Text(
-              "${errorMsg}",
-              style: TextStyle(
-                color: Colors.redAccent,
-                fontWeight: FontWeight.bold,
-              ),
+              child:Text('Login In...',style: TextStyle(
+                fontWeight: FontWeight.w500,
+                fontSize: 18,
+              ),),
             ),
           ],
+        ),) : SingleChildScrollView(
+          child: Column(
+            children: <Widget>[
+              Container(
+                padding: EdgeInsets.all(10),
+                child:Image.asset('images/connect_logo.png',scale: 2),
+              ),
+              Container(
+                padding: EdgeInsets.all(10),
+                child: TextField(
+                  controller: unameController,
+                  decoration: InputDecoration(
+                    border: OutlineInputBorder(),
+                    labelText: 'User Name',
+                  ),
+                ),
+              ),
+              Container(
+                padding: EdgeInsets.all(10),
+                child: TextField(
+                  controller: pwdController,
+                  obscureText: true,
+                  decoration: InputDecoration(
+                    border: OutlineInputBorder(),
+                    labelText: 'Password',
+                  ),
+                ),
+              ),
+              Container(
+                padding: EdgeInsets.all(10),
+                child: ElevatedButton(
+                  child: Text('Login'),
+                  onPressed: () async{
+                    // ScaffoldMessenger.of(context).showSnackBar(
+                    //   const SnackBar(content: Text('Login In...')),
+                    // );
+                    setState(() {
+                      _isLoading = true;
+                    });
+                    EmployeeLoginData emp = await authenticate(unameController.text,pwdController.text);
+                    if(emp != null) {
+                      if(emp.status){
+                        // obtain shared preferences
+                        final prefs = await SharedPreferences.getInstance();
+                        // set value
+                        prefs.setString('empno', emp.emp_no);
+                        prefs.setString('name', emp.emp_name);
+                        prefs.setBool('isLoggedIn', true);
+                        setState(() {
+                          _isLoading = false;
+                        });
+                        Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (BuildContext context) => Home()), (Route<dynamic> route) => false);
+                      }
+                      else{
+                        setState(() {
+                          _isLoading = false;
+                        });
+                        // showDialog(
+                        //   context: context,
+                        //   builder: (context) {
+                        //     return AlertDialog(
+                        //       // Retrieve the text the that user has entered by using the
+                        //       // TextEditingController.
+                        //       content: Text('Authentication Failed'),
+                        //     );
+                        //   },
+                        // );
+                      }
+                    }
+                    else{
+                      showDialog(
+                        context: context,
+                        builder: (context) {
+                          return AlertDialog(
+                            // Retrieve the text the that user has entered by using the
+                            // TextEditingController.
+                            content: Text('Authentication Failed'),
+                          );
+                        },
+                      );
+                    }
+                  },
+                ),
+
+              ),
+              errorMsg == null? Container(): Text(
+                "${errorMsg}",
+                style: TextStyle(
+                  color: Colors.redAccent,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -158,70 +179,7 @@ class _LoginState extends State<Login> {
     }
   }
 }
-class AppDrawer extends StatefulWidget {
-  @override
-  State<AppDrawer> createState() => _AppDrawerState();
-}
 
-class _AppDrawerState extends State<AppDrawer> {
-  final String user = prefs.getString('name') ?? '';
-
-  @override
-  Widget build(BuildContext context) {
-    return Drawer(
-      // Add a ListView to the drawer. This ensures the user can scroll
-      // through the options in the drawer if there isn't enough vertical
-      // space to fit everything.
-      child: ListView(
-        // Important: Remove any padding from the ListView.
-        padding: EdgeInsets.zero,
-        children: [
-          DrawerHeader(
-            decoration: BoxDecoration(
-              color: Color.fromRGBO(165, 231, 206, 1.0),
-            ),
-            child: Stack(
-              alignment: const Alignment(0.0, 1),
-                children: [
-                  CircleAvatar(
-                    backgroundImage: AssetImage('images/bcpl_logo.png'),
-                    radius: 60,
-                  ),
-                  Container(
-                    decoration: const BoxDecoration(
-                      color: Colors.black45,
-                    ),
-                    child: Text(user, style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white,
-                    ),
-                    ),
-                  ),
-                ],
-            ),
-          ),
-          ListTile(
-            title: const Text('Home'),
-            onTap: () {
-              Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (BuildContext context) => Home()), (Route<dynamic> route) => false);
-            },
-          ),
-          ListTile(
-            title: const Text('Logout'),
-            onTap: () {
-              // Update the state of the app
-              logout();
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-  Future<void> logout() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.clear();
-    Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (BuildContext context) => Login()), (Route<dynamic> route) => false);
-  }
-}
 
 class EmployeeLoginData{
   final bool status;

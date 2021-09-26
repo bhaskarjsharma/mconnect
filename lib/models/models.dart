@@ -5,6 +5,7 @@ class NewsContent{
   final String contentTitle;
   final String contentDescription;
   final String creationDate;
+  //final List<NewsAttachment> attachments;
 
   NewsContent({required this.contentId, required this.contentType, required this.contentTitle,
     required this.contentDescription,required this.creationDate});
@@ -16,6 +17,27 @@ class NewsContent{
       contentTitle: json['title'],
       contentDescription: json['description'],
       creationDate: json['creationDate'],
+      //attachments: json['attachments'],
+    );
+  }
+}
+
+class NewsAttachment
+{
+  final int attachmentID ;
+  final String attachmentFileName ;
+  final String attachmentFileType ;
+  final String attachmentFilePath ;
+
+  NewsAttachment({required this.attachmentID, required this.attachmentFileName, required this.attachmentFileType,
+    required this.attachmentFilePath});
+
+  factory NewsAttachment.fromJson(Map<String, dynamic> json) {
+    return NewsAttachment(
+      attachmentID: json['attachmentID'],
+      attachmentFileName: json['attachmentFileName'],
+      attachmentFileType: json['attachmentFileType'],
+      attachmentFilePath: json['attachmentFilePath'],
     );
   }
 }
@@ -85,6 +107,33 @@ class LeaveQuota{
       QuotaHPL: json['QuotaHPL'],
       QuotaRH: json['QuotaRH'],
       QuotaCOFF: json['QuotaCOFF'],
+    );
+  }
+}
+
+class Document{
+  final String docId;
+  final String docType;
+  final String docFileName;
+  final String docDisplayName;
+  final String docPath;
+  final String docContentType;
+  final String docSize;
+  final String docDate;
+
+  Document({required this.docId,required this.docType, required this.docFileName, required this.docDisplayName,
+    required this.docPath,required this.docContentType,required this.docSize,required this.docDate});
+
+  factory Document.fromJson(Map<String, dynamic> json) {
+    return Document(
+      docId: json['docId'],
+      docType: json['docType'],
+      docFileName: json['docFileName'],
+      docDisplayName: json['docDisplayName'],
+      docPath: json['docPath'],
+      docContentType: json['docContentType'],
+      docSize: json['docSize'],
+      docDate: json['docDate'],
     );
   }
 }

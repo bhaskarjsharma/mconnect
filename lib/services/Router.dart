@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../account.dart';
 import '../constants.dart';
 import '../content.dart';
+import '../documents.dart';
 import '../home.dart';
 import '../people.dart';
 
@@ -28,8 +29,11 @@ class NavigationRouter {
         final args = settings.arguments as PeolpeScreenArguments;
         return MaterialPageRoute(builder: (BuildContext context) => PeopleDetails(args.empNo,args.empName,args.empUnit,args.empDisc,
             args.empBldGrp,args.empDesg,args.empEmail,args.empMobile,args.empIntercom,args.empIntercomResidence));
-        //case documentsRoute:
-        //return MaterialPageRoute(builder: (_) => News());
+      case documentsRoute:
+        return MaterialPageRoute(builder: (BuildContext context) => DocumentScreen());
+      case documentListRoute:
+        final args = settings.arguments as DocumentScreenArguments;
+        return MaterialPageRoute(builder: (BuildContext context) => DocumentList(args.docName,args.docType));
       case leaveQuotaRoute:
         return MaterialPageRoute(builder: (_) => LeaveQuotas());
       default:

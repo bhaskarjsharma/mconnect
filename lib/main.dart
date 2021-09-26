@@ -17,7 +17,8 @@ void main() async{
       theme: ThemeData(
           appBarTheme: AppBarTheme(
             backgroundColor: Color.fromRGBO(165, 231, 206, 1.0),
-          )),
+          ),
+      ),
       home: Home(),
       onGenerateRoute: NavigationRouter.generateRoute,
       initialRoute: homeRoute,
@@ -25,6 +26,14 @@ void main() async{
   }
   else{
     runApp(MaterialApp(
+      theme: ThemeData(
+          appBarTheme: AppBarTheme(
+            backgroundColor: Color.fromRGBO(165, 231, 206, 1.0),
+          ),
+          textTheme: const TextTheme(
+          headline1: TextStyle(fontSize: 23.0, fontWeight: FontWeight.bold,),
+          ),
+      ),
       title: "Login",
       home: Login(),
       onGenerateRoute: NavigationRouter.generateRoute,
@@ -33,15 +42,7 @@ void main() async{
   }
 
 }
-Widget divider(){
-  return Divider(
-  color:Colors.grey,
-  thickness:1,
-  height:20,
-  indent:10,
-  endIndent:10,
-  );
-}
+
 /*class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
 
