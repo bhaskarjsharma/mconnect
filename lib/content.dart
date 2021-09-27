@@ -156,95 +156,100 @@ class _NewsDetailsState extends State<NewsDetails>{
         title: Text('Connect - News & Events'),
       ),
       endDrawer: AppDrawer(),
-      body: ListView(
-        padding: EdgeInsets.all(10.0),
-        children: [
-          Card(
-            elevation: 10,
-            child: Container(
-              padding: EdgeInsets.all(10.0),
-              decoration: BoxDecoration(
-                color:Color.fromRGBO(254, 249, 248, 1),
-                borderRadius: BorderRadius.circular(12),
-              ),
+      body: CustomScrollView(
+        slivers: <Widget>[
+          SliverList(
+            delegate: SliverChildListDelegate(
+              [
+                Card(
+                  elevation: 10,
+                  child: Container(
+                    padding: EdgeInsets.all(10.0),
+                    decoration: BoxDecoration(
+                      color:Color.fromRGBO(254, 249, 248, 1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
 
-              child: Column(
-                children: [
-                  Text(widget.contentTitle,
-                      textAlign: TextAlign.justify,
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
-                      )),
-                  Container(
-                    padding: EdgeInsets.only(top: 10.0),
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child:Text('Date: '+widget.creationDate,
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 15,
-                            color: Colors.blue,
-                          )),
+                    child: Column(
+                      children: [
+                        Text(widget.contentTitle,
+                            textAlign: TextAlign.justify,
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18,
+                            )),
+                        Container(
+                          padding: EdgeInsets.only(top: 10.0),
+                          child: Align(
+                            alignment: Alignment.centerLeft,
+                            child:Text('Date: '+widget.creationDate,
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 15,
+                                  color: Colors.blue,
+                                )),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ],
-              ),
-            ),
-          ),
-          Card(
-            elevation: 5,
-            margin: EdgeInsets.only(top: 10,left: 5,right:5),
-
-            child: Container(
-              decoration: BoxDecoration(
-                color:Color.fromRGBO(254, 253, 249, 1),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              //color: Colors.amber[500],
-              child: Html(data: widget.contentDescription,style: {"body": Style(
-                    fontSize: FontSize(18.0),
-                    fontWeight: FontWeight.w400,
-                    textAlign: TextAlign.justify,
-                  ),
-                },
-              ) ,
-            ),
-          ),
-
-          getImage(),
-
-          Container(
-            //color: Colors.amber[100],
-            child: ElevatedButton(
-              onPressed: (){
-                downloadFile(widget.contentId.toString());
-              },
-              child: const Text('Download'),
-            )
-          ),
-          Container(
-            //color: Colors.amber[100],
-              child: Center(
-                child:  Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    Text(
-                      'Download progress:',
-                    ),
-                    Text(
-                      '$_progress',
-                      style: TextStyle(color: Colors.red),
-                    ),
-                  ],
                 ),
-              ),
-          ),
+                Card(
+                  elevation: 5,
+                  margin: EdgeInsets.only(top: 10,left: 5,right:5),
 
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color:Color.fromRGBO(254, 253, 249, 1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    //color: Colors.amber[500],
+                    child: Html(data: widget.contentDescription,style: {"body": Style(
+                      fontSize: FontSize(18.0),
+                      fontWeight: FontWeight.w400,
+                      textAlign: TextAlign.justify,
+                    ),
+                    },
+                    ) ,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          createImageGrid1(),
         ],
+
+            // Container(
+            //   //color: Colors.amber[100],
+            //     child: ElevatedButton(
+            //       onPressed: (){
+            //         downloadFile(widget.contentId.toString());
+            //       },
+            //       child: const Text('Download'),
+            //     )
+            // ),
+            // Container(
+            //   //color: Colors.amber[100],
+            //   child: Center(
+            //     child:  Column(
+            //       mainAxisAlignment: MainAxisAlignment.center,
+            //       children: <Widget>[
+            //         Text(
+            //           'Download progress:',
+            //         ),
+            //         Text(
+            //           '$_progress',
+            //           style: TextStyle(color: Colors.red),
+            //         ),
+            //       ],
+            //     ),
+            //   ),
+            // ),
+
       ),
     );
   }
+
 
   FutureBuilder getImage(){
     return FutureBuilder<List<NewsAttachment>>(
@@ -253,7 +258,7 @@ class _NewsDetailsState extends State<NewsDetails>{
       {
         if (snapshot.hasData) {
           List<NewsAttachment>? _attachmentData = snapshot.data;
-          return createImageGrid(_attachmentData);
+          //return createImageGrid1(_attachmentData);
         } else if (snapshot.hasError) {
           return Text("${snapshot.error}");
         }
@@ -277,20 +282,132 @@ class _NewsDetailsState extends State<NewsDetails>{
       },
     );
   }
+  SliverGrid createImageGrid1(){
+    return SliverGrid(
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+        ),
+      delegate: SliverChildBuilderDelegate(
+            (BuildContext context, int index) {
+              return FutureBuilder(
+                future: _attachmentDataFuture ,
+                builder: (BuildContext context, AsyncSnapshot<List<NewsAttachment>> snapshot)
+                {
+
+                  if (snapshot.hasData) {
+                    List<NewsAttachment>? _attachmentData = snapshot.data;
+                    return InkWell(
+                      onTap: (){
+                        showDialog("https://connect.bcplindia.co.in/MobileAppAPI/Download?id="+_attachmentData![index].attachmentID.toString());
+                        //Navigator.of(context).push(MaterialPageRoute(builder: (context) => SliderShowFullmages(listImagesModel: list, current: _current)));
+                      },
+                      child:Image.network("https://connect.bcplindia.co.in/MobileAppAPI/Download?id="+_attachmentData![index].attachmentID.toString()),
+                    );
+                    //return createImageGrid1(_attachmentData);
+                  } else if (snapshot.hasError) {
+                    return Text("${snapshot.error}");
+                  }
+                  return SizedBox(
+                    height: MediaQuery.of(context).size.height / 1.3,
+                    child: Center(
+                      child: Column(
+                        children: <Widget>[
+                          CircularProgressIndicator(),
+                          Container(
+                            padding: EdgeInsets.all(10),
+                            child:Text('Fetching Data. Please Wait...',style: TextStyle(
+                              fontWeight: FontWeight.w500,
+                              fontSize: 18,
+                            ),),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              );
+              return InkWell(
+                       onTap: (){
+                         showDialog("https://connect.bcplindia.co.in/MobileAppAPI/Download?id="+_attachmentData[index].attachmentID.toString());
+                         //Navigator.of(context).push(MaterialPageRoute(builder: (context) => SliderShowFullmages(listImagesModel: list, current: _current)));
+                      },
+                       child:Image.network("https://connect.bcplindia.co.in/MobileAppAPI/Download?id="+_attachmentData[index].attachmentID.toString()),
+                     );
+        },
+        childCount: _attachmentData.length,
+      ),
+        // itemCount: _attachmentData.length,
+        // itemBuilder: (BuildContext context, int index) {
+        //   return InkWell(
+        //     onTap: (){
+        //       showDialog("https://connect.bcplindia.co.in/MobileAppAPI/Download?id="+_attachmentData[index].attachmentID.toString());
+        //       //Navigator.of(context).push(MaterialPageRoute(builder: (context) => SliderShowFullmages(listImagesModel: list, current: _current)));
+        //     },
+        //     child:Image.network("https://connect.bcplindia.co.in/MobileAppAPI/Download?id="+_attachmentData[index].attachmentID.toString()),
+        //   );
+        // },
+    );
+  }
   GridView createImageGrid(_attachmentData){
     return GridView.count(
       crossAxisCount: 2,
       crossAxisSpacing: 5,
       mainAxisSpacing: 5,
       padding: EdgeInsets.all(10.0), // 3px padding all around
-
+      shrinkWrap: true,
       children: <Widget>[
-        Image.network("https://connect.bcplindia.co.in/MobileAppAPI/Download?id="+_attachmentData[0].attachmentID.toString()),
-        Image.network("https://connect.bcplindia.co.in/MobileAppAPI/Download?id="+_attachmentData[1].attachmentID.toString()),
+        InkWell(
+          onTap: (){
+            showDialog("https://connect.bcplindia.co.in/MobileAppAPI/Download?id="+_attachmentData[0].attachmentID.toString());
+            //Navigator.of(context).push(MaterialPageRoute(builder: (context) => SliderShowFullmages(listImagesModel: list, current: _current)));
+          },
+          child:Image.network("https://connect.bcplindia.co.in/MobileAppAPI/Download?id="+_attachmentData[0].attachmentID.toString()),
+        ),
       ],
     );
   }
 
+  showDialog(String url){
+    showGeneralDialog(
+      context: context,
+      barrierColor: Colors.black12.withOpacity(1), // Background color
+      barrierDismissible: false,
+      barrierLabel: 'Dialog',
+      transitionDuration: Duration(milliseconds: 400), // How long it takes to popup dialog after button click
+      pageBuilder: (_, __, ___) {
+        // Makes widget fullscreen
+        return SizedBox.expand(
+          child: Column(
+            children: <Widget>[
+              Expanded(
+                flex: 10,
+                child: SizedBox.expand(child: Image.network(url)),
+              ),
+              Expanded(
+                flex: 1,
+                child: SizedBox.expand(
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+                        Text(
+                          'Close',
+                          style: TextStyle(fontSize: 18),
+                        ),
+                        Icon(Icons.cancel,size:20),
+                      ],
+                    ),
+
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
 
   Card createPhotoGallery(_attachmentData){
     return Card(
