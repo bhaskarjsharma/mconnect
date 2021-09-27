@@ -1,6 +1,9 @@
 import 'dart:convert';
+import 'dart:io';
+import 'package:dio/dio.dart';
 import 'package:flutter_projects/models/models.dart';
 import 'package:http/http.dart' as http;
+import 'package:path_provider/path_provider.dart';
 
 
 Future<List<NewsContent>> fetchContent() async{
@@ -19,6 +22,22 @@ Future<List<NewsContent>> fetchContent() async{
     // If the server did not return a 200 OK response,
     print("The error message is: ${response.body}");
     throw Exception('Failed to authenticate.');
+  }
+}
+
+Future<List<NewsAttachment>> fetchContentAttachments(int contentId, String contentType) async{
+
+  // Here Dio is used instead of the native HTTP
+  final response = await Dio().post('https://connect.bcplindia.co.in/MobileAppAPI/ContentAttachments',
+      data: {'contentId': contentId, 'contentType': contentType});
+
+  if (response.statusCode == 200) {
+    List jsonResponse = response.data;
+    return jsonResponse.map((attachments) => NewsAttachment.fromJson(attachments)).toList();
+
+  } else {
+    print("The error message is: ${response.data}");
+    throw Exception('Failed to retrieve data.');
   }
 }
 
@@ -86,3 +105,18 @@ Future<List<Document>> fetchDocuments(String docName, String docType) async{
     throw Exception('Failed to retrieve data.');
   }
 }
+
+Future<String> getDownloadDirectory() async {
+  var externalStorageDirPath;
+  if (Platform.isAndroid) {
+    final directory = await getExternalStorageDirectory();
+    externalStorageDirPath = directory?.path;
+  }
+  else if (Platform.isIOS) {
+    externalStorageDirPath = (await getApplicationDocumentsDirectory()).absolute.path;
+  }
+  return externalStorageDirPath;
+}
+
+
+

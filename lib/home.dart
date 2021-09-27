@@ -46,8 +46,10 @@ class _HomeState extends State<Home>  {
             makeDashboardItem("Documents",Icons.collections,Colors.green,documentsRoute),
             makeDashboardItem("Leave Quota",Icons.date_range,Colors.orange,leaveQuotaRoute),
             makeDashboardItem("Holiday List",Icons.today,Colors.brown,holidayListRoute),
-            makeDashboardItem("Documents",Icons.collections,Colors.green,homeRoute),
-
+            makeDashboardItem("Payslips",Icons.collections,Colors.cyan,homeRoute),
+            makeDashboardItem("Attendance",Icons.fingerprint,Colors.deepPurple,homeRoute),
+            makeDashboardItem("Shift Roster",Icons.pending_actions,Colors.teal,homeRoute),
+            makeDashboardItem("ITAC",Icons.computer,Colors.red,homeRoute),
           ],
         ),
       ),
@@ -169,6 +171,20 @@ class _AppDrawerState extends State<AppDrawer> {
           ListTile(
             leading: Icon(Icons.security_update,color: Colors.green, size:25),
             title: const Text('Check Updates'),
+            onTap: () {
+              Navigator.pushNamed(context, homeRoute);
+            },
+          ),
+          ListTile(
+            leading: Icon(Icons.feedback,color: Colors.orange, size:25),
+            title: const Text('Feedback'),
+            onTap: () {
+              Navigator.pushNamed(context, homeRoute);
+            },
+          ),
+          ListTile(
+            leading: Icon(Icons.info,color: Colors.black45, size:25),
+            title: const Text('About'),
             onTap: () {
               Navigator.pushNamed(context, homeRoute);
             },

@@ -189,7 +189,7 @@ class _DocumentListState extends State<DocumentList>{
   ListTile createListTileDocument(data,index) {
     return ListTile(
       onTap: () {
-        downloadFile(data[index].docPath,data[index].docFileName);
+        //downloadFile(data[index].docPath,data[index].docFileName);
       },
       title: Text(data[index].docDisplayName,
           style: TextStyle(
@@ -218,30 +218,6 @@ class _DocumentListState extends State<DocumentList>{
           // )) : null
       ),
     );
-  }
-
-  Future<void> downloadFile(String filePath,String fileName) async {
-    final dir = await _getDownloadDirectory();
-    final savePath = path.join(dir.path, fileName);
-
-    try {
-      var dio = Dio();
-      var response = await dio.download(filePath+"/"+fileName,savePath);
-    } catch (e) {
-      print(e);
-    }
-
-    //final isPermissionStatusGranted = await _requestPermissions();
-
-    // if (isPermissionStatusGranted) {
-    //   final savePath = path.join(dir.path, _fileName);
-    //   await _startDownload(savePath);
-    // } else {
-    //   // handle the scenario when user declines the permissions
-    // }
-  }
-  Future<Directory> _getDownloadDirectory() async {
-    return await getApplicationDocumentsDirectory();
   }
 }
 
