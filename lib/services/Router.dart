@@ -36,6 +36,8 @@ class NavigationRouter {
         return MaterialPageRoute(builder: (BuildContext context) => DocumentList(args.docName,args.docType));
       case leaveQuotaRoute:
         return MaterialPageRoute(builder: (_) => LeaveQuotas());
+      case holidayListRoute:
+        return MaterialPageRoute(builder: (_) => Holidays());
       default:
         return MaterialPageRoute(
             builder: (_) => Scaffold(

@@ -137,5 +137,20 @@ class Document{
     );
   }
 }
+class HolidayList{
+  final String holidayDate;
+  final String holidayName;
+  final String holidayType;
+
+  HolidayList({required this.holidayDate,required this.holidayName, required this.holidayType});
+
+  factory HolidayList.fromJson(Map<String, dynamic> json) {
+    return HolidayList(
+      holidayDate: json['holidayDate'],
+      holidayName: json['holidayName'],
+      holidayType: json['holidayType'],
+    );
+  }
+}
 
 

@@ -9,4 +9,4 @@ const String peopleDetailsRoute = '/PeopleDetails';
 const String documentsRoute = '/DocumentScreen';
 const String documentListRoute = '/DocumentList';
 const String leaveQuotaRoute = '/LeaveQuota';
-const String holidayListRoute = '/holidayList';
+const String holidayListRoute = '/Holidays';

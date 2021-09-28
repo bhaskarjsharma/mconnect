@@ -1,10 +1,12 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:dio/dio.dart';
+import '../home.dart';
 import 'package:flutter_projects/models/models.dart';
+import 'package:flutter_projects/services/permissions.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
-
+import 'package:path/path.dart' as path;
 
 Future<List<NewsContent>> fetchContent() async{
   final response = await http.get(
@@ -105,6 +107,20 @@ Future<List<Document>> fetchDocuments(String docName, String docType) async{
     throw Exception('Failed to retrieve data.');
   }
 }
+Future<List<HolidayList>> fetchHolidayList() async{
+
+  // Here Dio is used instead of the native HTTP
+  final response = await Dio().get('https://connect.bcplindia.co.in/MobileAppAPI/GetHolidayList');
+
+  if (response.statusCode == 200) {
+    List jsonResponse = response.data;
+    return jsonResponse.map((dataList) => HolidayList.fromJson(dataList)).toList();
+
+  } else {
+    print("The error message is: ${response.data}");
+    throw Exception('Failed to retrieve data.');
+  }
+}
 
 Future<String> getDownloadDirectory() async {
   var externalStorageDirPath;
@@ -117,6 +133,10 @@ Future<String> getDownloadDirectory() async {
   }
   return externalStorageDirPath;
 }
+
+
+
+
 
 
 

@@ -1,16 +1,20 @@
+import 'dart:convert';
+
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:flutter_projects/services/permissions.dart';
 import 'package:flutter_projects/services/webservice.dart';
+import 'package:fluttericon/font_awesome_icons.dart';
 import 'package:path/path.dart' as path;
-import 'package:photo_view/photo_view.dart';
-import 'package:photo_view/photo_view_gallery.dart';
 import 'constants.dart';
 import 'home.dart';
 import 'main.dart';
 import 'models/models.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:open_file/open_file.dart';
 
 class News extends StatefulWidget {
   @override
@@ -52,10 +56,12 @@ class _NewsState extends State<News>{
         } else if (snapshot.hasError) {
           return Text("${snapshot.error}");
         }
-        return SizedBox(
+        return Container(
           height: MediaQuery.of(context).size.height / 1.3,
           child: Center(
             child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: <Widget>[
                 CircularProgressIndicator(),
                 Container(
@@ -134,15 +140,16 @@ class NewsDetails extends StatefulWidget {
   State<NewsDetails> createState() => _NewsDetailsState();
 }
 
-class _NewsDetailsState extends State<NewsDetails>{
-  String _progress = "-";
+class _NewsDetailsState extends State<NewsDetails> {
+  String _progress = "";
   late Future<List<NewsAttachment>> _attachmentDataFuture;
   late List<NewsAttachment> _attachmentData;
+  int gridImageCount = 1;
 
   @override
-  void initState(){
+  void initState() {
     super.initState();
-    _attachmentDataFuture = fetchContentAttachments(widget.contentId,"News");
+    _attachmentDataFuture = fetchContentAttachments(widget.contentId, "News");
   }
 
   @override
@@ -166,7 +173,7 @@ class _NewsDetailsState extends State<NewsDetails>{
                   child: Container(
                     padding: EdgeInsets.all(10.0),
                     decoration: BoxDecoration(
-                      color:Color.fromRGBO(254, 249, 248, 1),
+                      color: Color.fromRGBO(254, 249, 248, 1),
                       borderRadius: BorderRadius.circular(12),
                     ),
 
@@ -182,7 +189,7 @@ class _NewsDetailsState extends State<NewsDetails>{
                           padding: EdgeInsets.only(top: 10.0),
                           child: Align(
                             alignment: Alignment.centerLeft,
-                            child:Text('Date: '+widget.creationDate,
+                            child: Text('Date: ' + widget.creationDate,
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 15,
@@ -196,184 +203,193 @@ class _NewsDetailsState extends State<NewsDetails>{
                 ),
                 Card(
                   elevation: 5,
-                  margin: EdgeInsets.only(top: 10,left: 5,right:5),
+                  margin: EdgeInsets.only(top: 10, left: 5, right: 5),
 
                   child: Container(
                     decoration: BoxDecoration(
-                      color:Color.fromRGBO(254, 253, 249, 1),
+                      color: Color.fromRGBO(254, 253, 249, 1),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     //color: Colors.amber[500],
-                    child: Html(data: widget.contentDescription,style: {"body": Style(
+                    child: Html(
+                      data: widget.contentDescription, style: {"body": Style(
                       fontSize: FontSize(18.0),
                       fontWeight: FontWeight.w400,
                       textAlign: TextAlign.justify,
                     ),
                     },
-                    ) ,
+                    ),
                   ),
                 ),
               ],
             ),
           ),
-          createImageGrid1(),
+          getImage(),
         ],
 
-            // Container(
-            //   //color: Colors.amber[100],
-            //     child: ElevatedButton(
-            //       onPressed: (){
-            //         downloadFile(widget.contentId.toString());
-            //       },
-            //       child: const Text('Download'),
-            //     )
-            // ),
-            // Container(
-            //   //color: Colors.amber[100],
-            //   child: Center(
-            //     child:  Column(
-            //       mainAxisAlignment: MainAxisAlignment.center,
-            //       children: <Widget>[
-            //         Text(
-            //           'Download progress:',
-            //         ),
-            //         Text(
-            //           '$_progress',
-            //           style: TextStyle(color: Colors.red),
-            //         ),
-            //       ],
-            //     ),
-            //   ),
-            // ),
+        // Container(
+        //   //color: Colors.amber[100],
+        //     child: ElevatedButton(
+        //       onPressed: (){
+        //         downloadFile(widget.contentId.toString());
+        //       },
+        //       child: const Text('Download'),
+        //     )
+        // ),
+        // Container(
+        //   //color: Colors.amber[100],
+        //   child: Center(
+        //     child:  Column(
+        //       mainAxisAlignment: MainAxisAlignment.center,
+        //       children: <Widget>[
+        //         Text(
+        //           'Download progress:',
+        //         ),
+        //         Text(
+        //           '$_progress',
+        //           style: TextStyle(color: Colors.red),
+        //         ),
+        //       ],
+        //     ),
+        //   ),
+        // ),
 
       ),
     );
   }
 
-
-  FutureBuilder getImage(){
-    return FutureBuilder<List<NewsAttachment>>(
-      future: _attachmentDataFuture,
-      builder: (BuildContext context, AsyncSnapshot<List<NewsAttachment>> snapshot)
-      {
-        if (snapshot.hasData) {
-          List<NewsAttachment>? _attachmentData = snapshot.data;
-          //return createImageGrid1(_attachmentData);
-        } else if (snapshot.hasError) {
-          return Text("${snapshot.error}");
-        }
-        return SizedBox(
-          height: MediaQuery.of(context).size.height / 1.3,
-          child: Center(
-            child: Column(
-              children: <Widget>[
-                CircularProgressIndicator(),
-                Container(
-                  padding: EdgeInsets.all(10),
-                  child:Text('Fetching Data. Please Wait...',style: TextStyle(
-                    fontWeight: FontWeight.w500,
-                    fontSize: 18,
-                  ),),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-  SliverGrid createImageGrid1(){
+  Widget getImage() {
     return SliverGrid(
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-        ),
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2),
       delegate: SliverChildBuilderDelegate(
             (BuildContext context, int index) {
-              return FutureBuilder(
-                future: _attachmentDataFuture ,
-                builder: (BuildContext context, AsyncSnapshot<List<NewsAttachment>> snapshot)
-                {
+          return FutureBuilder(
 
-                  if (snapshot.hasData) {
-                    List<NewsAttachment>? _attachmentData = snapshot.data;
-                    return InkWell(
-                      onTap: (){
-                        showDialog("https://connect.bcplindia.co.in/MobileAppAPI/Download?id="+_attachmentData![index].attachmentID.toString());
-                        //Navigator.of(context).push(MaterialPageRoute(builder: (context) => SliderShowFullmages(listImagesModel: list, current: _current)));
-                      },
-                      child:Image.network("https://connect.bcplindia.co.in/MobileAppAPI/Download?id="+_attachmentData![index].attachmentID.toString()),
-                    );
-                    //return createImageGrid1(_attachmentData);
-                  } else if (snapshot.hasError) {
-                    return Text("${snapshot.error}");
-                  }
-                  return SizedBox(
-                    height: MediaQuery.of(context).size.height / 1.3,
-                    child: Center(
-                      child: Column(
-                        children: <Widget>[
-                          CircularProgressIndicator(),
-                          Container(
-                            padding: EdgeInsets.all(10),
-                            child:Text('Fetching Data. Please Wait...',style: TextStyle(
-                              fontWeight: FontWeight.w500,
-                              fontSize: 18,
-                            ),),
-                          ),
-                        ],
-                      ),
+            future: _attachmentDataFuture,
+            builder: (context, AsyncSnapshot<List<NewsAttachment>> snapshot) {
+              if (snapshot.connectionState == ConnectionState.done &&
+                  snapshot.hasData) {
+                WidgetsBinding.instance!.addPostFrameCallback((_) {
+                  setState(() {
+                    gridImageCount = snapshot.data!.length;
+                  });
+                });
+
+                String attachmentUrl = "https://connect.bcplindia.co.in/MobileAppAPI/Download?id=" +
+                    snapshot.data![index].attachmentID.toString();
+                String fileName = snapshot.data![index].attachmentFileName;
+
+                if (snapshot.data![index].attachmentFileType.contains(
+                    "image/")) {
+                  return InkWell(
+                    onTap: () {
+                      showDialog(attachmentUrl);
+                    },
+                    child: CachedNetworkImage(
+                      imageUrl: attachmentUrl,
+                      placeholder: (context, url) =>
+                          SizedBox(width: 50,
+                              height: 50,
+                              child: CircularProgressIndicator()),
+                      errorWidget: (context, url, error) => Icon(Icons.error),
                     ),
                   );
-                },
-              );
-              return InkWell(
-                       onTap: (){
-                         showDialog("https://connect.bcplindia.co.in/MobileAppAPI/Download?id="+_attachmentData[index].attachmentID.toString());
-                         //Navigator.of(context).push(MaterialPageRoute(builder: (context) => SliderShowFullmages(listImagesModel: list, current: _current)));
-                      },
-                       child:Image.network("https://connect.bcplindia.co.in/MobileAppAPI/Download?id="+_attachmentData[index].attachmentID.toString()),
-                     );
+                }
+                else if (snapshot.data![index].attachmentFileType ==
+                    "application/pdf") {
+                  return InkWell(
+                    onTap: () {
+                      downloadFile(attachmentUrl, fileName);
+                    },
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(FontAwesome.file_pdf, size: 40, color: Colors.red),
+                        Text('Download PDF',
+                            style: TextStyle(fontSize: 15, color: Colors.black),
+                            textAlign: TextAlign.center),
+                        Text('$_progress', style: TextStyle(
+                            color: Colors.red, fontSize: 15),),
+                      ],
+                    ),
+
+                  );
+                }
+                else if (snapshot.data![index].attachmentFileType ==
+                    "application/msword") {
+                  return InkWell(
+                    onTap: () {
+                      downloadFile(attachmentUrl, fileName);
+                    },
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(FontAwesome.file_word, size: 40, color: Colors
+                            .blue),
+                        Text('Download PDF',
+                            style: TextStyle(fontSize: 15, color: Colors.black),
+                            textAlign: TextAlign.center),
+                        Text('$_progress', style: TextStyle(
+                            color: Colors.red, fontSize: 15),),
+                      ],
+                    ),
+                  );
+                }
+                else if (snapshot.data![index].attachmentFileType ==
+                    "application/vnd.ms-excel") {
+                  return InkWell(
+                    onTap: () {
+                      downloadFile(attachmentUrl, fileName);
+                    },
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(FontAwesome.file_excel, size: 40,
+                            color: Colors.green),
+                        Text('Download PDF',
+                            style: TextStyle(fontSize: 15, color: Colors.black),
+                            textAlign: TextAlign.center),
+                        Text('$_progress',
+                          style: TextStyle(color: Colors.red, fontSize: 15),),
+                      ],
+                    ),
+                  );
+                }
+                else if (snapshot.data![index].attachmentFileType.contains(
+                    "video/")) {
+                  return Center(
+                    child: Text('Video'),
+                  );
+                }
+                else {
+                  return Center(
+                    child: Text('Invalid Type'),
+                  );
+                }
+              }
+              else {
+                return Center(
+                  child: Text('Please Wait...'),
+                );
+              }
+            },
+          );
         },
-        childCount: _attachmentData.length,
+        childCount: gridImageCount,
       ),
-        // itemCount: _attachmentData.length,
-        // itemBuilder: (BuildContext context, int index) {
-        //   return InkWell(
-        //     onTap: (){
-        //       showDialog("https://connect.bcplindia.co.in/MobileAppAPI/Download?id="+_attachmentData[index].attachmentID.toString());
-        //       //Navigator.of(context).push(MaterialPageRoute(builder: (context) => SliderShowFullmages(listImagesModel: list, current: _current)));
-        //     },
-        //     child:Image.network("https://connect.bcplindia.co.in/MobileAppAPI/Download?id="+_attachmentData[index].attachmentID.toString()),
-        //   );
-        // },
-    );
-  }
-  GridView createImageGrid(_attachmentData){
-    return GridView.count(
-      crossAxisCount: 2,
-      crossAxisSpacing: 5,
-      mainAxisSpacing: 5,
-      padding: EdgeInsets.all(10.0), // 3px padding all around
-      shrinkWrap: true,
-      children: <Widget>[
-        InkWell(
-          onTap: (){
-            showDialog("https://connect.bcplindia.co.in/MobileAppAPI/Download?id="+_attachmentData[0].attachmentID.toString());
-            //Navigator.of(context).push(MaterialPageRoute(builder: (context) => SliderShowFullmages(listImagesModel: list, current: _current)));
-          },
-          child:Image.network("https://connect.bcplindia.co.in/MobileAppAPI/Download?id="+_attachmentData[0].attachmentID.toString()),
-        ),
-      ],
     );
   }
 
-  showDialog(String url){
+  showDialog(String url) {
     showGeneralDialog(
       context: context,
-      barrierColor: Colors.black12.withOpacity(1), // Background color
+      barrierColor: Colors.black12.withOpacity(1),
+      // Background color
       barrierDismissible: false,
       barrierLabel: 'Dialog',
-      transitionDuration: Duration(milliseconds: 400), // How long it takes to popup dialog after button click
+      transitionDuration: Duration(milliseconds: 400),
+      // How long it takes to popup dialog after button click
       pageBuilder: (_, __, ___) {
         // Makes widget fullscreen
         return SizedBox.expand(
@@ -381,7 +397,11 @@ class _NewsDetailsState extends State<NewsDetails>{
             children: <Widget>[
               Expanded(
                 flex: 10,
-                child: SizedBox.expand(child: Image.network(url)),
+                child: SizedBox.expand(child: CachedNetworkImage(
+                  imageUrl: url,
+                  placeholder: (context, url) => CircularProgressIndicator(),
+                  errorWidget: (context, url, error) => Icon(Icons.error),
+                ),),
               ),
               Expanded(
                 flex: 1,
@@ -395,7 +415,7 @@ class _NewsDetailsState extends State<NewsDetails>{
                           'Close',
                           style: TextStyle(fontSize: 18),
                         ),
-                        Icon(Icons.cancel,size:20),
+                        Icon(Icons.cancel, size: 20),
                       ],
                     ),
 
@@ -409,61 +429,42 @@ class _NewsDetailsState extends State<NewsDetails>{
     );
   }
 
-  Card createPhotoGallery(_attachmentData){
-    return Card(
-        child: PhotoViewGallery.builder(
-          scrollPhysics: const BouncingScrollPhysics(),
-          builder: (BuildContext context, int index) {
-            return PhotoViewGalleryPageOptions(
-              imageProvider: NetworkImage("https://connect.bcplindia.co.in/MobileAppAPI/Download?id="+_attachmentData[index].attachmentID.toString()),
-              initialScale: PhotoViewComputedScale.contained * 0.8,
-              minScale: PhotoViewComputedScale.contained * 0.8,
-              maxScale: PhotoViewComputedScale.covered * 1.1,
-              heroAttributes: PhotoViewHeroAttributes(tag: _attachmentData[index].attachmentID.toString()),
-            );
-          },
-          itemCount: _attachmentData.length,
-          loadingBuilder: (context, event) => Center(
-            child: Container(
-              width: 20.0,
-              height: 20.0,
-              child: CircularProgressIndicator(
-                value: event == null
-                    ? 0
-                    : event.cumulativeBytesLoaded / event.expectedTotalBytes!.toInt(),
-              ),
-            ),
-          ),
-          //backgroundDecoration: widget.backgroundDecoration,
-          //pageController: widget.pageController,
-          //onPageChanged: onPageChanged,
-        )
-    );
-  }
-
-  Future<void> downloadFile(String id) async {
-    String savePath = await getDownloadDirectory();
+  Future<void> downloadFile(String url, String fileName) async {
+    Map<String, dynamic> result = {
+      'isSuccess': false,
+      'filePath': null,
+      'error': null,
+    };
+    String saveDirPath = await getDownloadDirectory();
+    String finalSavePath = path.join(saveDirPath, fileName);
     final isPermissionStatusGranted = await requestStoragePermissions();
-    if(isPermissionStatusGranted){
+    if (isPermissionStatusGranted) {
       try {
         final Dio _dio = Dio();
-        //var response = await _dio.download("https://connect.bcplindia.co.in/MobileAppAPI/Download1?id=5902",
-            //savePath, onReceiveProgress: _onReceiveProgress);
-        var response = await _dio.get("https://connect.bcplindia.co.in/MobileAppAPI/Download1?id=5902");
-        if (response.statusCode == 200) {
-          //print(response.data);
-        }
-      } catch (e) { }
+        var response = await _dio.download(url,
+            finalSavePath, onReceiveProgress: _onReceiveProgress);
+        result['isSuccess'] = response.statusCode == 200;
+        result['filePath'] = finalSavePath;
+      } catch (ex) {
+        result['error'] = ex.toString();
+      }
+      finally {
+        await HomeState().showNotification(result);
+      }
     }
   }
+
   void _onReceiveProgress(int received, int total) {
     if (total != -1) {
       setState(() {
-        _progress = (received / total * 100).toStringAsFixed(0) + "%";
+        _progress =
+            "Downlading File: " + (received / total * 100).toStringAsFixed(0) +
+                "%";
       });
     }
   }
 }
+
 
 class NewsContentArguments{
   final int contentId;

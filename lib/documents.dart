@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_projects/services/permissions.dart';
 import 'package:flutter_projects/services/webservice.dart';
 import 'models/models.dart';
 import 'constants.dart';
@@ -110,6 +111,7 @@ class _DocumentState extends State<DocumentScreen>{
     );
   }
 }
+@immutable
 class DocumentList extends StatefulWidget {
 
   final String docName;
@@ -125,6 +127,7 @@ class _DocumentListState extends State<DocumentList>{
   late Future<List<Document>> _docList;
   bool _loadImageError = false;
   String savePath = '';
+  String _progress = "";
   @override
   void initState() {
     super.initState();
@@ -141,11 +144,11 @@ class _DocumentListState extends State<DocumentList>{
         title: Text('Connect'),
       ),
       endDrawer: AppDrawer(),
-      body: getPeople(),
+      body: getDocuments(),
     );
   }
 
-  FutureBuilder getPeople(){
+  FutureBuilder getDocuments(){
     return FutureBuilder<List<Document>>(
       future: _docList,
       builder: (BuildContext context, AsyncSnapshot<List<Document>> snapshot){
@@ -159,6 +162,8 @@ class _DocumentListState extends State<DocumentList>{
           height: MediaQuery.of(context).size.height / 1.3,
           child: Center(
             child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: <Widget>[
                 CircularProgressIndicator(),
                 Container(
@@ -189,7 +194,10 @@ class _DocumentListState extends State<DocumentList>{
   ListTile createListTileDocument(data,index) {
     return ListTile(
       onTap: () {
-        //downloadFile(data[index].docPath,data[index].docFileName);
+        String attachmentUrl = "https://connect.bcplindia.co.in/MobileAppAPI/DownloadHRDocument?id=" +
+            data[index].docId;
+        String fileName = data[index].docFileName;
+        downloadFile(attachmentUrl,fileName);
       },
       title: Text(data[index].docDisplayName,
           style: TextStyle(
@@ -217,7 +225,43 @@ class _DocumentListState extends State<DocumentList>{
           //   color: Colors.black,
           // )) : null
       ),
+      trailing: CircleAvatar(
+        child: Icon(Icons.download,size:20,color:Colors.red),
+      ),
     );
+  }
+
+  Future<void> downloadFile(String url, String fileName) async {
+    Map<String, dynamic> result = {
+      'isSuccess': false,
+      'filePath': null,
+      'error': null,
+    };
+    String saveDirPath = await getDownloadDirectory();
+    String finalSavePath = path.join(saveDirPath, fileName);
+    final isPermissionStatusGranted = await requestStoragePermissions();
+    if (isPermissionStatusGranted) {
+      try {
+        final Dio _dio = Dio();
+        var response = await _dio.download(url,
+            finalSavePath, onReceiveProgress: _onReceiveProgress);
+        result['isSuccess'] = response.statusCode == 200;
+        result['filePath'] = finalSavePath;
+      } catch (ex) {
+        result['error'] = ex.toString();
+      }
+      finally {
+        await HomeState().showNotification(result);
+      }
+    }
+  }
+
+  void _onReceiveProgress(int received, int total) {
+    if (total != -1) {
+      setState(() {
+        _progress = (received / total * 100).toStringAsFixed(0) + "%";
+      });
+    }
   }
 }
 

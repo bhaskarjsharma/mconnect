@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_projects/services/webservice.dart';
@@ -44,8 +45,9 @@ class _PeopleState extends State<People>{
       child: Container(
         margin: EdgeInsets.symmetric(vertical: 20),
         child:Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
 
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             Container(
 
@@ -267,6 +269,8 @@ class _PeopleListState extends State<PeopleList>{
           height: MediaQuery.of(context).size.height / 1.3,
           child: Center(
             child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: <Widget>[
                 CircularProgressIndicator(),
                 Container(
@@ -317,7 +321,7 @@ class _PeopleListState extends State<PeopleList>{
           )),
       leading: CircleAvatar(
           backgroundColor: RandomColorModel().getColor(),
-        backgroundImage: this._loadImageError ? null : NetworkImage("https://connect.bcplindia.co.in/MobileAppAPI/imageFile?empno="+data[index].emp_no),
+        backgroundImage: this._loadImageError ? null : CachedNetworkImageProvider("https://connect.bcplindia.co.in/MobileAppAPI/imageFile?empno="+data[index].emp_no),
         onBackgroundImageError: this._loadImageError ? null : (dynamic exception, StackTrace? stackTrace){
             this.setState((){
               this._loadImageError = true;
@@ -387,7 +391,7 @@ class _PeopleDetailsState extends State<PeopleDetails>{
           shape: BoxShape.circle,
           border: Border.all(color: Colors.black12),
           image: DecorationImage (
-            image: NetworkImage("https://connect.bcplindia.co.in/MobileAppAPI/imageFile?empno="+widget.empNo),
+            image: CachedNetworkImageProvider("https://connect.bcplindia.co.in/MobileAppAPI/imageFile?empno="+widget.empNo),
             fit: BoxFit.contain,
 
           )
