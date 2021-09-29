@@ -1,6 +1,8 @@
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import '../AttendanceView.dart';
+import '../ShiftRosterView.dart';
 import '../account.dart';
 import '../constants.dart';
 import '../content.dart';
@@ -38,6 +40,16 @@ class NavigationRouter {
         return MaterialPageRoute(builder: (_) => LeaveQuotas());
       case holidayListRoute:
         return MaterialPageRoute(builder: (_) => Holidays());
+      case shiftRosterRoute:
+        return MaterialPageRoute(builder: (_) => ShiftRosterView());
+      case shiftRosterListRoute:
+        final args = settings.arguments as ShiftRosterScreenArguments;
+        return MaterialPageRoute(builder: (BuildContext context) => ShiftRosterList(args.fromDate,args.toDate));
+      case attendanceRoute:
+        return MaterialPageRoute(builder: (_) => AttendanceView());
+      case attendanceListRoute:
+        final args = settings.arguments as AttendanceScreenArguments;
+        return MaterialPageRoute(builder: (BuildContext context) => attendanceList(args.fromDate,args.toDate));
       default:
         return MaterialPageRoute(
             builder: (_) => Scaffold(

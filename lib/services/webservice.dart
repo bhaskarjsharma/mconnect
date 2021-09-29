@@ -121,6 +121,36 @@ Future<List<HolidayList>> fetchHolidayList() async{
     throw Exception('Failed to retrieve data.');
   }
 }
+Future<List<ShiftRoster>> fetchShiftRosterData(String empno, String fromDate, String toDate) async{
+
+  // Here Dio is used instead of the native HTTP
+  final response = await Dio().post('https://connect.bcplindia.co.in/MobileAppAPI/ShiftRosterData',
+      data: {'empno': empno, 'fromDate': fromDate, 'toDate': toDate});
+
+  if (response.statusCode == 200) {
+    List jsonResponse = response.data;
+    return jsonResponse.map((dataList) => ShiftRoster.fromJson(dataList)).toList();
+
+  } else {
+    print("The error message is: ${response.data}");
+    throw Exception('Failed to retrieve data.');
+  }
+}
+Future<List<AttendanceData>> fetchAttendanceData(String empno, String fromDate, String toDate) async{
+
+  // Here Dio is used instead of the native HTTP
+  final response = await Dio().post('https://connect.bcplindia.co.in/MobileAppAPI/BiometricPunchData',
+      data: {'empno': empno, 'fromDate': fromDate, 'toDate': toDate});
+
+  if (response.statusCode == 200) {
+    List jsonResponse = response.data;
+    return jsonResponse.map((dataList) => AttendanceData.fromJson(dataList)).toList();
+
+  } else {
+    print("The error message is: ${response.data}");
+    throw Exception('Failed to retrieve data.');
+  }
+}
 
 Future<String> getDownloadDirectory() async {
   var externalStorageDirPath;

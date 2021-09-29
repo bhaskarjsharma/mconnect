@@ -5,6 +5,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_projects/services/permissions.dart';
 import 'package:flutter_projects/services/webservice.dart';
+import 'main.dart';
 import 'models/models.dart';
 import 'constants.dart';
 import 'home.dart';
@@ -127,7 +128,9 @@ class _DocumentListState extends State<DocumentList>{
   late Future<List<Document>> _docList;
   bool _loadImageError = false;
   String savePath = '';
-  String _progress = "";
+  //List<String>? _progress;
+  List<String>? _progress;
+
   @override
   void initState() {
     super.initState();
@@ -165,6 +168,7 @@ class _DocumentListState extends State<DocumentList>{
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: <Widget>[
+
                 CircularProgressIndicator(),
                 Container(
                   padding: EdgeInsets.all(10),
@@ -185,6 +189,7 @@ class _DocumentListState extends State<DocumentList>{
     return ListView.builder(
         itemCount: data.length,
         itemBuilder: (context, index) {
+          _progress = List<String>.generate(data.length,(counter) => "Item $counter");
           return Card(
               child: createListTileDocument(data,index)
           );
@@ -197,14 +202,14 @@ class _DocumentListState extends State<DocumentList>{
         String attachmentUrl = "https://connect.bcplindia.co.in/MobileAppAPI/DownloadHRDocument?id=" +
             data[index].docId;
         String fileName = data[index].docFileName;
-        downloadFile(attachmentUrl,fileName);
+        downloadFile(attachmentUrl,fileName, index);
       },
       title: Text(data[index].docDisplayName,
           style: TextStyle(
             fontWeight: FontWeight.w400,
             fontSize: 18,
           )),
-      subtitle: Text("Added: "+data[index].docDate + " Size: "+data[index].docSize,
+      subtitle: Text("Added: "+data[index].docDate,
           style: TextStyle(
             fontWeight: FontWeight.w400,
             fontSize: 15,
@@ -225,13 +230,20 @@ class _DocumentListState extends State<DocumentList>{
           //   color: Colors.black,
           // )) : null
       ),
-      trailing: CircleAvatar(
-        child: Icon(Icons.download,size:20,color:Colors.red),
-      ),
+      trailing: Column(
+        children: [
+          CircleAvatar(
+            backgroundColor: Colors.black12,
+            child: Icon(Icons.download,size:20,color:Colors.black38),
+          ),
+          Text(_progress![index],
+            style: TextStyle(color: Colors.red, fontSize: 13),),
+        ],
+      )
     );
   }
 
-  Future<void> downloadFile(String url, String fileName) async {
+  Future<void> downloadFile(String url, String fileName, int index) async {
     Map<String, dynamic> result = {
       'isSuccess': false,
       'filePath': null,
@@ -244,25 +256,32 @@ class _DocumentListState extends State<DocumentList>{
       try {
         final Dio _dio = Dio();
         var response = await _dio.download(url,
-            finalSavePath, onReceiveProgress: _onReceiveProgress);
+            finalSavePath, onReceiveProgress: (int received, int total) {
+              if (total != -1) {
+                setState(() {
+                  _progress![index] = (received / total * 100).toStringAsFixed(0) + "%";
+                });
+              }
+            });
         result['isSuccess'] = response.statusCode == 200;
         result['filePath'] = finalSavePath;
       } catch (ex) {
         result['error'] = ex.toString();
       }
       finally {
-        await HomeState().showNotification(result);
+        await showNotification(result);
       }
     }
   }
 
-  void _onReceiveProgress(int received, int total) {
-    if (total != -1) {
-      setState(() {
-        _progress = (received / total * 100).toStringAsFixed(0) + "%";
-      });
-    }
-  }
+   // void _onReceiveProgress(int received, int total) {
+   //   if (total != -1) {
+   //     setState(() {
+   //       _progress[index] = (received / total * 100).toStringAsFixed(0) + "%";
+   //     });
+   //   }
+   // }
+
 }
 
 class DocumentScreenArguments {

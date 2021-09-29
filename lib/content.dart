@@ -449,7 +449,7 @@ class _NewsDetailsState extends State<NewsDetails> {
         result['error'] = ex.toString();
       }
       finally {
-        await HomeState().showNotification(result);
+        await showNotification(result);
       }
     }
   }

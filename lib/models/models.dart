@@ -152,5 +152,37 @@ class HolidayList{
     );
   }
 }
+class ShiftRoster{
+  final String date;
+  final String shift;
+  final bool approved;
+
+  ShiftRoster({required this.date,required this.shift, required this.approved});
+
+  factory ShiftRoster.fromJson(Map<String, dynamic> json) {
+    return ShiftRoster(
+      date: json['date'],
+      shift: json['shift'],
+      approved: json['approved'],
+    );
+  }
+}
+class AttendanceData{
+  final String date;
+  final String punchDate;
+  final String punchTime;
+  final String deviceName;
+
+  AttendanceData({required this.date,required this.punchDate, required this.punchTime, required this.deviceName});
+
+  factory AttendanceData.fromJson(Map<String, dynamic> json) {
+    return AttendanceData(
+      date: json['date'],
+      punchDate: json['punchDate'],
+      punchTime: json['punchTime'],
+      deviceName: json['deviceName'],
+    );
+  }
+}
 
 

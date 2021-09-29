@@ -10,3 +10,7 @@ const String documentsRoute = '/DocumentScreen';
 const String documentListRoute = '/DocumentList';
 const String leaveQuotaRoute = '/LeaveQuota';
 const String holidayListRoute = '/Holidays';
+const String shiftRosterRoute = '/ShiftRosterView';
+const String shiftRosterListRoute = '/ShiftRosterList';
+const String attendanceRoute = '/AttendanceView';
+const String attendanceListRoute = '/AttendanceList';

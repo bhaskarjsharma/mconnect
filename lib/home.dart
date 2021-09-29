@@ -25,14 +25,6 @@ class HomeState extends State<Home>  {
   @override
   void initState(){
     super.initState();
-
-    flutterLocalNotificationsPlugin =
-    FlutterLocalNotificationsPlugin();
-    flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
-    final android = AndroidInitializationSettings('@mipmap/ic_launcher');
-    final iOS = IOSInitializationSettings();
-    final initSettings = InitializationSettings(android: android, iOS: iOS);
-    flutterLocalNotificationsPlugin.initialize(initSettings, onSelectNotification: onSelectNotification);
   }
 
 
@@ -64,9 +56,9 @@ class HomeState extends State<Home>  {
             makeDashboardItem("Leave Quota",const Icon(FontAwesome.info_circled,size:30, color:Colors.orange),Colors.orange,leaveQuotaRoute),
             makeDashboardItem("Holiday List",const Icon(FontAwesome.calendar_empty,size:30, color:Colors.brown),Colors.brown,holidayListRoute),
             makeDashboardItem("Payslips", const Icon(FontAwesome.rupee,size:30, color:Colors.cyan),Colors.cyan,homeRoute),
-            makeDashboardItem("Attendance",const Icon(FontAwesome.bank,size:30, color:Colors.deepPurple),Colors.deepPurple,homeRoute),
-            makeDashboardItem("Shift Roster",const Icon(FontAwesome.calendar,size:30, color:Colors.teal),Colors.teal,homeRoute),
-            makeDashboardItem("ITAC",const Icon(FontAwesome.laptop,size:30, color:Colors.red),Colors.red,homeRoute),
+            makeDashboardItem("Attendance",const Icon(FontAwesome.bank,size:30, color:Colors.deepPurple),Colors.deepPurple,attendanceRoute),
+            makeDashboardItem("Shift Roster",const Icon(FontAwesome.calendar,size:30, color:Colors.teal),Colors.teal,shiftRosterRoute),
+            makeDashboardItem("Claims",const Icon(FontAwesome.doc_inv,size:30, color:Colors.red),Colors.red,homeRoute),
           ],
         ),
       ),
@@ -101,45 +93,7 @@ class HomeState extends State<Home>  {
     );
   }
 
-  Future<void> showNotification(Map<String, dynamic> downloadStatus) async {
-    final android = AndroidNotificationDetails(
-        'channel id',
-        'channel name',
-        'channel description',
-        priority: Priority.high,
-        importance: Importance.max
-    );
-    final iOS = IOSNotificationDetails();
-    final platform = NotificationDetails(android: android, iOS: iOS);
-    final json = jsonEncode(downloadStatus);
-    final isSuccess = downloadStatus['isSuccess'];
 
-    await flutterLocalNotificationsPlugin.show(
-        0, // notification id
-        isSuccess ? 'Success' : 'Failure',
-        isSuccess ? 'File has been downloaded successfully!' : 'There was an error while downloading the file.',
-        platform,
-        payload: json
-    );
-  }
-
-  Future onSelectNotification(String? json) async {
-    //  handling clicked notification
-    final obj = jsonDecode(json!);
-
-    if (obj['isSuccess']) {
-      OpenFile.open(obj['filePath']);
-    }
-    else {
-      // showDialog(
-      //   context: context,
-      //   builder: (_) => AlertDialog(
-      //     title: Text('Error'),
-      //     content: Text('${obj['error']}'),
-      //   ),
-      // );
-    }
-  }
 }
 
 class AppDrawer extends StatefulWidget {
@@ -221,6 +175,13 @@ class _AppDrawerState extends State<AppDrawer> {
             onTap: () {
               //Navigator.pushNamed(context, homeRoute);
               Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (BuildContext context) => Home()), (Route<dynamic> route) => false);
+            },
+          ),
+          ListTile(
+            leading: Icon(Icons.download,color: Colors.green, size:25),
+            title: const Text('Downloads'),
+            onTap: () {
+              Navigator.pushNamed(context, homeRoute);
             },
           ),
           ListTile(
@@ -356,11 +317,23 @@ class Holidays extends StatefulWidget {
 class _HolidaysState extends State<Holidays> with SingleTickerProviderStateMixin{
   late Future<List<HolidayList>> _holidayListData;
   TabController? _tabController;
+  final List<Tab> myTabs = <Tab>[
+    Tab(text: 'General Holiday'),
+    Tab(text: 'Restricted Holiday'),
+  ];
+
   @override
   void initState(){
-    _tabController = TabController(length: 2, vsync: this);
+    //_tabController = TabController(length: 2, vsync: this);
+    _tabController = TabController(vsync: this, length: myTabs.length);
     super.initState();
     _holidayListData = fetchHolidayList();
+  }
+
+  @override
+  void dispose() {
+    _tabController!.dispose();
+    super.dispose();
   }
 
   @override
@@ -372,6 +345,10 @@ class _HolidaysState extends State<Holidays> with SingleTickerProviderStateMixin
           child: Image.asset('images/bcpl_logo.png'),
         ),
         title: Text('Connect'),
+        bottom:TabBar(
+          controller: _tabController,
+          tabs: myTabs,
+        ),
       ),
       endDrawer: AppDrawer(),
       body: getHolidayList(),
@@ -382,62 +359,19 @@ class _HolidaysState extends State<Holidays> with SingleTickerProviderStateMixin
       future: _holidayListData,
       builder: (BuildContext context, snapshot){
         if (snapshot.hasData) {
-          //LeaveQuota? data = snapshot.data;
-          return Column(
+          List<HolidayList>? data = snapshot.data;
+          List<HolidayList>? ghList = data!.where((element) =>
+          element.holidayType == "GH").toList();
+
+          List<HolidayList>? rhList = data!.where((element) =>
+          element.holidayType == "RH").toList();
+
+          return TabBarView(
+            controller: _tabController,
             children: [
-              TabBar(
-                controller: _tabController,
-                // give the indicator a decoration (color and border radius)
-                indicator: BoxDecoration(
-                  borderRadius: BorderRadius.circular(
-                    25.0,
-                  ),
-                  color: Colors.green,
-                ),
-                labelColor: Colors.white,
-                unselectedLabelColor: Colors.black,
-                tabs: [
-                  // first tab [you can add an icon using the icon property]
-                  Tab(
-                    text: 'Place Bid',
-                  ),
-
-                  // second tab [you can add an icon using the icon property]
-                  Tab(
-                    text: 'Buy Now',
-                  ),
-                ],
-              ),
-              // tab bar view here
-              Expanded(
-                child: TabBarView(
-                  controller: _tabController,
-                  children: [
-                    // first tab bar view widget
-                    Center(
-                      child: Text(
-                        'Place Bid',
-                        style: TextStyle(
-                          fontSize: 25,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-
-                    // second tab bar view widget
-                    Center(
-                      child: Text(
-                        'Buy Now',
-                        style: TextStyle(
-                          fontSize: 25,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
+              createHolidayList(ghList),
+              createHolidayList(rhList),
+            ]
           );
         } else if (snapshot.hasError) {
           return Text("${snapshot.error}");
@@ -451,28 +385,37 @@ class _HolidaysState extends State<Holidays> with SingleTickerProviderStateMixin
       },
     );
   }
-  Widget descSection(String title, String subtitle, IconData icon){
-    return Card(
-      elevation:2,
-      child: ListTile(
-        isThreeLine: true,
-        title: Text(title,
-            style: TextStyle(
-              fontWeight: FontWeight.w400,
-              fontSize: 16,
-            )),
-        subtitle:  Text(subtitle,
-            style: TextStyle(
-              fontWeight: FontWeight.w400,
-              fontSize: 20,
-              color: Colors.blue[500],
-            )),
+  ListView createHolidayList(data) {
+    return ListView.builder(
+        itemCount: data.length,
+        itemBuilder: (context, index) {
+          return Card(
+              child: ListTile(
+                leading: Container(
+                  padding: EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Colors.black12,
+                    border: Border.all(
+                      color: Colors.black12,
+                      width: 1,
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(data[index].holidayDate,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w500,
+                      fontSize: 18,
+                    ),),
+                ),
 
-        leading: Icon(
-          icon,
-          color: Colors.blue[500],
-        ),
-      ),
+                title: Text(data[index].holidayName,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w400,
+                      fontSize: 18,
+                    ),),
+              ),
+          );
+        }
     );
   }
 }
