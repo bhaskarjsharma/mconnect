@@ -2,6 +2,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../AttendanceView.dart';
+import '../Payslip.dart';
 import '../ShiftRosterView.dart';
 import '../account.dart';
 import '../constants.dart';
@@ -50,6 +51,11 @@ class NavigationRouter {
       case attendanceListRoute:
         final args = settings.arguments as AttendanceScreenArguments;
         return MaterialPageRoute(builder: (BuildContext context) => attendanceList(args.fromDate,args.toDate));
+      case payslipRoute:
+        return MaterialPageRoute(builder: (_) => Payslip());
+      case payslipDataRoute:
+        final args = settings.arguments as PayslipScreenArguments;
+        return MaterialPageRoute(builder: (BuildContext context) => PayslipData(args.month,args.year));
       default:
         return MaterialPageRoute(
             builder: (_) => Scaffold(

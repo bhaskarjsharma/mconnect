@@ -151,7 +151,21 @@ Future<List<AttendanceData>> fetchAttendanceData(String empno, String fromDate, 
     throw Exception('Failed to retrieve data.');
   }
 }
+Future<List<PayrollData>> fetchPayrollData(String empno, String month, String year) async{
 
+  // Here Dio is used instead of the native HTTP
+  final response = await Dio().post('https://connect.bcplindia.co.in/MobileAppAPI/GetPayrollResult',
+      data: {'empno': empno, 'month': month, 'year': year});
+
+  if (response.statusCode == 200) {
+    List jsonResponse = response.data;
+    return jsonResponse.map((dataList) => PayrollData.fromJson(dataList)).toList();
+
+  } else {
+    print("The error message is: ${response.data}");
+    throw Exception('Failed to retrieve data.');
+  }
+}
 Future<String> getDownloadDirectory() async {
   var externalStorageDirPath;
   if (Platform.isAndroid) {

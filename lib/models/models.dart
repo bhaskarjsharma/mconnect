@@ -110,7 +110,6 @@ class LeaveQuota{
     );
   }
 }
-
 class Document{
   final String docId;
   final String docType;
@@ -181,6 +180,30 @@ class AttendanceData{
       punchDate: json['punchDate'],
       punchTime: json['punchTime'],
       deviceName: json['deviceName'],
+    );
+  }
+}
+class PayrollData{
+  final String Pernr;
+  final String Month;
+  final String Year;
+  final String WageType;
+  final String WageTypeText;
+  final String WageTypeType;
+  final String WageTypeAmount;
+
+  PayrollData({required this.Pernr,required this.Month, required this.Year, required this.WageType,
+    required this.WageTypeText,required this.WageTypeType,required this.WageTypeAmount});
+
+  factory PayrollData.fromJson(Map<String, dynamic> json) {
+    return PayrollData(
+      Pernr: json['Pernr'],
+      Month: json['Month'],
+      Year: json['Year'],
+      WageType: json['WageType'],
+      WageTypeText: json['WageTypeText'],
+      WageTypeType: json['WageTypeType'],
+      WageTypeAmount: json['WageTypeAmount'],
     );
   }
 }

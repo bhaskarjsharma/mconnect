@@ -66,7 +66,7 @@ class _PeopleState extends State<People>{
                 controller: empNameContrl,
                 decoration: InputDecoration(
                   border: OutlineInputBorder(),
-                  labelText: 'Employee Name',
+                  labelText: 'Employee Name (Optional)',
                 ),
                 // The validator receives the text that the user has entered.
                 // validator: (value) {
@@ -79,38 +79,46 @@ class _PeopleState extends State<People>{
             ),
             Container(
               padding: EdgeInsets.all(10),
-              child: DropdownButton<String>(
-                value: _empUnit,
-                style: TextStyle(color: Colors.black),
-                hint: Text(
-                  "Unit (Optional)",
-                  style: TextStyle(
-                      color: Colors.black,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600),
-                ),
-                items: <String>[
-                  '',
-                  'Civil',
-                  'C&P',
-                  'Company Secretary',
-                  'IT',
-                  'Law',
-                  'Marketing',
-                  'Security',
-                ].map<DropdownMenuItem<String>>((String value) {
-                  return DropdownMenuItem<String>(
-                    value: value,
-                    child: Text(value),
-                  );
-                }).toList(),
+              child: InputDecorator(
+                  decoration: InputDecoration(
+                    labelText: 'Unit (Optional)',
+                    contentPadding: const EdgeInsets.only(left: 10.0),
+                    border: const OutlineInputBorder(),
+                    isDense: true,
+                  ),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<String>(
 
-                onChanged: (String? newValue) {
-                  setState(() {
-                    _empUnit = newValue!;
-                  });
-                },
+                      isExpanded: true,
+                      icon: Icon(Icons.keyboard_arrow_down),
+                      value: _empUnit,
+                      style: TextStyle(color: Colors.black),
+                      items: <String>[
+                        '',
+                        'Civil',
+                        'C&P',
+                        'Company Secretary',
+                        'IT',
+                        'Law',
+                        'Marketing',
+                        'Security',
+                      ].map<DropdownMenuItem<String>>((String value) {
+                        return DropdownMenuItem<String>(
+                          value: value,
+                          child: Text(value),
+                        );
+                      }).toList(),
+
+                      onChanged: (String? newValue) {
+                        setState(() {
+                          _empUnit = newValue!;
+                        });
+                      },
+                    ),
+                  ),
               ),
+
+
 
               // child:TextFormField(
               //   controller: empUnitControl,
@@ -122,72 +130,79 @@ class _PeopleState extends State<People>{
             ),
             Container(
               padding: EdgeInsets.all(10),
-              child: DropdownButton<String>(
-                value: _empDisc,
-                style: TextStyle(color: Colors.black),
-                items: <String>[
-                  '',
-                  'Civil',
-                  'C&P',
-                  'Company Secretary',
-                  'IT',
-                  'Law',
-                  'Marketing',
-                  'Security',
-                ].map<DropdownMenuItem<String>>((String value) {
-                  return DropdownMenuItem<String>(
-                    value: value,
-                    child: Text(value),
-                  );
-                }).toList(),
-                hint: Text(
-                  "Discipline (Optional)",
-                  style: TextStyle(
-                      color: Colors.black,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600),
+              child: InputDecorator(
+                decoration: InputDecoration(
+                  labelText: 'Discipline (Optional)',
+                  contentPadding: const EdgeInsets.only(left: 10.0),
+                  border: const OutlineInputBorder(),
                 ),
-                onChanged: (String? newValue) {
-                  setState(() {
-                    _empDisc = newValue!;
-                  });
-                },
+                child: DropdownButtonHideUnderline(
+                    child: DropdownButton<String>(
+                      value: _empDisc,
+                      style: TextStyle(color: Colors.black),
+                      items: <String>[
+                        '',
+                        'Civil',
+                        'C&P',
+                        'Company Secretary',
+                        'IT',
+                        'Law',
+                        'Marketing',
+                        'Security',
+                      ].map<DropdownMenuItem<String>>((String value) {
+                        return DropdownMenuItem<String>(
+                          value: value,
+                          child: Text(value),
+                        );
+                      }).toList(),
+                      onChanged: (String? newValue) {
+                        setState(() {
+                          _empDisc = newValue!;
+                        });
+                      },
+                    ),
+                ),
               ),
+
             ),
             Container(
               padding: EdgeInsets.all(10),
-              child: DropdownButton<String>(
-                value: _empBldGrp,
-                style: TextStyle(color: Colors.black),
-                items: <String>[
-                  '',
-                  'A-',
-                  'A+',
-                  'AB-',
-                  'AB+',
-                  'B-',
-                  'B+',
-                  'O-',
-                  'O+',
-                ].map<DropdownMenuItem<String>>((String value) {
-                  return DropdownMenuItem<String>(
-                    value: value,
-                    child: Text(value),
-                  );
-                }).toList(),
-                hint: Text(
-                  "Blood Group (Optional)",
-                  style: TextStyle(
-                      color: Colors.black,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600),
+              child: InputDecorator(
+                decoration: InputDecoration(
+                  labelText: 'Blood Group (Optional)',
+                  //labelStyle: Theme.of(context).primaryTextTheme.caption!.copyWith(color: Colors.black),
+                  contentPadding: const EdgeInsets.only(left: 10.0),
+                  border: const OutlineInputBorder(),
                 ),
-                onChanged: (String? newValue) {
-                  setState(() {
-                    _empBldGrp = newValue!;
-                  });
-                },
+                child: DropdownButtonHideUnderline(
+                    child: DropdownButton<String>(
+                      value: _empBldGrp,
+                      style: TextStyle(color: Colors.black),
+                      items: <String>[
+                        '',
+                        'A-',
+                        'A+',
+                        'AB-',
+                        'AB+',
+                        'B-',
+                        'B+',
+                        'O-',
+                        'O+',
+                      ].map<DropdownMenuItem<String>>((String value) {
+                        return DropdownMenuItem<String>(
+                          value: value,
+                          child: Text(value),
+                        );
+                      }).toList(),
+                      onChanged: (String? newValue) {
+                        setState(() {
+                          _empBldGrp = newValue!;
+                        });
+                      },
+                    ),
+                ),
               ),
+
             ),
             Container(
               padding: const EdgeInsets.all(10.0),
@@ -299,6 +314,7 @@ class _PeopleListState extends State<PeopleList>{
     );
   }
   ListTile createListTilePeople(data,index,String title, String subtitle) {
+    String profilePicUrl = "https://connect.bcplindia.co.in/MobileAppAPI/imageFile?empno="+data[index].emp_no;
     return ListTile(
       onTap: () async{
         Navigator.pushNamed(context, peopleDetailsRoute, arguments: PeolpeScreenArguments(
@@ -319,18 +335,40 @@ class _PeopleListState extends State<PeopleList>{
             fontSize: 15,
             color: Colors.blue[500],
           )),
-      leading: CircleAvatar(
+      leading: CachedNetworkImage(
+        placeholder: (context, url) => CircularProgressIndicator(),
+        errorWidget: (context, url, error) => new CircleAvatar(
           backgroundColor: RandomColorModel().getColor(),
-        backgroundImage: this._loadImageError ? null : CachedNetworkImageProvider("https://connect.bcplindia.co.in/MobileAppAPI/imageFile?empno="+data[index].emp_no),
-        onBackgroundImageError: this._loadImageError ? null : (dynamic exception, StackTrace? stackTrace){
-            this.setState((){
-              this._loadImageError = true;
-            });
+          child: Text(title.substring(0,1).toUpperCase(),style: TextStyle(
+              color: Colors.black,),) ,
+        ),
+        fit: BoxFit.contain,
+        imageUrl: profilePicUrl,
+        imageBuilder: (context, imageProvider) { // you can access to imageProvider
+          return CircleAvatar( // or any widget that use imageProvider like (PhotoView)
+            backgroundImage: imageProvider,
+          );
         },
-        child:this._loadImageError? Text(title.substring(0,1).toUpperCase(),style: TextStyle(
-          color: Colors.black,
-        )) : null
-         ),
+      ),
+
+
+      // CircleAvatar(
+      //     backgroundImage: profileImage,
+      //     backgroundColor: RandomColorModel().getColor(),
+      //     foregroundColor: Colors.black,
+      //     child: profileImage. Text(title.substring(0,1).toUpperCase(),style: TextStyle(
+      //          color: Colors.black,
+      //       ),
+      //      ),
+         // onBackgroundImageError: this._loadImageError ? null : (dynamic exception, StackTrace? stackTrace){
+         //     this.setState((){
+         //       this._loadImageError = true;
+         //     });
+         // },
+         // child:this._loadImageError? Text(title.substring(0,1).toUpperCase(),style: TextStyle(
+         //   color: Colors.black,
+         // )) : null
+         //),
     );
   }
 }
@@ -384,18 +422,36 @@ class _PeopleDetailsState extends State<PeopleDetails>{
   Widget imageSection() {
     return Card(
         elevation:0,
-      child: Container(
-        padding:EdgeInsets.all(8),
-        height:200,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          border: Border.all(color: Colors.black12),
-          image: DecorationImage (
-            image: CachedNetworkImageProvider("https://connect.bcplindia.co.in/MobileAppAPI/imageFile?empno="+widget.empNo),
-            fit: BoxFit.contain,
-
-          )
-        )
+      child: CachedNetworkImage(
+        placeholder: (context, url) => CircularProgressIndicator(),
+        errorWidget: (context, url, error) => new Container(
+            padding:EdgeInsets.all(8),
+            height:200,
+            decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.black12),
+                image: DecorationImage (
+                  image: AssetImage ('images/user_default.png'),
+                  fit: BoxFit.contain,
+                )
+            )
+        ),
+        fit: BoxFit.contain,
+        imageUrl: "https://connect.bcplindia.co.in/MobileAppAPI/imageFile?empno="+widget.empNo,
+        imageBuilder: (context, imageProvider) { // you can access to imageProvider
+          return Container( // or any widget that use imageProvider like (PhotoView)
+              padding:EdgeInsets.all(8),
+              height:200,
+              decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.black12),
+                  image: DecorationImage (
+                    image: imageProvider,
+                    fit: BoxFit.contain,
+                  )
+              )
+          );
+        },
       ),
     );
   }

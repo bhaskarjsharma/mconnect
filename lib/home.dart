@@ -55,7 +55,7 @@ class HomeState extends State<Home>  {
             makeDashboardItem("Documents",const Icon(FontAwesome.file_pdf,size:30, color:Colors.green),Colors.green,documentsRoute),
             makeDashboardItem("Leave Quota",const Icon(FontAwesome.info_circled,size:30, color:Colors.orange),Colors.orange,leaveQuotaRoute),
             makeDashboardItem("Holiday List",const Icon(FontAwesome.calendar_empty,size:30, color:Colors.brown),Colors.brown,holidayListRoute),
-            makeDashboardItem("Payslips", const Icon(FontAwesome.rupee,size:30, color:Colors.cyan),Colors.cyan,homeRoute),
+            makeDashboardItem("Payslips", const Icon(FontAwesome.rupee,size:30, color:Colors.cyan),Colors.cyan,payslipRoute),
             makeDashboardItem("Attendance",const Icon(FontAwesome.bank,size:30, color:Colors.deepPurple),Colors.deepPurple,attendanceRoute),
             makeDashboardItem("Shift Roster",const Icon(FontAwesome.calendar,size:30, color:Colors.teal),Colors.teal,shiftRosterRoute),
             makeDashboardItem("Claims",const Icon(FontAwesome.doc_inv,size:30, color:Colors.red),Colors.red,homeRoute),
