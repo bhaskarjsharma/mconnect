@@ -20,6 +20,12 @@ class NavigationRouter {
         return MaterialPageRoute(builder: (_) => Home());
       case newsRoute:
         return MaterialPageRoute(builder: (_) => News());
+      case feedbackRoute:
+        return MaterialPageRoute(builder: (_) => AppFeedback());
+      case aboutAppRoute:
+        return MaterialPageRoute(builder: (_) => AboutApp());
+      case downloadsRoute:
+        return MaterialPageRoute(builder: (_) => DownloadDirectory());
       case newsDetailsRoute:
         final args = settings.arguments as NewsContentArguments;
         return MaterialPageRoute(builder: (BuildContext context) => NewsDetails(args.contentId,args.contentType,args.contentTitle,args.contentDescription,args.creationDate));

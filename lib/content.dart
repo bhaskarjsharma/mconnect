@@ -7,9 +7,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:flutter_projects/services/permissions.dart';
 import 'package:flutter_projects/services/webservice.dart';
-import 'package:fluttericon/font_awesome_icons.dart';
 import 'package:path/path.dart' as path;
 import 'constants.dart';
+import 'fonts_icons/connect_app_icon_icons.dart';
 import 'home.dart';
 import 'main.dart';
 import 'models/models.dart';
@@ -305,7 +305,7 @@ class _NewsDetailsState extends State<NewsDetails> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(FontAwesome.file_pdf, size: 40, color: Colors.red),
+                        Icon(ConnectAppIcon.file_pdf, size: 40, color: Colors.red),
                         Text('Download PDF',
                             style: TextStyle(fontSize: 15, color: Colors.black),
                             textAlign: TextAlign.center),
@@ -325,7 +325,7 @@ class _NewsDetailsState extends State<NewsDetails> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(FontAwesome.file_word, size: 40, color: Colors
+                        Icon(ConnectAppIcon.file_word, size: 40, color: Colors
                             .blue),
                         Text('Download PDF',
                             style: TextStyle(fontSize: 15, color: Colors.black),
@@ -345,7 +345,7 @@ class _NewsDetailsState extends State<NewsDetails> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(FontAwesome.file_excel, size: 40,
+                        Icon(ConnectAppIcon.file_excel, size: 40,
                             color: Colors.green),
                         Text('Download PDF',
                             style: TextStyle(fontSize: 15, color: Colors.black),

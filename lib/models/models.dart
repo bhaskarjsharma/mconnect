@@ -1,4 +1,25 @@
 
+class EmployeeLoginData{
+  final bool status;
+  final String emp_no;
+  final String emp_name;
+  final String emp_desg;
+  final String emp_disc;
+  final String auth_token;
+
+  EmployeeLoginData({required this.status, required this.emp_no, required this.emp_name, required this.emp_desg, required this.emp_disc,required this.auth_token});
+  factory EmployeeLoginData.fromJson(Map<String, dynamic> json) {
+    return EmployeeLoginData(
+      status: json['status'],
+      emp_no: json['emp_no'],
+      emp_name: json['emp_name'],
+      emp_desg: json['emp_desg'],
+      emp_disc: json['emp_discipline'],
+      auth_token: json['auth_token'],
+    );
+  }
+}
+
 class NewsContent{
   final int contentId;
   final String contentType;

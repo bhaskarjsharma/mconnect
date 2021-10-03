@@ -1,19 +1,21 @@
 
 import 'dart:convert';
+import 'dart:io';
 import 'dart:math';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:fluttericon/font_awesome5_icons.dart';
+import 'package:open_file/open_file.dart';
+import 'fonts_icons/connect_app_icon_icons.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_projects/services/webservice.dart';
-import 'package:fluttericon/font_awesome_icons.dart';
-import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
-import 'package:open_file/open_file.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'account.dart';
 import 'constants.dart';
 import 'main.dart';
 import 'models/models.dart';
+import 'dart:io' as io;
+import 'package:package_info_plus/package_info_plus.dart';
+import 'package:path/path.dart' as path;
 
 class Home extends StatefulWidget {
   @override
@@ -26,7 +28,6 @@ class HomeState extends State<Home>  {
   void initState(){
     super.initState();
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -50,15 +51,15 @@ class HomeState extends State<Home>  {
           padding: EdgeInsets.all(10.0), // 3px padding all around
 
           children: <Widget>[
-            makeDashboardItem("News & Events",const Icon(FontAwesome.newspaper,size:30, color:Colors.blue),Colors.blue,newsRoute),
-            makeDashboardItem("People",const Icon(FontAwesome.users,size:30, color:Colors.pink),Colors.pink,peopleRoute),
-            makeDashboardItem("Documents",const Icon(FontAwesome.file_pdf,size:30, color:Colors.green),Colors.green,documentsRoute),
-            makeDashboardItem("Leave Quota",const Icon(FontAwesome.info_circled,size:30, color:Colors.orange),Colors.orange,leaveQuotaRoute),
-            makeDashboardItem("Holiday List",const Icon(FontAwesome.calendar_empty,size:30, color:Colors.brown),Colors.brown,holidayListRoute),
-            makeDashboardItem("Payslips", const Icon(FontAwesome.rupee,size:30, color:Colors.cyan),Colors.cyan,payslipRoute),
-            makeDashboardItem("Attendance",const Icon(FontAwesome.bank,size:30, color:Colors.deepPurple),Colors.deepPurple,attendanceRoute),
-            makeDashboardItem("Shift Roster",const Icon(FontAwesome.calendar,size:30, color:Colors.teal),Colors.teal,shiftRosterRoute),
-            makeDashboardItem("Claims",const Icon(FontAwesome.doc_inv,size:30, color:Colors.red),Colors.red,homeRoute),
+            makeDashboardItem("News & Events",const Icon(ConnectAppIcon.newspaper,size:30, color:Colors.blue),Colors.blue,newsRoute),
+            makeDashboardItem("People",const Icon(ConnectAppIcon.users,size:30, color:Colors.pink),Colors.pink,peopleRoute),
+            makeDashboardItem("Documents",const Icon(ConnectAppIcon.article_alt,size:30, color:Colors.green),Colors.green,documentsRoute),
+            makeDashboardItem("Leave Quota",const Icon(Icons.info,size:30, color:Colors.orange),Colors.orange,leaveQuotaRoute),
+            makeDashboardItem("Holiday List",const Icon(ConnectAppIcon.calendar,size:30, color:Colors.brown),Colors.brown,holidayListRoute),
+            makeDashboardItem("Payslips", const Icon(ConnectAppIcon.rupee_sign,size:30, color:Colors.cyan),Colors.cyan,payslipRoute),
+            makeDashboardItem("Attendance",const Icon(Icons.fingerprint,size:30, color:Colors.deepPurple),Colors.deepPurple,attendanceRoute),
+            makeDashboardItem("Shift Roster",const Icon(ConnectAppIcon.calendar_alt,size:30, color:Colors.teal),Colors.teal,shiftRosterRoute),
+            makeDashboardItem("Claims",const Icon(ConnectAppIcon.file_alt,size:30, color:Colors.red),Colors.red,homeRoute),
           ],
         ),
       ),
@@ -92,8 +93,6 @@ class HomeState extends State<Home>  {
       ),
     );
   }
-
-
 }
 
 class AppDrawer extends StatefulWidget {
@@ -104,8 +103,8 @@ class AppDrawer extends StatefulWidget {
 class _AppDrawerState extends State<AppDrawer> {
   final String user = prefs.getString('name') ?? '';
   final String empno = prefs.getString('empno') ?? '';
-  final String designation = prefs.getString('designation') ?? '';
-  final String discipline = prefs.getString('discipline') ?? '';
+  final String designation = prefs.getString('desg') ?? '';
+  final String discipline = prefs.getString('disc') ?? '';
   @override
   Widget build(BuildContext context) {
     return Drawer(
@@ -148,19 +147,10 @@ class _AppDrawerState extends State<AppDrawer> {
 
                     Align(
                       alignment: Alignment.centerLeft,
-                      child: Text(designation,
+                      child: Text(designation + " (" + discipline +")",
                         style: TextStyle(
-                          fontWeight: FontWeight.w500,
-                          fontSize: 20,
-                        ),
-                      ),
-                    ),
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(discipline,
-                        style: TextStyle(
-                          fontWeight: FontWeight.w500,
-                          fontSize: 20,
+                          fontWeight: FontWeight.w400,
+                          fontSize: 18,
                         ),
                       ),
                     ),
@@ -181,28 +171,21 @@ class _AppDrawerState extends State<AppDrawer> {
             leading: Icon(Icons.download,color: Colors.green, size:25),
             title: const Text('Downloads'),
             onTap: () {
-              Navigator.pushNamed(context, homeRoute);
-            },
-          ),
-          ListTile(
-            leading: Icon(Icons.security_update,color: Colors.green, size:25),
-            title: const Text('Check Updates'),
-            onTap: () {
-              Navigator.pushNamed(context, homeRoute);
+              Navigator.pushNamed(context, downloadsRoute);
             },
           ),
           ListTile(
             leading: Icon(Icons.feedback,color: Colors.orange, size:25),
             title: const Text('Feedback'),
             onTap: () {
-              Navigator.pushNamed(context, homeRoute);
+              Navigator.pushNamed(context, feedbackRoute);
             },
           ),
           ListTile(
             leading: Icon(Icons.info,color: Colors.black45, size:25),
-            title: const Text('About'),
+            title: const Text('App Info & Updates'),
             onTap: () {
-              Navigator.pushNamed(context, homeRoute);
+              Navigator.pushNamed(context, aboutAppRoute);
             },
           ),
           ListTile(
@@ -310,6 +293,7 @@ class _LeaveQuotaState extends State<LeaveQuotas>{
     );
   }
 }
+
 class Holidays extends StatefulWidget {
   @override
   State<Holidays> createState() => _HolidaysState();
@@ -419,6 +403,342 @@ class _HolidaysState extends State<Holidays> with SingleTickerProviderStateMixin
     );
   }
 }
+
+class AppFeedback extends StatelessWidget  {
+  final _formKey = GlobalKey<FormState>();
+  final feedbackTextContrl = TextEditingController();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        leading: Container(
+          width: 40,
+          child: Image.asset('images/bcpl_logo.png'),
+        ),
+        title: Text('Connect'),
+      ),
+      endDrawer: AppDrawer(),
+      body: feedbackForm(),
+    );
+  }
+
+  Form feedbackForm(){
+    return Form(
+      key: _formKey,
+      child: Container(
+        margin: EdgeInsets.symmetric(vertical: 20),
+        child:Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+
+          children: <Widget>[
+            Container(
+
+              padding: EdgeInsets.all(10),
+              child: Center(child: Text('Glad to hear from you...',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w800,
+                    fontSize: 20,
+                    color: Colors.blue[500],
+                  ))) ,
+            ),
+            Container(
+              padding: EdgeInsets.all(10),
+              child: TextFormField(
+                controller: feedbackTextContrl,
+                maxLines: 8,
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(),
+                  labelText: 'Feedback',
+                ),
+                // The validator receives the text that the user has entered.
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please enter your feedback';
+                  }
+                  return null;
+                },
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.all(10.0),
+              child: Center( child: ElevatedButton(
+                onPressed: () {
+                  if (_formKey.currentState!.validate()) {
+                    // If the form is valid, display a snackbar. In the real world,
+                    // you'd often call a server or save the information in a database.
+                    // ScaffoldMessenger.of(context).showSnackBar(
+                    //   const SnackBar(content: Text('Thank you for your valuable feedback')),
+                    // );
+                  }
+                },
+                child: const Text('Submit'),
+              ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class AboutApp extends StatefulWidget {
+  @override
+  State<AboutApp> createState() => _AboutAppState();
+}
+class _AboutAppState extends State<AboutApp>{
+  String appName = '';
+  String packageName = '';
+  String version = '';
+  String buildNumber = '';
+
+  @override
+  void initState(){
+    getPackageInfo();
+    super.initState();
+  }
+  getPackageInfo(){
+    PackageInfo.fromPlatform().then((PackageInfo packageInfo) {
+      setState(() {
+        appName = packageInfo.appName;
+        packageName = packageInfo.packageName;
+        version = packageInfo.version;
+        buildNumber = packageInfo.buildNumber;
+      });
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        leading: Container(
+          width: 40,
+          child: Image.asset('images/bcpl_logo.png'),
+        ),
+        title: Text('Connect'),
+      ),
+      endDrawer: AppDrawer(),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Image.asset('images/bcpl_logo.png'),
+            SizedBox(height: 10),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              //crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Container(
+                  width: 100,
+                  child: Text('App Name'),
+                ),
+                Container(
+                  width: 200,
+                  child: Text(appName),
+                ),
+
+              ],
+            ),
+            SizedBox(height: 10),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              //crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Container(
+                  width: 100,
+                  child: Text('Package Name'),
+                ),
+                Container(
+                  width: 200,
+                  child: Text(packageName),
+                ),
+
+              ],
+            ),
+            SizedBox(height: 10),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              //crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Container(
+                  width: 100,
+                  child: Text('Version'),
+                ),
+                Container(
+                  width: 200,
+                  child: Text(version),
+                ),
+
+              ],
+            ),
+            SizedBox(height: 10),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              //crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Container(
+                  width: 100,
+                  child: Text('Build Number'),
+                ),
+                Container(
+                  width: 200,
+                  child: Text(buildNumber),
+                ),
+              ],
+            ),
+            SizedBox(height: 10),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              //crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Container(
+                  width: 100,
+                  child: Text('Developed By'),
+                ),
+                Container(
+                  width: 200,
+                  child: Text('Bhaskar Jyoti Sharma, Manager (IT)'),
+                ),
+              ],
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: (){
+
+              },
+              child: const Text('Check for updates'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class DownloadDirectory extends StatefulWidget {
+  @override
+  State<DownloadDirectory> createState() => _DownloadDirectoryState();
+}
+class _DownloadDirectoryState extends State<DownloadDirectory>{
+  late String directory;
+  late Future<List<FileSystemEntity>> file;
+
+  @override
+  void initState(){
+    super.initState();
+    file = getDownloads();
+  }
+
+  Future<List<FileSystemEntity>> getDownloads() async {
+    directory = await getDownloadDirectory();
+    return io.Directory("$directory/").listSync();
+    // setState(() {
+    //   return file = io.Directory("$directory/resume/").listSync();  //use your folder name insted of resume.
+    // });
+  }
+
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        leading: Container(
+          width: 40,
+          child: Image.asset('images/bcpl_logo.png'),
+        ),
+        title: Text('Connect'),
+      ),
+      endDrawer: AppDrawer(),
+      body: getDownloadedFiles(),
+    );
+  }
+
+  FutureBuilder getDownloadedFiles(){
+    return FutureBuilder<List<FileSystemEntity>>(
+      future: file,
+      builder: (BuildContext context, AsyncSnapshot<List<FileSystemEntity>> snapshot){
+        if (snapshot.hasData) {
+          List<FileSystemEntity>? data = snapshot.data;
+          if(data!.isNotEmpty){
+            return Container(
+              child: Column(
+                children: <Widget>[
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: data!.length,
+                      itemBuilder: (BuildContext context, int index) {
+                        return Card(
+                          child: createDownloadList(data,index),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }
+          else{
+            return Center(child:Text('Downloads folder empty'),);
+          }
+
+        } else if (snapshot.hasError) {
+          return Text("${snapshot.error}");
+        }
+        return SizedBox(
+          height: MediaQuery.of(context).size.height / 1.3,
+          child: Center(
+            child: CircularProgressIndicator(),
+          ),
+        );
+      },
+    );
+  }
+
+  Row createDownloadList(data,index){
+    String extension = path.extension((data[index] as File).path);
+    String fileName = path.basenameWithoutExtension((data[index] as File).path);
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        if(extension == '.pdf')
+          Icon(ConnectAppIcon.file_pdf, size: 20, color: Colors.red),
+        if(extension == '.docx' || extension == '.doc')
+          Icon(ConnectAppIcon.file_word, size: 20, color: Colors.blue),
+        if(extension == '.xls' || extension == '.xlsx')
+          Icon(ConnectAppIcon.file_excel, size: 20, color: Colors.green),
+        InkWell(
+          onTap: (){
+            OpenFile.open((data[index] as File).path);
+          },
+          child: Text(fileName,
+            style: TextStyle(
+              fontWeight: FontWeight.w400,
+              fontSize: 15,
+            ),),
+        ),
+        InkWell(
+            onTap: (){
+              (data[index] as File).delete();
+              data.removeAt(index);
+              setState(() {
+                data = data;
+              });
+            },
+            child:CircleAvatar(
+              backgroundColor: Colors.black12,
+              child: Icon(Icons.delete,size:20,color:Colors.black38),
+            ),
+        ),
+      ],
+    );
+  }
+
+}
+
 Widget divider(){
   return Divider(
     color:Colors.grey,

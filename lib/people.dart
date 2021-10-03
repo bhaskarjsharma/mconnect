@@ -8,6 +8,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:share_plus/share_plus.dart';
 import 'account.dart';
 import 'constants.dart';
+import 'fonts_icons/connect_app_icon_icons.dart';
 import 'home.dart';
 import 'main.dart';
 import 'models/models.dart';
@@ -413,7 +414,7 @@ class _PeopleDetailsState extends State<PeopleDetails>{
           buttonSection(),
           descSection("Unit",widget.empUnit,Icons.business),
           descSection("Email",widget.empEmail.toLowerCase(),Icons.email),
-          doubleDisp("Intercom (O)","Intercom (R)",widget.empIntercom,widget.empIntercomResidence,Icons.call),
+          doubleDisp("Intercom (O)","Intercom (R)",widget.empIntercom,widget.empIntercomResidence,ConnectAppIcon.phone),
         ],
       ),
     );

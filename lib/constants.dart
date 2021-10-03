@@ -16,3 +16,6 @@ const String attendanceRoute = '/AttendanceView';
 const String attendanceListRoute = '/AttendanceList';
 const String payslipRoute = '/Payslip';
 const String payslipDataRoute = '/PayslipData';
+const String feedbackRoute = '/AppFeedback';
+const String aboutAppRoute = '/AboutApp';
+const String downloadsRoute = '/DownloadDirectory';
