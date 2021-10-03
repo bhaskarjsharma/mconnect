@@ -24,10 +24,29 @@ class _NewsState extends State<News>{
 
   late Future<NewsContent> contentData;
   late Future<List<NewsContent>> _contentData;
+  bool _showBackToTopButton = false;
+  late ScrollController _scrollController;
+
   @override
   void initState() {
     super.initState();
     _contentData = fetchContent();
+    _scrollController = ScrollController()
+      ..addListener(() {
+        setState(() {
+          if (_scrollController.offset >= 400) {
+            _showBackToTopButton = true; // show the back-to-top button
+          } else {
+            _showBackToTopButton = false; // hide the back-to-top button
+          }
+        });
+      });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose(); // dispose the controller
+    super.dispose();
   }
 
   @override
@@ -42,6 +61,12 @@ class _NewsState extends State<News>{
       ),
       endDrawer: AppDrawer(),
       body: getNews(),
+      floatingActionButton: _showBackToTopButton == false
+          ? null
+          : FloatingActionButton(
+        onPressed: _scrollToTop,
+        child: Icon(Icons.arrow_upward),
+      ),
     );
   }
 
@@ -80,6 +105,7 @@ class _NewsState extends State<News>{
   }
   ListView createListNews(data) {
     return ListView.builder(
+        controller: _scrollController,
         itemCount: data.length,
         itemBuilder: (context, index) {
           return Card(
@@ -124,6 +150,12 @@ class _NewsState extends State<News>{
         // )) : null
       ),
     );
+  }
+
+  // This function is triggered when the user presses the back-to-top button
+  void _scrollToTop() {
+    _scrollController.animateTo(0,
+        duration: Duration(seconds: 3), curve: Curves.linear);
   }
 }
 class NewsDetails extends StatefulWidget {

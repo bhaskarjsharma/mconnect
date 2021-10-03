@@ -436,7 +436,7 @@ class AppFeedback extends StatelessWidget  {
             Container(
 
               padding: EdgeInsets.all(10),
-              child: Center(child: Text('Glad to hear from you...',
+              child: Center(child: Text('Please provide your feedback',
                   style: TextStyle(
                     fontWeight: FontWeight.w800,
                     fontSize: 20,

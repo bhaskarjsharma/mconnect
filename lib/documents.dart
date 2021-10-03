@@ -130,11 +130,28 @@ class _DocumentListState extends State<DocumentList>{
   String savePath = '';
   //List<String>? _progress;
   List<String>? _progress;
+  bool _showBackToTopButton = false;
+  late ScrollController _scrollController;
 
   @override
   void initState() {
     super.initState();
     _docList = fetchDocuments(widget.docName,widget.docType);
+    _scrollController = ScrollController()
+      ..addListener(() {
+        setState(() {
+          if (_scrollController.offset >= 400) {
+            _showBackToTopButton = true; // show the back-to-top button
+          } else {
+            _showBackToTopButton = false; // hide the back-to-top button
+          }
+        });
+      });
+  }
+  @override
+  void dispose() {
+    _scrollController.dispose(); // dispose the controller
+    super.dispose();
   }
   @override
   Widget build(BuildContext context) {
@@ -148,6 +165,12 @@ class _DocumentListState extends State<DocumentList>{
       ),
       endDrawer: AppDrawer(),
       body: getDocuments(),
+      floatingActionButton: _showBackToTopButton == false
+          ? null
+          : FloatingActionButton(
+        onPressed: _scrollToTop,
+        child: Icon(Icons.arrow_upward),
+      ),
     );
   }
 
@@ -272,6 +295,10 @@ class _DocumentListState extends State<DocumentList>{
         await showNotification(result);
       }
     }
+  }
+  void _scrollToTop() {
+    _scrollController.animateTo(0,
+        duration: Duration(seconds: 3), curve: Curves.linear);
   }
 
    // void _onReceiveProgress(int received, int total) {

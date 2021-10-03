@@ -251,10 +251,27 @@ class _PeopleListState extends State<PeopleList>{
 
   late Future<List<Employee>> _peopleData;
   bool _loadImageError = false;
+  bool _showBackToTopButton = false;
+  late ScrollController _scrollController;
   @override
   void initState() {
     super.initState();
     _peopleData = fetchEmployees(widget.empName,widget.empUnit,widget.empDisc,widget.empBldGrp);
+    _scrollController = ScrollController()
+      ..addListener(() {
+        setState(() {
+          if (_scrollController.offset >= 400) {
+            _showBackToTopButton = true; // show the back-to-top button
+          } else {
+            _showBackToTopButton = false; // hide the back-to-top button
+          }
+        });
+      });
+  }
+  @override
+  void dispose() {
+    _scrollController.dispose(); // dispose the controller
+    super.dispose();
   }
   @override
   Widget build(BuildContext context) {
@@ -268,6 +285,12 @@ class _PeopleListState extends State<PeopleList>{
       ),
       endDrawer: AppDrawer(),
       body: getPeople(),
+      floatingActionButton: _showBackToTopButton == false
+          ? null
+          : FloatingActionButton(
+        onPressed: _scrollToTop,
+        child: Icon(Icons.arrow_upward),
+      ),
     );
   }
 
@@ -371,6 +394,10 @@ class _PeopleListState extends State<PeopleList>{
          // )) : null
          //),
     );
+  }
+  void _scrollToTop() {
+    _scrollController.animateTo(0,
+        duration: Duration(seconds: 3), curve: Curves.linear);
   }
 }
 class PeopleDetails extends StatefulWidget {
