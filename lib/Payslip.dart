@@ -193,14 +193,15 @@ class _PayslipDataState extends State<PayslipData> with SingleTickerProviderStat
     return ListView.builder(
         itemCount: data.length,
         itemBuilder: (context, index) {
-          return Row(
-            children: [
-              Text(data[index].holidayName,
+          return Card(
+
+            child: ListTile(
+              title: Text(data[index].WageTypeText,
                 style: TextStyle(
                   fontWeight: FontWeight.w400,
                   fontSize: 18,
                 ),),
-              Container(
+              trailing: Container(
                 padding: EdgeInsets.all(10),
                 decoration: BoxDecoration(
                   color: Colors.black12,
@@ -210,13 +211,13 @@ class _PayslipDataState extends State<PayslipData> with SingleTickerProviderStat
                   ),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Text(data[index].holidayDate,
+                child: Text(data[index].WageTypeAmount,
                   style: TextStyle(
                     fontWeight: FontWeight.w500,
                     fontSize: 18,
                   ),),
               ),
-            ],
+            ),
           );
         }
     );

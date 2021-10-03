@@ -7,6 +7,7 @@ import 'home.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'main.dart';
+import 'models/models.dart';
 
 class Login extends StatefulWidget {
   @override
@@ -92,6 +93,9 @@ class _LoginState extends State<Login> {
                         // set value
                         prefs.setString('empno', emp.emp_no);
                         prefs.setString('name', emp.emp_name);
+                        prefs.setString('desg', emp.emp_desg  ?? 'test');
+                        prefs.setString('disc', emp.emp_disc  ?? 'test');
+                        prefs.setString('auth_token', emp.auth_token ?? 'test');
                         prefs.setBool('isLoggedIn', true);
                         setState(() {
                           _isLoading = false;
@@ -180,19 +184,4 @@ class _LoginState extends State<Login> {
   }
 }
 
-
-class EmployeeLoginData{
-  final bool status;
-  final String emp_no;
-  final String emp_name;
-
-  EmployeeLoginData({required this.status, required this.emp_no, required this.emp_name});
-  factory EmployeeLoginData.fromJson(Map<String, dynamic> json) {
-    return EmployeeLoginData(
-      status: json['status'],
-      emp_no: json['emp_no'],
-      emp_name: json['emp_name'],
-    );
-  }
-}
 
