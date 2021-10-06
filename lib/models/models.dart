@@ -1,13 +1,33 @@
 
+class APIResponseData{
+  final bool isAuthenticated;
+  final bool status;
+  final String? data;
+  final String? error_code;
+  final String? error_details;
+
+  APIResponseData({required this.isAuthenticated, required this.status, required this.data,
+    required this.error_code,required this.error_details});
+
+  factory APIResponseData.fromJson(Map<String, dynamic> json) {
+    return APIResponseData(
+      isAuthenticated: json['isAuthenticated'],
+      status: json['status'],
+      data: json['data'],
+      error_code: json['error_code'],
+      error_details: json['error_details'],
+    );
+  }
+}
 class EmployeeLoginData{
   final bool status;
-  final String emp_no;
-  final String emp_name;
-  final String emp_desg;
-  final String emp_disc;
-  final String auth_token;
+  final String? emp_no;
+  final String? emp_name;
+  final String? emp_desg;
+  final String? emp_disc;
+  final String? auth_jwt;
 
-  EmployeeLoginData({required this.status, required this.emp_no, required this.emp_name, required this.emp_desg, required this.emp_disc,required this.auth_token});
+  EmployeeLoginData({required this.status, this.emp_no,  this.emp_name,  this.emp_desg,  this.emp_disc, this.auth_jwt});
   factory EmployeeLoginData.fromJson(Map<String, dynamic> json) {
     return EmployeeLoginData(
       status: json['status'],
@@ -15,7 +35,7 @@ class EmployeeLoginData{
       emp_name: json['emp_name'],
       emp_desg: json['emp_desg'],
       emp_disc: json['emp_discipline'],
-      auth_token: json['auth_token'],
+      auth_jwt: json['auth_token'],
     );
   }
 }
@@ -166,9 +186,9 @@ class HolidayList{
 
   factory HolidayList.fromJson(Map<String, dynamic> json) {
     return HolidayList(
-      holidayDate: json['holidayDate'],
-      holidayName: json['holidayName'],
-      holidayType: json['holidayType'],
+      holidayDate: json['HolidayDate'],
+      holidayName: json['HolidayName'],
+      holidayType: json['HolidayType'],
     );
   }
 }

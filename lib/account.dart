@@ -3,9 +3,8 @@ import 'package:http/http.dart' as http;
 import 'dart:async';
 import 'dart:convert';
 import 'home.dart';
-
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
 import 'main.dart';
 import 'models/models.dart';
 
@@ -30,8 +29,10 @@ class _LoginState extends State<Login> {
           child: Image.asset('images/bcpl_logo.png'),
         ),
         title: Text(
-          'Connect',
-          style: Theme.of(context).textTheme.headline1,
+          'Connect',style: TextStyle(
+          color:Colors.black54,
+          fontSize: 23.0, fontWeight: FontWeight.bold,
+        ),
         ),
       ),
       body: Center(
@@ -48,6 +49,7 @@ class _LoginState extends State<Login> {
           ],
         ),) : SingleChildScrollView(
           child: Column(
+
             children: <Widget>[
               Container(
                 padding: EdgeInsets.all(10),
@@ -91,44 +93,59 @@ class _LoginState extends State<Login> {
                         // obtain shared preferences
                         final prefs = await SharedPreferences.getInstance();
                         // set value
-                        prefs.setString('empno', emp.emp_no);
-                        prefs.setString('name', emp.emp_name);
-                        prefs.setString('desg', emp.emp_desg  ?? 'test');
-                        prefs.setString('disc', emp.emp_disc  ?? 'test');
-                        prefs.setString('auth_token', emp.auth_token ?? 'test');
                         prefs.setBool('isLoggedIn', true);
+                        // Create secure storage
+                        final storage = new FlutterSecureStorage();
+                        // Write value
+                        await storage.write(key: 'empno', value: emp.emp_no);
+                        await storage.write(key: 'name', value: emp.emp_name);
+                        await storage.write(key: 'desg', value: emp.emp_desg);
+                        await storage.write(key: 'disc', value: emp.emp_disc);
+                        await storage.write(key: 'auth_token', value: emp.auth_jwt);
+
+                        //Set variables for first time view
+                        setState(() {
+                          empno = emp.emp_no!;
+                          user = emp.emp_name!;
+                          designation = emp.emp_desg!;
+                          discipline = emp.emp_disc!;
+                          auth_token = emp.auth_jwt!;
+                        });
+
+                        ScaffoldMessenger.of(context).showSnackBar(
+                           SnackBar(content: Text("Welcome, ${emp.emp_name}")),
+                        );
                         setState(() {
                           _isLoading = false;
                         });
                         Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (BuildContext context) => Home()), (Route<dynamic> route) => false);
                       }
                       else{
-                        setState(() {
-                          _isLoading = false;
-                        });
-                        // showDialog(
-                        //   context: context,
-                        //   builder: (context) {
-                        //     return AlertDialog(
-                        //       // Retrieve the text the that user has entered by using the
-                        //       // TextEditingController.
-                        //       content: Text('Authentication Failed'),
-                        //     );
-                        //   },
-                        // );
+                         ScaffoldMessenger.of(context).showSnackBar(
+                           const SnackBar(content: Text('Invalid Credentials. Unable to login')),
+                         );
+                         setState(() {
+                           _isLoading = false;
+                         });
                       }
                     }
                     else{
-                      showDialog(
-                        context: context,
-                        builder: (context) {
-                          return AlertDialog(
-                            // Retrieve the text the that user has entered by using the
-                            // TextEditingController.
-                            content: Text('Authentication Failed'),
-                          );
-                        },
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Invalid Credentials. Unable to login')),
                       );
+                      setState(() {
+                        _isLoading = false;
+                      });
+                      // showDialog(
+                      //   context: context,
+                      //   builder: (context) {
+                      //     return AlertDialog(
+                      //       // Retrieve the text the that user has entered by using the
+                      //       // TextEditingController.
+                      //       content: Text('Authentication Failed'),
+                      //     );
+                      //   },
+                      // );
                     }
                   },
                 ),

@@ -1,4 +1,5 @@
 
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
@@ -125,8 +126,9 @@ class DocumentList extends StatefulWidget {
 }
 class _DocumentListState extends State<DocumentList>{
 
-  late Future<List<Document>> _docList;
-  bool _loadImageError = false;
+  late List<Document> _docList;
+  late Future<APIResponseData> _apiResponseData;
+  bool isLoading = true;
   String savePath = '';
   //List<String>? _progress;
   List<String>? _progress;
@@ -136,7 +138,18 @@ class _DocumentListState extends State<DocumentList>{
   @override
   void initState() {
     super.initState();
-    _docList = fetchDocuments(widget.docName,widget.docType);
+    DioClient _dio = new DioClient();
+    var _endpointProvider = new EndPointProvider(_dio.init());
+    _apiResponseData = _endpointProvider.fetchDocuments(widget.docName,widget.docType);
+    _apiResponseData.then((result) {
+      if(result.isAuthenticated && result.status){
+        final parsed = jsonDecode(result.data ?? '').cast<Map<String, dynamic>>();
+        setState(() {
+          _docList =  parsed.map<Document>((json) => Document.fromJson(json)).toList();
+          isLoading = false;
+        });
+      }
+    });
     _scrollController = ScrollController()
       ..addListener(() {
         setState(() {
@@ -164,7 +177,33 @@ class _DocumentListState extends State<DocumentList>{
         title: Text('Connect'),
       ),
       endDrawer: AppDrawer(),
-      body: getDocuments(),
+      body: isLoading? Container(
+        height: MediaQuery.of(context).size.height / 1.3,
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              CircularProgressIndicator(),
+              Container(
+                padding: EdgeInsets.all(10),
+                child:Text('Getting your data. Please wait...',style: TextStyle(
+                  fontWeight: FontWeight.w500,fontSize: 18,),
+                ),
+              ),
+            ],
+          ),
+        ),
+
+      ) : ListView.builder(
+          itemCount: _docList.length,
+          itemBuilder: (context, index) {
+            _progress = List<String>.generate(_docList.length,(counter) => "Item $counter");
+            return Card(
+                child: createListTileDocument(_docList,index)
+            );
+          }
+      ),
       floatingActionButton: _showBackToTopButton == false
           ? null
           : FloatingActionButton(
@@ -174,40 +213,40 @@ class _DocumentListState extends State<DocumentList>{
     );
   }
 
-  FutureBuilder getDocuments(){
-    return FutureBuilder<List<Document>>(
-      future: _docList,
-      builder: (BuildContext context, AsyncSnapshot<List<Document>> snapshot){
-        if (snapshot.hasData) {
-          List<Document>? data = snapshot.data;
-          return createListDocument(data);
-        } else if (snapshot.hasError) {
-          return Text("${snapshot.error}");
-        }
-        return SizedBox(
-          height: MediaQuery.of(context).size.height / 1.3,
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: <Widget>[
-
-                CircularProgressIndicator(),
-                Container(
-                  padding: EdgeInsets.all(10),
-                  child:Text('Fetching Data. Please Wait...',style: TextStyle(
-                    fontWeight: FontWeight.w500,
-                    fontSize: 18,
-                  ),),
-                ),
-              ],
-            ),
-
-          ),
-        );
-      },
-    );
-  }
+  // FutureBuilder getDocuments(){
+  //   return FutureBuilder<List<Document>>(
+  //     future: _docList,
+  //     builder: (BuildContext context, AsyncSnapshot<List<Document>> snapshot){
+  //       if (snapshot.hasData) {
+  //         List<Document>? data = snapshot.data;
+  //         return createListDocument(data);
+  //       } else if (snapshot.hasError) {
+  //         return Text("${snapshot.error}");
+  //       }
+  //       return SizedBox(
+  //         height: MediaQuery.of(context).size.height / 1.3,
+  //         child: Center(
+  //           child: Column(
+  //             mainAxisAlignment: MainAxisAlignment.center,
+  //             crossAxisAlignment: CrossAxisAlignment.center,
+  //             children: <Widget>[
+  //
+  //               CircularProgressIndicator(),
+  //               Container(
+  //                 padding: EdgeInsets.all(10),
+  //                 child:Text('Fetching Data. Please Wait...',style: TextStyle(
+  //                   fontWeight: FontWeight.w500,
+  //                   fontSize: 18,
+  //                 ),),
+  //               ),
+  //             ],
+  //           ),
+  //
+  //         ),
+  //       );
+  //     },
+  //   );
+  // }
   ListView createListDocument(data) {
     return ListView.builder(
         itemCount: data.length,
@@ -277,7 +316,7 @@ class _DocumentListState extends State<DocumentList>{
     final isPermissionStatusGranted = await requestStoragePermissions();
     if (isPermissionStatusGranted) {
       try {
-        final Dio _dio = Dio();
+        final Dio _dio = Dio()..interceptors.add(ApiInterceptors());
         var response = await _dio.download(url,
             finalSavePath, onReceiveProgress: (int received, int total) {
               if (total != -1) {

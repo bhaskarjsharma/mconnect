@@ -1,4 +1,6 @@
 
+import 'dart:convert';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_projects/services/webservice.dart';
@@ -165,14 +167,25 @@ class attendanceList extends StatefulWidget {
 }
 class _attendanceListState extends State<attendanceList>{
 
-  late Future<List<AttendanceData>> _attendanceData;
-  String _empno = '';
-  bool _loadImageError = false;
+  late List<AttendanceData> _attendanceData;
+  late Future<APIResponseData> _apiResponseData;
+  bool isLoading = true;
+
   @override
   void initState() {
+    DioClient _dio = new DioClient();
+    var _endpointProvider = new EndPointProvider(_dio.init());
+    _apiResponseData = _endpointProvider.fetchAttendanceData(empno,widget.fromDate,widget.toDate);
+    _apiResponseData.then((result) {
+      if(result.isAuthenticated && result.status){
+        final parsed = jsonDecode(result.data ?? '').cast<Map<String, dynamic>>();
+        setState(() {
+          _attendanceData =  parsed.map<AttendanceData>((json) => AttendanceData.fromJson(json)).toList();
+          isLoading = false;
+        });
+      }
+    });
     super.initState();
-    _empno = prefs.getString('empno') ?? '';
-    _attendanceData = fetchAttendanceData(_empno,widget.fromDate,widget.toDate);
   }
   @override
   Widget build(BuildContext context) {
@@ -185,149 +198,110 @@ class _attendanceListState extends State<attendanceList>{
         title: Text('Connect - People'),
       ),
       endDrawer: AppDrawer(),
-      body: getAttendanceData(),
-    );
-  }
-
-  FutureBuilder getAttendanceData(){
-    return FutureBuilder<List<AttendanceData>>(
-      future: _attendanceData,
-      builder: (BuildContext context, AsyncSnapshot<List<AttendanceData>> snapshot){
-        if (snapshot.hasData) {
-          List<AttendanceData>? data = snapshot.data;
-          return createListAttendance(data);
-        } else if (snapshot.hasError) {
-          return Text("${snapshot.error}");
-        }
-        return SizedBox(
-          height: MediaQuery.of(context).size.height / 1.3,
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: <Widget>[
-                CircularProgressIndicator(),
-                Container(
-                  padding: EdgeInsets.all(10),
-                  child:Text('Fetching Data. Please Wait...',style: TextStyle(
-                    fontWeight: FontWeight.w500,
-                    fontSize: 18,
-                  ),),
-                ),
-              ],
-            ),
-
-          ),
-        );
-      },
-    );
-  }
-
-  SingleChildScrollView createListAttendance(data){
-    return SingleChildScrollView(
-      scrollDirection: Axis.vertical,
-      child: FittedBox(
-          child: DataTable(
-            columns: <DataColumn>[
-              DataColumn(
-                label: Text(
-                  'Date',
-                  style: TextStyle(fontStyle: FontStyle.normal,fontSize: 20,),
-                ),
-              ),
-              DataColumn(
-                label: Text(
-                  'Punch Date',
-                  style: TextStyle(fontStyle: FontStyle.normal,fontSize: 20,),
-                ),
-              ),
-              DataColumn(
-                label: Text(
-                  'Punch Time',
-                  style: TextStyle(fontStyle: FontStyle.normal,fontSize: 20,),
-                ),
-              ),
-              DataColumn(
-                label: Text(
-                  'Device',
-                  style: TextStyle(fontStyle: FontStyle.normal,fontSize: 20,),
+      body: isLoading? Container(
+        height: MediaQuery.of(context).size.height / 1.3,
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              CircularProgressIndicator(),
+              Container(
+                padding: EdgeInsets.all(10),
+                child:Text('Getting your data. Please wait...',style: TextStyle(
+                  fontWeight: FontWeight.w500,fontSize: 18,),
                 ),
               ),
             ],
-            rows: List<DataRow>.generate(
-              data.length,
-                  (int index) => DataRow(
-                color: MaterialStateProperty.resolveWith<Color?>(
-                        (Set<MaterialState> states) {
-                      // All rows will have the same selected color.
-                      if (states.contains(MaterialState.selected)) {
-                        return Theme.of(context).colorScheme.primary.withOpacity(0.08);
-                      }
-                      // Even rows will have a grey color.
-                      if (index.isEven) {
-                        return Colors.grey.withOpacity(0.3);
-                      }
-                      return null; // Use default value for other states and odd rows.
-                    }),
-                cells: <DataCell>[
-                  DataCell(Text(data[index].date ?? '')),
-                  DataCell(Text(data[index].punchDate ?? '')),
-                  DataCell(Text(data[index].punchTime ?? '')),
-                  DataCell(Text(data[index].deviceName ?? '')),
+          ),
+        ),
+
+      ) : ListView.builder(
+          itemCount: _attendanceData.length,
+          itemBuilder: (context, index) {
+            return Card(
+              child: DataTable(
+                columns: const <DataColumn>[
+                  DataColumn(
+                    label: Text(
+                      'Date',
+                      style: TextStyle(fontStyle: FontStyle.italic),
+                    ),
+                  ),
+                  DataColumn(
+                    label: Text(
+                      'Punch Date',
+                      style: TextStyle(fontStyle: FontStyle.italic),
+                    ),
+                  ),
+                  DataColumn(
+                    label: Text(
+                      'Punch Time',
+                      style: TextStyle(fontStyle: FontStyle.italic),
+                    ),
+                  ),
+                  DataColumn(
+                    label: Text(
+                      'Device',
+                      style: TextStyle(fontStyle: FontStyle.italic),
+                    ),
+                  ),
+                ],
+                rows: <DataRow>[
+                  DataRow(
+                    cells: <DataCell>[
+                      DataCell(Text(_attendanceData[index].date)),
+                      DataCell(Text(_attendanceData[index].punchDate)),
+                      DataCell(Text(_attendanceData[index].punchTime)),
+                      DataCell(Text(_attendanceData[index].deviceName)),
+                    ],
+                  ),
                 ],
               ),
-            ),
-          ),
+            );
+          }
       ),
     );
   }
-  ListView createListAttendance1(data) {
-    return ListView.builder(
-        itemCount: data.length,
-        itemBuilder: (context, index) {
-          return Card(
-            child: DataTable(
-              columns: const <DataColumn>[
-                DataColumn(
-                  label: Text(
-                    'Date',
-                    style: TextStyle(fontStyle: FontStyle.italic),
-                  ),
-                ),
-                DataColumn(
-                  label: Text(
-                    'Punch Date',
-                    style: TextStyle(fontStyle: FontStyle.italic),
-                  ),
-                ),
-                DataColumn(
-                  label: Text(
-                    'Punch Time',
-                    style: TextStyle(fontStyle: FontStyle.italic),
-                  ),
-                ),
-                DataColumn(
-                  label: Text(
-                    'Device',
-                    style: TextStyle(fontStyle: FontStyle.italic),
-                  ),
-                ),
-              ],
-              rows: <DataRow>[
-                DataRow(
-                  cells: <DataCell>[
-                    DataCell(Text(data[index].date ?? '')),
-                    DataCell(Text(data[index].punchDate ?? '')),
-                    DataCell(Text(data[index].punchTime ?? '')),
-                    DataCell(Text(data[index].deviceName ?? '')),
-                  ],
-                ),
-              ],
-            ),
-          );
-        }
-    );
-  }
+
+  // FutureBuilder getAttendanceData(){
+  //   return FutureBuilder<List<AttendanceData>>(
+  //     future: _attendanceData,
+  //     builder: (BuildContext context, AsyncSnapshot<List<AttendanceData>> snapshot){
+  //       if (snapshot.hasData) {
+  //         List<AttendanceData>? data = snapshot.data;
+  //         return createListAttendance(data);
+  //       } else if (snapshot.hasError) {
+  //         return Text("${snapshot.error}");
+  //       }
+  //       return SizedBox(
+  //         height: MediaQuery.of(context).size.height / 1.3,
+  //         child: Center(
+  //           child: Column(
+  //             mainAxisAlignment: MainAxisAlignment.center,
+  //             crossAxisAlignment: CrossAxisAlignment.center,
+  //             children: <Widget>[
+  //               CircularProgressIndicator(),
+  //               Container(
+  //                 padding: EdgeInsets.all(10),
+  //                 child:Text('Fetching Data. Please Wait...',style: TextStyle(
+  //                   fontWeight: FontWeight.w500,
+  //                   fontSize: 18,
+  //                 ),),
+  //               ),
+  //             ],
+  //           ),
+  //
+  //         ),
+  //       );
+  //     },
+  //   );
+  // }
+
+
+  // ListView createListAttendance1(data) {
+  //   return
+  // }
 }
 class AttendanceScreenArguments {
   final String fromDate;

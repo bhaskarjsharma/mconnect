@@ -7,13 +7,23 @@ import 'account.dart';
 import 'constants.dart';
 import 'home.dart';
 import 'package:flutter_projects/services/Router.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 late var prefs;
+late var storage;
 late FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
+String empno = '';
+String user = '';
+String designation = '';
+String discipline = '';
+String auth_token = '';
+late GlobalKey<NavigatorState> navigatorKey;
 
 void main() async{
   // handle exceptions caused by making main async
   WidgetsFlutterBinding.ensureInitialized();
+
+  navigatorKey = new GlobalKey<NavigatorState>();
 
   flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
@@ -24,8 +34,15 @@ void main() async{
   flutterLocalNotificationsPlugin.initialize(initSettings, onSelectNotification: onSelectNotification);
 
   prefs = await SharedPreferences.getInstance();
+  storage = new FlutterSecureStorage();
   final bool isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
   if(isLoggedIn){
+    empno = await storage.read(key: 'empno');
+    user = await storage.read(key: 'name');
+    designation = await storage.read(key: 'desg');
+    discipline = await storage.read(key: 'disc');
+    auth_token = await storage.read(key: 'auth_token');
+
     runApp(MaterialApp(
       title: "Home",
       theme: ThemeData(
@@ -36,9 +53,12 @@ void main() async{
       home: Home(),
       onGenerateRoute: NavigationRouter.generateRoute,
       initialRoute: homeRoute,
+      navigatorKey: navigatorKey,
     ));
   }
   else{
+    prefs.clear();
+    storage.deleteAll();
     runApp(MaterialApp(
       theme: ThemeData(
           appBarTheme: AppBarTheme(
@@ -56,6 +76,8 @@ void main() async{
   }
 
 }
+
+
 
 Future<void> showNotification(Map<String, dynamic> downloadStatus) async {
   final android = AndroidNotificationDetails(
@@ -98,3 +120,5 @@ Future onSelectNotification(String? json) async {
     // );
   }
 }
+
+

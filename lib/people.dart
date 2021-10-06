@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:math';
 
 import 'package:cached_network_image/cached_network_image.dart';
@@ -249,14 +250,26 @@ class PeopleList extends StatefulWidget {
 }
 class _PeopleListState extends State<PeopleList>{
 
-  late Future<List<Employee>> _peopleData;
-  bool _loadImageError = false;
+  late List<Employee> _peopleData;
+  late Future<APIResponseData> _apiResponseData;
+  bool isLoading = true;
   bool _showBackToTopButton = false;
   late ScrollController _scrollController;
   @override
   void initState() {
     super.initState();
-    _peopleData = fetchEmployees(widget.empName,widget.empUnit,widget.empDisc,widget.empBldGrp);
+    DioClient _dio = new DioClient();
+    var _endpointProvider = new EndPointProvider(_dio.init());
+    _apiResponseData = _endpointProvider.fetchEmployees(widget.empName,widget.empUnit,widget.empDisc,widget.empBldGrp);
+    _apiResponseData.then((result) {
+      if(result.isAuthenticated && result.status){
+        final parsed = jsonDecode(result.data ?? '').cast<Map<String, dynamic>>();
+        setState(() {
+          _peopleData =  parsed.map<Employee>((json) => Employee.fromJson(json)).toList();
+          isLoading = false;
+        });
+      }
+    });
     _scrollController = ScrollController()
       ..addListener(() {
         setState(() {
@@ -284,7 +297,7 @@ class _PeopleListState extends State<PeopleList>{
         title: Text('Connect - People'),
       ),
       endDrawer: AppDrawer(),
-      body: getPeople(),
+      body: isLoading? waiting() : createListPeople(_peopleData),
       floatingActionButton: _showBackToTopButton == false
           ? null
           : FloatingActionButton(
@@ -293,51 +306,70 @@ class _PeopleListState extends State<PeopleList>{
       ),
     );
   }
-
-  FutureBuilder getPeople(){
-    return FutureBuilder<List<Employee>>(
-      future: _peopleData,
-      builder: (BuildContext context, AsyncSnapshot<List<Employee>> snapshot){
-        if (snapshot.hasData) {
-          List<Employee>? data = snapshot.data;
-          return createListPeople(data);
-        } else if (snapshot.hasError) {
-          return Text("${snapshot.error}");
-        }
-        return SizedBox(
-          height: MediaQuery.of(context).size.height / 1.3,
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: <Widget>[
-                CircularProgressIndicator(),
-                Container(
-                  padding: EdgeInsets.all(10),
-                  child:Text('Fetching Data. Please Wait...',style: TextStyle(
-                    fontWeight: FontWeight.w500,
-                    fontSize: 18,
-                  ),),
-                ),
-              ],
+  Widget waiting(){
+    return Container(
+      height: MediaQuery.of(context).size.height / 1.3,
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(),
+            Container(
+              padding: EdgeInsets.all(10),
+              child:Text('Getting your data. Please wait...',style: TextStyle(
+                fontWeight: FontWeight.w500,fontSize: 18,),
+              ),
             ),
-
-          ),
-        );
-      },
+          ],
+        ),
+      ),
     );
   }
+  // FutureBuilder getPeople(){
+  //   return FutureBuilder<List<Employee>>(
+  //     future: _peopleData,
+  //     builder: (BuildContext context, AsyncSnapshot<List<Employee>> snapshot){
+  //       if (snapshot.hasData) {
+  //         List<Employee>? data = snapshot.data;
+  //         return createListPeople(data);
+  //       } else if (snapshot.hasError) {
+  //         return Text("${snapshot.error}");
+  //       }
+  //       return SizedBox(
+  //         height: MediaQuery.of(context).size.height / 1.3,
+  //         child: Center(
+  //           child: Column(
+  //             mainAxisAlignment: MainAxisAlignment.center,
+  //             crossAxisAlignment: CrossAxisAlignment.center,
+  //             children: <Widget>[
+  //               CircularProgressIndicator(),
+  //               Container(
+  //                 padding: EdgeInsets.all(10),
+  //                 child:Text('Fetching Data. Please Wait...',style: TextStyle(
+  //                   fontWeight: FontWeight.w500,
+  //                   fontSize: 18,
+  //                 ),),
+  //               ),
+  //             ],
+  //           ),
+  //
+  //         ),
+  //       );
+  //     },
+  //   );
+  // }
   ListView createListPeople(data) {
     return ListView.builder(
         itemCount: data.length,
         itemBuilder: (context, index) {
           return Card(
-              child: createListTilePeople(data,index,data[index].emp_name, data[index].emp_desg + ", " + data[index].emp_discipline)
+              child: createListTilePeople(data,index)
           );
         }
     );
   }
-  ListTile createListTilePeople(data,index,String title, String subtitle) {
+  ListTile createListTilePeople(data,index) {
     String profilePicUrl = "https://connect.bcplindia.co.in/MobileAppAPI/imageFile?empno="+data[index].emp_no;
     return ListTile(
       onTap: () async{
@@ -348,12 +380,12 @@ class _PeopleListState extends State<PeopleList>{
           ),
         );
       },
-      title: Text(title,
+      title: Text(data[index].emp_name,
           style: TextStyle(
             fontWeight: FontWeight.w400,
             fontSize: 18,
           )),
-      subtitle: Text(subtitle,
+      subtitle: Text("${data[index].emp_desg}, ${data[index].emp_discipline}",
           style: TextStyle(
             fontWeight: FontWeight.w400,
             fontSize: 15,
@@ -363,7 +395,7 @@ class _PeopleListState extends State<PeopleList>{
         placeholder: (context, url) => CircularProgressIndicator(),
         errorWidget: (context, url, error) => new CircleAvatar(
           backgroundColor: RandomColorModel().getColor(),
-          child: Text(title.substring(0,1).toUpperCase(),style: TextStyle(
+          child: Text(data[index].emp_name.substring(0,1).toUpperCase(),style: TextStyle(
               color: Colors.black,),) ,
         ),
         fit: BoxFit.contain,

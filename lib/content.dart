@@ -16,6 +16,9 @@ import 'models/models.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:open_file/open_file.dart';
 
+import 'models/models.dart';
+
+
 class News extends StatefulWidget {
   @override
   State<News> createState() => _NewsState();
@@ -23,14 +26,29 @@ class News extends StatefulWidget {
 class _NewsState extends State<News>{
 
   late Future<NewsContent> contentData;
-  late Future<List<NewsContent>> _contentData;
+  //late Future<List<NewsContent>> _contentData;
+  late Future<APIResponseData> _apiResponseData;
+  List<NewsContent> _contentData = <NewsContent>[];
   bool _showBackToTopButton = false;
   late ScrollController _scrollController;
+  bool isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _contentData = fetchContent();
+    DioClient _dio = new DioClient();
+    var _endpointProvider = new EndPointProvider(_dio.init());
+    _apiResponseData = _endpointProvider.fetchNews();
+
+    _apiResponseData.then((result) {
+      if(result.isAuthenticated && result.status){
+        final parsed = jsonDecode(result.data ?? '').cast<Map<String, dynamic>>();
+        setState(() {
+          _contentData =  parsed.map<NewsContent>((json) => NewsContent.fromJson(json)).toList();
+          isLoading = false;
+        });
+      }
+    });
     _scrollController = ScrollController()
       ..addListener(() {
         setState(() {
@@ -60,7 +78,33 @@ class _NewsState extends State<News>{
         title: Text('Connect - News & Events'),
       ),
       endDrawer: AppDrawer(),
-      body: getNews(),
+      body: isLoading? Container(
+        height: MediaQuery.of(context).size.height / 1.3,
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              CircularProgressIndicator(),
+              Container(
+                padding: EdgeInsets.all(10),
+                child:Text('Getting your data. Please wait...',style: TextStyle(
+                  fontWeight: FontWeight.w500,fontSize: 18,),
+                ),
+              ),
+            ],
+          ),
+        ),
+
+      ) : ListView.builder(
+          controller: _scrollController,
+          itemCount: _contentData.length,
+          itemBuilder: (context, index) {
+            return Card(
+                child: createListTileNews(_contentData,index, Icons.article)
+            );
+          }
+      ),
       floatingActionButton: _showBackToTopButton == false
           ? null
           : FloatingActionButton(
@@ -70,39 +114,40 @@ class _NewsState extends State<News>{
     );
   }
 
-  FutureBuilder getNews(){
-    return FutureBuilder<List<NewsContent>>(
-      future: _contentData,
-      builder: (BuildContext context, AsyncSnapshot<List<NewsContent>> snapshot){
-        if (snapshot.hasData) {
-          List<NewsContent>? data = snapshot.data;
-          print(data![0].contentTitle);
-          return createListNews(data);
-        } else if (snapshot.hasError) {
-          return Text("${snapshot.error}");
-        }
-        return Container(
-          height: MediaQuery.of(context).size.height / 1.3,
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: <Widget>[
-                CircularProgressIndicator(),
-                Container(
-                  padding: EdgeInsets.all(10),
-                  child:Text('Fetching Data. Please Wait...',style: TextStyle(
-                    fontWeight: FontWeight.w500,
-                    fontSize: 18,
-                  ),),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
-  }
+
+  // FutureBuilder getNews(){
+  //   return FutureBuilder<List<NewsContent>>(
+  //     future: _contentData,
+  //     builder: (BuildContext context, AsyncSnapshot<List<NewsContent>> snapshot){
+  //       if (snapshot.hasData) {
+  //         List<NewsContent>? data = snapshot.data;
+  //         print(data![0].contentTitle);
+  //         return createListNews(data);
+  //       } else if (snapshot.hasError) {
+  //         return Text("${snapshot.error}");
+  //       }
+  //       return Container(
+  //         height: MediaQuery.of(context).size.height / 1.3,
+  //         child: Center(
+  //           child: Column(
+  //             mainAxisAlignment: MainAxisAlignment.center,
+  //             crossAxisAlignment: CrossAxisAlignment.center,
+  //             children: <Widget>[
+  //               CircularProgressIndicator(),
+  //               Container(
+  //                 padding: EdgeInsets.all(10),
+  //                 child:Text('Fetching Data. Please Wait...',style: TextStyle(
+  //                   fontWeight: FontWeight.w500,
+  //                   fontSize: 18,
+  //                 ),),
+  //               ),
+  //             ],
+  //           ),
+  //         ),
+  //       );
+  //     },
+  //   );
+  // }
   ListView createListNews(data) {
     return ListView.builder(
         controller: _scrollController,
@@ -174,14 +219,25 @@ class NewsDetails extends StatefulWidget {
 
 class _NewsDetailsState extends State<NewsDetails> {
   String _progress = "";
+  late Future<APIResponseData> _apiResponseData;
   late Future<List<NewsAttachment>> _attachmentDataFuture;
   late List<NewsAttachment> _attachmentData;
   int gridImageCount = 1;
 
   @override
   void initState() {
+    DioClient _dio = new DioClient();
+    var _endpointProvider = new EndPointProvider(_dio.init());
+    _apiResponseData = _endpointProvider.fetchContentAttachments(widget.contentId, "News");
+    _apiResponseData.then((result) {
+      if(result.isAuthenticated && result.status){
+        final parsed = jsonDecode(result.data ?? '').cast<Map<String, dynamic>>();
+        setState(() {
+          _attachmentData =  parsed.map<NewsContent>((json) => NewsContent.fromJson(json)).toList();
+        });
+      }
+    });
     super.initState();
-    _attachmentDataFuture = fetchContentAttachments(widget.contentId, "News");
   }
 
   @override
@@ -290,7 +346,104 @@ class _NewsDetailsState extends State<NewsDetails> {
     );
   }
 
-  Widget getImage() {
+  Widget getImage(){
+    return SliverGrid(
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2),
+        delegate: SliverChildBuilderDelegate(
+            (BuildContext context, int index){
+              String attachmentUrl = "https://connect.bcplindia.co.in/MobileAppAPI/Download?id=" +
+                  _attachmentData[index].attachmentID.toString();
+              String fileName = _attachmentData[index].attachmentFileName;
+              String fileType = _attachmentData[index].attachmentFileType;
+
+              if (fileType.contains("image/")) {
+                return InkWell(
+                  onTap: () {
+                    showDialog(attachmentUrl);
+                  },
+                  child: CachedNetworkImage(
+                    imageUrl: attachmentUrl,
+                    placeholder: (context, url) =>
+                        SizedBox(width: 50,
+                            height: 50,
+                            child: CircularProgressIndicator()),
+                    errorWidget: (context, url, error) => Icon(Icons.error),
+                  ),
+                );
+              }
+              else if (fileType == "application/pdf") {
+                return InkWell(
+                  onTap: () {
+                    downloadFile(attachmentUrl, fileName);
+                  },
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(ConnectAppIcon.file_pdf, size: 40, color: Colors.red),
+                      Text('Download PDF',
+                          style: TextStyle(fontSize: 15, color: Colors.black),
+                          textAlign: TextAlign.center),
+                      Text('$_progress', style: TextStyle(
+                          color: Colors.red, fontSize: 15),),
+                    ],
+                  ),
+
+                );
+              }
+              else if (fileType == "application/msword") {
+                return InkWell(
+                  onTap: () {
+                    downloadFile(attachmentUrl, fileName);
+                  },
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(ConnectAppIcon.file_word, size: 40, color: Colors
+                          .blue),
+                      Text('Download PDF',
+                          style: TextStyle(fontSize: 15, color: Colors.black),
+                          textAlign: TextAlign.center),
+                      Text('$_progress', style: TextStyle(
+                          color: Colors.red, fontSize: 15),),
+                    ],
+                  ),
+                );
+              }
+              else if (fileType == "application/vnd.ms-excel") {
+                return InkWell(
+                  onTap: () {
+                    downloadFile(attachmentUrl, fileName);
+                  },
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(ConnectAppIcon.file_excel, size: 40,
+                          color: Colors.green),
+                      Text('Download PDF',
+                          style: TextStyle(fontSize: 15, color: Colors.black),
+                          textAlign: TextAlign.center),
+                      Text('$_progress',
+                        style: TextStyle(color: Colors.red, fontSize: 15),),
+                    ],
+                  ),
+                );
+              }
+              else if (fileType.contains("video/")) {
+                return Center(
+                  child: Text('Video'),
+                );
+              }
+              else {
+                return Center(
+                  child: Text('Invalid Type'),
+                );
+              }
+            },
+          childCount: _attachmentData.length,
+        ),
+    );
+  }
+  Widget getImage1() {
     return SliverGrid(
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2),

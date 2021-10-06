@@ -1,4 +1,6 @@
 
+import 'dart:convert';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_projects/services/webservice.dart';
@@ -160,14 +162,25 @@ class ShiftRosterList extends StatefulWidget {
 }
 class _ShiftRosterListState extends State<ShiftRosterList>{
 
-  late Future<List<ShiftRoster>> _shiftRosterData;
-  String _empno = '';
-  bool _loadImageError = false;
+  late List<ShiftRoster> _shiftRosterData;
+  late Future<APIResponseData> _apiResponseData;
+  bool isLoading = true;
+
   @override
   void initState() {
     super.initState();
-    _empno = prefs.getString('empno') ?? '';
-    _shiftRosterData = fetchShiftRosterData(_empno,widget.fromDate,widget.toDate);
+    DioClient _dio = new DioClient();
+    var _endpointProvider = new EndPointProvider(_dio.init());
+    _apiResponseData = _endpointProvider.fetchShiftRosterData(empno,widget.fromDate,widget.toDate);
+    _apiResponseData.then((result) {
+      if(result.isAuthenticated && result.status){
+        final parsed = jsonDecode(result.data ?? '').cast<Map<String, dynamic>>();
+        setState(() {
+          _shiftRosterData =  parsed.map<ShiftRoster>((json) => ShiftRoster.fromJson(json)).toList();
+          isLoading = false;
+        });
+      }
+    });
   }
   @override
   Widget build(BuildContext context) {
@@ -180,43 +193,62 @@ class _ShiftRosterListState extends State<ShiftRosterList>{
         title: Text('Connect - People'),
       ),
       endDrawer: AppDrawer(),
-      body: getShiftData(),
+      body: isLoading? waiting() : createListShift(_shiftRosterData),
     );
   }
-
-  FutureBuilder getShiftData(){
-    return FutureBuilder<List<ShiftRoster>>(
-      future: _shiftRosterData,
-      builder: (BuildContext context, AsyncSnapshot<List<ShiftRoster>> snapshot){
-        if (snapshot.hasData) {
-          List<ShiftRoster>? data = snapshot.data;
-          return createListShift(data);
-        } else if (snapshot.hasError) {
-          return Text("${snapshot.error}");
-        }
-        return SizedBox(
-          height: MediaQuery.of(context).size.height / 1.3,
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: <Widget>[
-                CircularProgressIndicator(),
-                Container(
-                  padding: EdgeInsets.all(10),
-                  child:Text('Fetching Data. Please Wait...',style: TextStyle(
-                    fontWeight: FontWeight.w500,
-                    fontSize: 18,
-                  ),),
-                ),
-              ],
+  Widget waiting(){
+    return Container(
+      height: MediaQuery.of(context).size.height / 1.3,
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(),
+            Container(
+              padding: EdgeInsets.all(10),
+              child:Text('Getting your data. Please wait...',style: TextStyle(
+                fontWeight: FontWeight.w500,fontSize: 18,),
+              ),
             ),
-
-          ),
-        );
-      },
+          ],
+        ),
+      ),
     );
   }
+  // FutureBuilder getShiftData(){
+  //   return FutureBuilder<List<ShiftRoster>>(
+  //     future: _shiftRosterData,
+  //     builder: (BuildContext context, AsyncSnapshot<List<ShiftRoster>> snapshot){
+  //       if (snapshot.hasData) {
+  //         List<ShiftRoster>? data = snapshot.data;
+  //         return createListShift(data);
+  //       } else if (snapshot.hasError) {
+  //         return Text("${snapshot.error}");
+  //       }
+  //       return SizedBox(
+  //         height: MediaQuery.of(context).size.height / 1.3,
+  //         child: Center(
+  //           child: Column(
+  //             mainAxisAlignment: MainAxisAlignment.center,
+  //             crossAxisAlignment: CrossAxisAlignment.center,
+  //             children: <Widget>[
+  //               CircularProgressIndicator(),
+  //               Container(
+  //                 padding: EdgeInsets.all(10),
+  //                 child:Text('Fetching Data. Please Wait...',style: TextStyle(
+  //                   fontWeight: FontWeight.w500,
+  //                   fontSize: 18,
+  //                 ),),
+  //               ),
+  //             ],
+  //           ),
+  //
+  //         ),
+  //       );
+  //     },
+  //   );
+  // }
   ListView createListShift(data) {
     return ListView.builder(
         itemCount: data.length,

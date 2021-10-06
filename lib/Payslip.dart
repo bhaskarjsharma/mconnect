@@ -1,4 +1,6 @@
 
+import 'dart:convert';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_projects/services/webservice.dart';
@@ -118,8 +120,12 @@ class PayslipData extends StatefulWidget {
 }
 class _PayslipDataState extends State<PayslipData> with SingleTickerProviderStateMixin{
 
-  late Future<List<PayrollData>> _payrollData;
-  String _empno = '';
+  late List<PayrollData> _payrollData;
+  late List<PayrollData> _earnings;
+  late List<PayrollData> _deduction;
+  late List<PayrollData> _netPay;
+  late Future<APIResponseData> _apiResponseData;
+  bool isLoading = true;
   TabController? _tabController;
 
   final List<Tab> myTabs = <Tab>[
@@ -131,10 +137,24 @@ class _PayslipDataState extends State<PayslipData> with SingleTickerProviderStat
   @override
   void initState(){
     _tabController = TabController(vsync: this, length: myTabs.length);
-    _empno = prefs.getString('empno') ?? '';
-    _payrollData = fetchPayrollData(_empno,widget.month,widget.year);
+    DioClient _dio = new DioClient();
+    var _endpointProvider = new EndPointProvider(_dio.init());
+    _apiResponseData = _endpointProvider.fetchPayrollData(empno,widget.month,widget.year);
+    _apiResponseData.then((result) {
+      if(result.isAuthenticated && result.status){
+        final parsed = jsonDecode(result.data ?? '').cast<Map<String, dynamic>>();
+        setState(() {
+          _payrollData =  parsed.map<PayrollData>((json) => PayrollData.fromJson(json)).toList();
+          _earnings = _payrollData.where((element) => element.WageTypeType == "ADDN").toList();
+          _deduction = _payrollData.where((element) => element.WageTypeType == "DEDN").toList();
+          _netPay = _payrollData.where((element) => element.WageTypeType == "OTHR").toList();
+          isLoading = false;
+        });
+      }
+    });
     super.initState();
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -150,45 +170,70 @@ class _PayslipDataState extends State<PayslipData> with SingleTickerProviderStat
         ),
       ),
       endDrawer: AppDrawer(),
-      body: getPayrollData(),
-    );
-  }
-
-  FutureBuilder getPayrollData(){
-    return FutureBuilder<List<PayrollData>>(
-      future: _payrollData,
-      builder: (BuildContext context, snapshot){
-        if (snapshot.hasData) {
-          List<PayrollData>? data = snapshot.data;
-          List<PayrollData>? earnings = data!.where((element) =>
-          element.WageTypeType == "ADDN").toList();
-
-          List<PayrollData>? deduction = data!.where((element) =>
-          element.WageTypeType == "DEDN").toList();
-
-          List<PayrollData>? netPay = data!.where((element) =>
-          element.WageTypeType == "OTHR").toList();
-
-          return TabBarView(
-              controller: _tabController,
-              children: [
-                createTabData(earnings),
-                createTabData(deduction),
-                createTabData(netPay),
-              ]
-          );
-        } else if (snapshot.hasError) {
-          return Text("${snapshot.error}");
-        }
-        return SizedBox(
-          height: MediaQuery.of(context).size.height / 1.3,
-          child: Center(
-            child: CircularProgressIndicator(),
+      body: isLoading? Container(
+        height: MediaQuery.of(context).size.height / 1.3,
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              CircularProgressIndicator(),
+              Container(
+                padding: EdgeInsets.all(10),
+                child:Text('Getting your data. Please wait...',style: TextStyle(
+                  fontWeight: FontWeight.w500,fontSize: 18,),
+                ),
+              ),
+            ],
           ),
-        );
-      },
+        ),
+
+      ) : TabBarView(
+          controller: _tabController,
+          children: [
+            createTabData(_earnings),
+            createTabData(_deduction),
+            createTabData(_netPay),
+          ]
+      ),
     );
   }
+
+  // FutureBuilder getPayrollData(){
+  //   return FutureBuilder<List<PayrollData>>(
+  //     future: _payrollData,
+  //     builder: (BuildContext context, snapshot){
+  //       if (snapshot.hasData) {
+  //         List<PayrollData>? data = snapshot.data;
+  //         List<PayrollData>? earnings = data!.where((element) =>
+  //         element.WageTypeType == "ADDN").toList();
+  //
+  //         List<PayrollData>? deduction = data!.where((element) =>
+  //         element.WageTypeType == "DEDN").toList();
+  //
+  //         List<PayrollData>? netPay = data!.where((element) =>
+  //         element.WageTypeType == "OTHR").toList();
+  //
+  //         return TabBarView(
+  //             controller: _tabController,
+  //             children: [
+  //               createTabData(earnings),
+  //               createTabData(deduction),
+  //               createTabData(netPay),
+  //             ]
+  //         );
+  //       } else if (snapshot.hasError) {
+  //         return Text("${snapshot.error}");
+  //       }
+  //       return SizedBox(
+  //         height: MediaQuery.of(context).size.height / 1.3,
+  //         child: Center(
+  //           child: CircularProgressIndicator(),
+  //         ),
+  //       );
+  //     },
+  //   );
+  // }
   ListView createTabData(data) {
     return ListView.builder(
         itemCount: data.length,

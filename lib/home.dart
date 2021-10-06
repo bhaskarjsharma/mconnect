@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:open_file/open_file.dart';
 import 'fonts_icons/connect_app_icon_icons.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -60,6 +61,7 @@ class HomeState extends State<Home>  {
             makeDashboardItem("Attendance",const Icon(Icons.fingerprint,size:30, color:Colors.deepPurple),Colors.deepPurple,attendanceRoute),
             makeDashboardItem("Shift Roster",const Icon(ConnectAppIcon.calendar_alt,size:30, color:Colors.teal),Colors.teal,shiftRosterRoute),
             makeDashboardItem("Claims",const Icon(ConnectAppIcon.file_alt,size:30, color:Colors.red),Colors.red,homeRoute),
+
           ],
         ),
       ),
@@ -97,14 +99,16 @@ class HomeState extends State<Home>  {
 
 class AppDrawer extends StatefulWidget {
   @override
-  State<AppDrawer> createState() => _AppDrawerState();
+  State<AppDrawer> createState() => AppDrawerState();
 }
 
-class _AppDrawerState extends State<AppDrawer> {
-  final String user = prefs.getString('name') ?? '';
-  final String empno = prefs.getString('empno') ?? '';
-  final String designation = prefs.getString('desg') ?? '';
-  final String discipline = prefs.getString('disc') ?? '';
+class AppDrawerState extends State<AppDrawer> {
+
+  @override
+  void initState(){
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Drawer(
@@ -202,8 +206,8 @@ class _AppDrawerState extends State<AppDrawer> {
   }
 
   Future<void> logout() async {
-    final prefs = await SharedPreferences.getInstance();
     await prefs.clear();
+    await storage.deleteAll();
     Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (BuildContext context) => Login()), (Route<dynamic> route) => false);
   }
 }
@@ -213,15 +217,24 @@ class LeaveQuotas extends StatefulWidget {
   State<LeaveQuotas> createState() => _LeaveQuotaState();
 }
 class _LeaveQuotaState extends State<LeaveQuotas>{
-  late Future<LeaveQuota> _leaveQuotaData;
-  String _empno = '';
+  late LeaveQuota _leaveQuotaData;
+  late Future<APIResponseData> _apiResponseData;
+  bool isLoading = true;
 
   @override
   void initState(){
     super.initState();
-    //SharedPreferences prefs = SharedPreferences.getInstance() as SharedPreferences;
-    _empno = prefs.getString('empno') ?? '';
-    _leaveQuotaData = fetchLeaveQuota(_empno);
+    DioClient _dio = new DioClient();
+    var _endpointProvider = new EndPointProvider(_dio.init());
+    _apiResponseData = _endpointProvider.fetchLeaveQuota(empno);
+    _apiResponseData.then((result) {
+      if(result.isAuthenticated && result.status){
+        setState(() {
+          _leaveQuotaData = LeaveQuota.fromJson(jsonDecode(result.data ?? ''));
+          isLoading = false;
+        });
+      }
+    });
   }
 
   @override
@@ -235,39 +248,67 @@ class _LeaveQuotaState extends State<LeaveQuotas>{
         title: Text('Connect'),
       ),
       endDrawer: AppDrawer(),
-      body: getQuota(),
-    );
-  }
-  FutureBuilder getQuota(){
-    return FutureBuilder<LeaveQuota>(
-      future: _leaveQuotaData,
-      builder: (BuildContext context, snapshot){
-        if (snapshot.hasData) {
-          LeaveQuota? data = snapshot.data;
-           return ListView(
-             padding: EdgeInsets.all(10.0),
-             children: [
-               descSection("Casual Leave (CL)",snapshot.data!.QuotaCL,Icons.star),
-               descSection("Earned Leave (EL)",snapshot.data!.QuotaEL,Icons.star),
-               descSection("Half Pay Leave (HPL)",snapshot.data!.QuotaHPL,Icons.star),
-               descSection("Restricted Holiday Leave (RH)",snapshot.data!.QuotaRH,Icons.star),
-               descSection("Compensatory Off Leave (COFF)",snapshot.data!.QuotaCOFF,Icons.star),
-
-             ],
-           );
-
-        } else if (snapshot.hasError) {
-          return Text("${snapshot.error}");
-        }
-        return SizedBox(
-          height: MediaQuery.of(context).size.height / 1.3,
-          child: Center(
-            child: CircularProgressIndicator(),
+      body: isLoading? Container(
+        height: MediaQuery.of(context).size.height / 1.3,
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              CircularProgressIndicator(),
+              Container(
+                padding: EdgeInsets.all(10),
+                child:Text('Getting your data. Please wait...',style: TextStyle(
+                  fontWeight: FontWeight.w500,fontSize: 18,),
+                ),
+              ),
+            ],
           ),
-        );
-      },
+        ),
+
+      ) : ListView(
+        padding: EdgeInsets.all(10.0),
+        children: [
+          descSection("Casual Leave (CL)",_leaveQuotaData.QuotaCL,Icons.star),
+          descSection("Earned Leave (EL)",_leaveQuotaData.QuotaEL,Icons.star),
+          descSection("Half Pay Leave (HPL)",_leaveQuotaData.QuotaHPL,Icons.star),
+          descSection("Restricted Holiday Leave (RH)",_leaveQuotaData.QuotaRH,Icons.star),
+          descSection("Compensatory Off Leave (COFF)",_leaveQuotaData.QuotaCOFF,Icons.star),
+
+        ],
+      ),
     );
   }
+  // FutureBuilder getQuota(){
+  //   return FutureBuilder<LeaveQuota>(
+  //     future: _leaveQuotaData,
+  //     builder: (BuildContext context, snapshot){
+  //       if (snapshot.hasData) {
+  //         LeaveQuota? data = snapshot.data;
+  //          return ListView(
+  //            padding: EdgeInsets.all(10.0),
+  //            children: [
+  //              descSection("Casual Leave (CL)",snapshot.data!.QuotaCL,Icons.star),
+  //              descSection("Earned Leave (EL)",snapshot.data!.QuotaEL,Icons.star),
+  //              descSection("Half Pay Leave (HPL)",snapshot.data!.QuotaHPL,Icons.star),
+  //              descSection("Restricted Holiday Leave (RH)",snapshot.data!.QuotaRH,Icons.star),
+  //              descSection("Compensatory Off Leave (COFF)",snapshot.data!.QuotaCOFF,Icons.star),
+  //
+  //            ],
+  //          );
+  //
+  //       } else if (snapshot.hasError) {
+  //         return Text("${snapshot.error}");
+  //       }
+  //       return SizedBox(
+  //         height: MediaQuery.of(context).size.height / 1.3,
+  //         child: Center(
+  //           child: CircularProgressIndicator(),
+  //         ),
+  //       );
+  //     },
+  //   );
+  // }
   Widget descSection(String title, String subtitle, IconData icon){
     return Card(
       elevation:2,
@@ -299,7 +340,11 @@ class Holidays extends StatefulWidget {
   State<Holidays> createState() => _HolidaysState();
 }
 class _HolidaysState extends State<Holidays> with SingleTickerProviderStateMixin{
-  late Future<List<HolidayList>> _holidayListData;
+  late List<HolidayList> _holidayListData;
+  late List<HolidayList> _ghList;
+  late List<HolidayList> _rhList;
+  late Future<APIResponseData> _apiResponseData;
+  bool isLoading = true;
   TabController? _tabController;
   final List<Tab> myTabs = <Tab>[
     Tab(text: 'General Holiday'),
@@ -311,7 +356,20 @@ class _HolidaysState extends State<Holidays> with SingleTickerProviderStateMixin
     //_tabController = TabController(length: 2, vsync: this);
     _tabController = TabController(vsync: this, length: myTabs.length);
     super.initState();
-    _holidayListData = fetchHolidayList();
+    DioClient _dio = new DioClient();
+    var _endpointProvider = new EndPointProvider(_dio.init());
+    _apiResponseData = _endpointProvider.fetchHolidayList();
+    _apiResponseData.then((result) {
+      if(result.isAuthenticated && result.status){
+        final parsed = jsonDecode(result.data ?? '').cast<Map<String, dynamic>>();
+        setState(() {
+          _holidayListData =  parsed.map<HolidayList>((json) => HolidayList.fromJson(json)).toList();
+          _ghList = _holidayListData.where((element) => element.holidayType == "GH").toList();
+          _rhList = _holidayListData.where((element) => element.holidayType == "RH").toList();
+          isLoading = false;
+        });
+      }
+    });
   }
 
   @override
@@ -335,40 +393,64 @@ class _HolidaysState extends State<Holidays> with SingleTickerProviderStateMixin
         ),
       ),
       endDrawer: AppDrawer(),
-      body: getHolidayList(),
-    );
-  }
-  FutureBuilder getHolidayList(){
-    return FutureBuilder<List<HolidayList>>(
-      future: _holidayListData,
-      builder: (BuildContext context, snapshot){
-        if (snapshot.hasData) {
-          List<HolidayList>? data = snapshot.data;
-          List<HolidayList>? ghList = data!.where((element) =>
-          element.holidayType == "GH").toList();
-
-          List<HolidayList>? rhList = data!.where((element) =>
-          element.holidayType == "RH").toList();
-
-          return TabBarView(
-            controller: _tabController,
+      body: isLoading? Container(
+        height: MediaQuery.of(context).size.height / 1.3,
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              createHolidayList(ghList),
-              createHolidayList(rhList),
-            ]
-          );
-        } else if (snapshot.hasError) {
-          return Text("${snapshot.error}");
-        }
-        return SizedBox(
-          height: MediaQuery.of(context).size.height / 1.3,
-          child: Center(
-            child: CircularProgressIndicator(),
+              CircularProgressIndicator(),
+              Container(
+                padding: EdgeInsets.all(10),
+                child:Text('Getting your data. Please wait...',style: TextStyle(
+                  fontWeight: FontWeight.w500,fontSize: 18,),
+                ),
+              ),
+            ],
           ),
-        );
-      },
+        ),
+
+      ) : TabBarView(
+          controller: _tabController,
+          children: [
+            createHolidayList(_ghList),
+            createHolidayList(_rhList),
+          ]
+      ),
     );
   }
+  // FutureBuilder getHolidayList(){
+  //   return FutureBuilder<List<HolidayList>>(
+  //     future: _holidayListData,
+  //     builder: (BuildContext context, snapshot){
+  //       if (snapshot.hasData) {
+  //         List<HolidayList>? data = snapshot.data;
+  //         List<HolidayList>? ghList = data!.where((element) =>
+  //         element.holidayType == "GH").toList();
+  //
+  //         List<HolidayList>? rhList = data!.where((element) =>
+  //         element.holidayType == "RH").toList();
+  //
+  //         return TabBarView(
+  //           controller: _tabController,
+  //           children: [
+  //             createHolidayList(ghList),
+  //             createHolidayList(rhList),
+  //           ]
+  //         );
+  //       } else if (snapshot.hasError) {
+  //         return Text("${snapshot.error}");
+  //       }
+  //       return SizedBox(
+  //         height: MediaQuery.of(context).size.height / 1.3,
+  //         child: Center(
+  //           child: CircularProgressIndicator(),
+  //         ),
+  //       );
+  //     },
+  //   );
+  // }
   ListView createHolidayList(data) {
     return ListView.builder(
         itemCount: data.length,
