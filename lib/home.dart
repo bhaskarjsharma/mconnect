@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_projects/people.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:open_file/open_file.dart';
 import 'fonts_icons/connect_app_icon_icons.dart';
@@ -25,6 +26,12 @@ class Home extends StatefulWidget {
 
 class HomeState extends State<Home>  {
   late  FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
+  final _formKey = GlobalKey<FormState>();
+  final empNameContrl = TextEditingController();
+  String _empUnit = '';
+  String _empDisc = '';
+  String _empBldGrp = '';
+
   @override
   void initState(){
     super.initState();
@@ -78,8 +85,25 @@ class HomeState extends State<Home>  {
         height:30,
         child: InkWell(
           onTap: (){
-            //Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context) => News()));
-            Navigator.pushNamed(context, routeName);
+            if(title == "People"){
+              showDialog(
+                  context: context,
+                  builder: (context){
+                    return StatefulBuilder(
+                      builder: (context, setState){
+                        return AlertDialog(
+                          content: PeopleFinderForm(),
+                        );
+                      },
+                    );
+                  },
+              );
+            }
+            else{
+              //Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context) => News()));
+              Navigator.pushNamed(context, routeName);
+            }
+
           },
           child:Column(
             children:
@@ -95,7 +119,183 @@ class HomeState extends State<Home>  {
       ),
     );
   }
+
+  Form PeopleFinderForm(){
+    return Form(
+      key: _formKey,
+      child: Container(
+        margin: EdgeInsets.symmetric(vertical: 20),
+        child:Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+
+          children: <Widget>[
+            Container(
+
+              padding: EdgeInsets.all(10),
+              child: Center(child: Text('Find Employees',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w800,
+                    fontSize: 20,
+                    color: Colors.blue[500],
+                  ))) ,
+            ),
+            Container(
+
+              padding: EdgeInsets.all(10),
+              child: TextFormField(
+                controller: empNameContrl,
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(),
+                  labelText: 'Employee Name (Optional)',
+                ),
+                // The validator receives the text that the user has entered.
+                // validator: (value) {
+                //   if (value == null || value.isEmpty) {
+                //     return 'Please enter some text';
+                //   }
+                //   return null;
+                // },
+              ),
+            ),
+            Container(
+              padding: EdgeInsets.all(10),
+              child: InputDecorator(
+                decoration: InputDecoration(
+                  labelText: 'Unit (Optional)',
+                  contentPadding: const EdgeInsets.only(left: 10.0),
+                  border: const OutlineInputBorder(),
+                  isDense: true,
+                ),
+                child: DropdownButtonHideUnderline(
+                  child: DropdownButton<String>(
+
+                    isExpanded: true,
+                    icon: Icon(Icons.keyboard_arrow_down),
+                    value: _empUnit,
+                    style: TextStyle(color: Colors.black),
+                    items: <String>[
+                      '',
+                      'Civil',
+                      'C&P',
+                      'Company Secretary',
+                      'IT',
+                      'Law',
+                      'Marketing',
+                      'Security',
+                    ].map<DropdownMenuItem<String>>((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value),
+                      );
+                    }).toList(),
+
+                    onChanged: (String? newValue) {
+                      setState(() {
+                        _empUnit = newValue!;
+                      });
+                    },
+                  ),
+                ),
+              ),
+            ),
+            Container(
+              padding: EdgeInsets.all(10),
+              child: InputDecorator(
+                decoration: InputDecoration(
+                  labelText: 'Discipline (Optional)',
+                  contentPadding: const EdgeInsets.only(left: 10.0),
+                  border: const OutlineInputBorder(),
+                ),
+                child: DropdownButtonHideUnderline(
+                  child: DropdownButton<String>(
+                    value: _empDisc,
+                    style: TextStyle(color: Colors.black),
+                    items: <String>[
+                      '',
+                      'Civil',
+                      'C&P',
+                      'Company Secretary',
+                      'IT',
+                      'Law',
+                      'Marketing',
+                      'Security',
+                    ].map<DropdownMenuItem<String>>((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value),
+                      );
+                    }).toList(),
+                    onChanged: (String? newValue) {
+                      setState(() {
+                        _empDisc = newValue!;
+                      });
+                    },
+                  ),
+                ),
+              ),
+
+            ),
+            Container(
+              padding: EdgeInsets.all(10),
+              child: InputDecorator(
+                decoration: InputDecoration(
+                  labelText: 'Blood Group (Optional)',
+                  //labelStyle: Theme.of(context).primaryTextTheme.caption!.copyWith(color: Colors.black),
+                  contentPadding: const EdgeInsets.only(left: 10.0),
+                  border: const OutlineInputBorder(),
+                ),
+                child: DropdownButtonHideUnderline(
+                  child: DropdownButton<String>(
+                    value: _empBldGrp,
+                    style: TextStyle(color: Colors.black),
+                    items: <String>[
+                      '',
+                      'A-',
+                      'A+',
+                      'AB-',
+                      'AB+',
+                      'B-',
+                      'B+',
+                      'O-',
+                      'O+',
+                    ].map<DropdownMenuItem<String>>((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value),
+                      );
+                    }).toList(),
+                    onChanged: (String? newValue) {
+                      setState(() {
+                        _empBldGrp = newValue!;
+                      });
+                    },
+                  ),
+                ),
+              ),
+
+            ),
+            Container(
+              padding: const EdgeInsets.all(10.0),
+              child: Center( child: ElevatedButton(
+                onPressed: () {
+                  Navigator.pushNamed(context, peopleListRoute, arguments: PeolpeScreenArguments(
+                      '',empNameContrl.text,_empUnit,_empDisc,_empBldGrp,
+                      '','','','',''
+                  ),);
+                },
+                child: const Text('Submit'),
+              ),
+              ),
+            ),
+          ],
+        ),
+      ),
+
+    );
+  }
 }
+
 
 class AppDrawer extends StatefulWidget {
   @override
