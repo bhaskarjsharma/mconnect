@@ -193,7 +193,7 @@ class _ShiftRosterListState extends State<ShiftRosterList>{
         title: Text('Connect - People'),
       ),
       endDrawer: AppDrawer(),
-      body: isLoading? waiting() : createListShift(_shiftRosterData),
+      body: isLoading? waiting() : createListShift(),
     );
   }
   Widget waiting(){
@@ -216,75 +216,81 @@ class _ShiftRosterListState extends State<ShiftRosterList>{
       ),
     );
   }
-  // FutureBuilder getShiftData(){
-  //   return FutureBuilder<List<ShiftRoster>>(
-  //     future: _shiftRosterData,
-  //     builder: (BuildContext context, AsyncSnapshot<List<ShiftRoster>> snapshot){
-  //       if (snapshot.hasData) {
-  //         List<ShiftRoster>? data = snapshot.data;
-  //         return createListShift(data);
-  //       } else if (snapshot.hasError) {
-  //         return Text("${snapshot.error}");
-  //       }
-  //       return SizedBox(
-  //         height: MediaQuery.of(context).size.height / 1.3,
-  //         child: Center(
-  //           child: Column(
-  //             mainAxisAlignment: MainAxisAlignment.center,
-  //             crossAxisAlignment: CrossAxisAlignment.center,
-  //             children: <Widget>[
-  //               CircularProgressIndicator(),
-  //               Container(
-  //                 padding: EdgeInsets.all(10),
-  //                 child:Text('Fetching Data. Please Wait...',style: TextStyle(
-  //                   fontWeight: FontWeight.w500,
-  //                   fontSize: 18,
-  //                 ),),
-  //               ),
-  //             ],
-  //           ),
-  //
-  //         ),
-  //       );
-  //     },
-  //   );
-  // }
-  ListView createListShift(data) {
+
+  Column createListShift(){
+    return Column(
+      children: [
+        Container(
+          decoration: BoxDecoration(
+            color:Color.fromRGBO(165, 231, 206, 1.0),
+          ),
+          height: 40.0,
+          child: Row(
+            children: <Widget>[
+              Expanded(
+                flex: 1,
+                child: Center(
+                  child: Text("Date",style: TextStyle(fontSize: 18,fontWeight: FontWeight.bold)),
+                ),
+              ),
+              Expanded(
+                flex: 1,
+                child: Center(
+                  child: Text("Shift",style: TextStyle(fontSize: 18,fontWeight: FontWeight.bold)),
+                ),
+              ),
+              Expanded(
+                flex: 1,
+                child: Center(
+                  child: Text("Approved",style: TextStyle(fontSize: 18,fontWeight: FontWeight.bold)),
+                ),
+              ),
+            ],
+          ),
+        ),
+        Expanded(
+          child: createList(_shiftRosterData),
+        ),
+      ],
+    );
+  }
+  ListView createList(data){
     return ListView.builder(
         itemCount: data.length,
         itemBuilder: (context, index) {
           return Card(
-              child: DataTable(
-                columns: const <DataColumn>[
-                  DataColumn(
-                    label: Text(
-                      'Date',
-                      style: TextStyle(fontStyle: FontStyle.italic),
+            child: Row(
+              children: [
+                Expanded(
+                  flex: 1, // takes 30% of available width
+                  child: Center(
+                    child: Container(
+                      padding: EdgeInsets.all(10),
+                      child: Text(data[index].date ?? ''),
                     ),
                   ),
-                  DataColumn(
-                    label: Text(
-                      'Shift',
-                      style: TextStyle(fontStyle: FontStyle.italic),
+
+                ),
+                Expanded(
+                  flex: 1, // takes 30% of available width
+                  child: Center(
+                    child: Container(
+                      padding: EdgeInsets.all(10),
+                      child: Text(data[index].shift ?? ''),
                     ),
                   ),
-                  DataColumn(
-                    label: Text(
-                      'Approved',
-                      style: TextStyle(fontStyle: FontStyle.italic),
+                ),
+                Expanded(
+                  flex: 1, // takes 30% of available width
+                  child: Center(
+                    child: Container(
+                      padding: EdgeInsets.all(10),
+                      child: Text(data[index].approved ?? ''),
                     ),
                   ),
-                ],
-                rows: <DataRow>[
-                  DataRow(
-                    cells: <DataCell>[
-                      DataCell(Text(data[index].date ?? '')),
-                      DataCell(Text(data[index].shift ?? '')),
-                      DataCell(Text(data[index].approved ?? '')),
-                    ],
-                  ),
-                ],
-              ),
+                ),
+              ],
+            ),
           );
         }
     );

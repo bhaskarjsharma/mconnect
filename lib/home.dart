@@ -5,7 +5,13 @@ import 'dart:math';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_projects/people.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:intl/intl.dart';
+import 'package:mat_month_picker_dialog/mat_month_picker_dialog.dart';
 import 'package:open_file/open_file.dart';
+import 'AttendanceView.dart';
+import 'Payslip.dart';
+import 'ShiftRosterView.dart';
+import 'documents.dart';
 import 'fonts_icons/connect_app_icon_icons.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_projects/services/webservice.dart';
@@ -26,11 +32,41 @@ class Home extends StatefulWidget {
 
 class HomeState extends State<Home>  {
   late  FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
-  final _formKey = GlobalKey<FormState>();
+  final _peopleFormKey = GlobalKey<FormState>();
+  final _documentFormKey = GlobalKey<FormState>();
+  final _paySlipFormKey = GlobalKey<FormState>();
+  final _attendanceFormKey = GlobalKey<FormState>();
+  final _shiftRosterFormKey = GlobalKey<FormState>();
+  final _claimsFormKey = GlobalKey<FormState>();
+
   final empNameContrl = TextEditingController();
   String _empUnit = '';
   String _empDisc = '';
   String _empBldGrp = '';
+
+  final docNameContrl = TextEditingController();
+  String _documentCategory = '';
+
+  final monthContrl = TextEditingController();
+  final yearContrl = TextEditingController();
+  DateTime payslipSelectedDate = DateTime.now();
+
+  final attendanceFromDateContrl = TextEditingController();
+  final attendanceToDateContrl = TextEditingController();
+  DateTime attendanceSelectedFromDate = DateTime.now();
+  DateTime attendanceSelectedToDate = DateTime.now();
+
+  final shiftFromDateContrl = TextEditingController();
+  final shiftToDateContrl = TextEditingController();
+  DateTime shiftSelectedFromDate = DateTime.now();
+  DateTime shiftSelectedToDate = DateTime.now();
+
+  final claimsFromDateContrl = TextEditingController();
+  final claimsToDateContrl = TextEditingController();
+  String _claimsType = '';
+  DateTime claimsSelectedFromDate = DateTime.now();
+  DateTime claimsSelectedToDate = DateTime.now();
+
 
   @override
   void initState(){
@@ -91,12 +127,812 @@ class HomeState extends State<Home>  {
                   builder: (context){
                     return StatefulBuilder(
                       builder: (context, setState){
-                        return AlertDialog(
-                          content: PeopleFinderForm(),
-                        );
+                        return AlertDialog (
+                            insetPadding: EdgeInsets.all(0),
+                            content: Builder(
+                              builder: (context) {
+                                // Get available height and width of the build area of this widget. Make a choice depending on the size.
+                                var height = MediaQuery.of(context).size.height;
+                                var width = MediaQuery.of(context).size.width;
+
+                                return Container(
+                                  height: height - (height/2.3),
+                                  width: width - (width/4),
+                                  child: Form(
+                                    key: _peopleFormKey,
+                                    child: Column(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      crossAxisAlignment: CrossAxisAlignment.center,
+
+                                      children: <Widget>[
+                                        Container(
+                                          padding: EdgeInsets.only(top:10,bottom:10),
+                                          child: Center(child: Text('Find Employees',
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.w800,
+                                                fontSize: 20,
+                                                color: Colors.blue[500],
+                                              ))) ,
+                                        ),
+                                        Container(
+                                          padding: EdgeInsets.only(top:10,bottom:10),
+                                          child: TextFormField(
+                                            controller: empNameContrl,
+                                            decoration: InputDecoration(
+                                              border: OutlineInputBorder(),
+                                              labelText: 'Employee Name (Optional)',
+                                            ),
+                                          ),
+                                        ),
+                                        Container(
+                                          padding: EdgeInsets.only(top:10,bottom:10),
+                                          child: InputDecorator(
+                                            decoration: InputDecoration(
+                                              labelText: 'Unit (Optional)',
+                                              contentPadding: const EdgeInsets.only(left: 10.0),
+                                              border: const OutlineInputBorder(),
+                                              isDense: true,
+                                            ),
+                                            child: DropdownButtonHideUnderline(
+                                              child: DropdownButton<String>(
+
+                                                isExpanded: true,
+                                                icon: Icon(Icons.keyboard_arrow_down),
+                                                value: _empUnit,
+                                                style: TextStyle(color: Colors.black),
+                                                items: <String>[
+                                                  '',
+                                                  'Civil',
+                                                  'C&P',
+                                                  'Company Secretary',
+                                                  'IT',
+                                                  'Law',
+                                                  'Marketing',
+                                                  'Security',
+                                                ].map<DropdownMenuItem<String>>((String value) {
+                                                  return DropdownMenuItem<String>(
+                                                    value: value,
+                                                    child: Text(value),
+                                                  );
+                                                }).toList(),
+
+                                                onChanged: (String? newValue) {
+                                                  setState(() {
+                                                    _empUnit = newValue!;
+                                                  });
+                                                },
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                        Container(
+                                          padding: EdgeInsets.only(top:10,bottom:10),
+                                          child: InputDecorator(
+                                            decoration: InputDecoration(
+                                              labelText: 'Discipline (Optional)',
+                                              contentPadding: const EdgeInsets.only(left: 10.0),
+                                              border: const OutlineInputBorder(),
+                                            ),
+                                            child: DropdownButtonHideUnderline(
+                                              child: DropdownButton<String>(
+                                                value: _empDisc,
+                                                style: TextStyle(color: Colors.black),
+                                                items: <String>[
+                                                  '',
+                                                  'Civil',
+                                                  'C&P',
+                                                  'Company Secretary',
+                                                  'IT',
+                                                  'Law',
+                                                  'Marketing',
+                                                  'Security',
+                                                ].map<DropdownMenuItem<String>>((String value) {
+                                                  return DropdownMenuItem<String>(
+                                                    value: value,
+                                                    child: Text(value),
+                                                  );
+                                                }).toList(),
+                                                onChanged: (String? newValue) {
+                                                  setState(() {
+                                                    _empDisc = newValue!;
+                                                  });
+                                                },
+                                              ),
+                                            ),
+                                          ),
+
+                                        ),
+                                        Container(
+                                          padding: EdgeInsets.only(top:10,bottom:10),
+                                          child: InputDecorator(
+                                            decoration: InputDecoration(
+                                              labelText: 'Blood Group (Optional)',
+                                              //labelStyle: Theme.of(context).primaryTextTheme.caption!.copyWith(color: Colors.black),
+                                              contentPadding: const EdgeInsets.only(left: 10.0),
+                                              border: const OutlineInputBorder(),
+                                            ),
+                                            child: DropdownButtonHideUnderline(
+                                              child: DropdownButton<String>(
+                                                value: _empBldGrp,
+                                                style: TextStyle(color: Colors.black),
+                                                items: <String>[
+                                                  '',
+                                                  'A-',
+                                                  'A+',
+                                                  'AB-',
+                                                  'AB+',
+                                                  'B-',
+                                                  'B+',
+                                                  'O-',
+                                                  'O+',
+                                                ].map<DropdownMenuItem<String>>((String value) {
+                                                  return DropdownMenuItem<String>(
+                                                    value: value,
+                                                    child: Text(value),
+                                                  );
+                                                }).toList(),
+                                                onChanged: (String? newValue) {
+                                                  setState(() {
+                                                    _empBldGrp = newValue!;
+                                                  });
+                                                },
+                                              ),
+                                            ),
+                                          ),
+
+                                        ),
+                                        Container(
+                                          padding: const EdgeInsets.all(10.0),
+                                          child: Row(
+                                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                            children: [
+                                              ElevatedButton(
+                                                onPressed: () {
+                                                  Navigator.pushNamed(context, peopleListRoute, arguments: PeolpeScreenArguments(
+                                                      '',empNameContrl.text,_empUnit,_empDisc,_empBldGrp,
+                                                      '','','','',''
+                                                  ),);
+                                                },
+                                                child: const Text('Submit'),
+                                              ),
+                                              ElevatedButton(
+                                                onPressed: () {
+                                                  setState(() {
+                                                    empNameContrl.text = '';
+                                                    _empUnit = '';
+                                                    _empDisc = '';
+                                                    _empBldGrp = '';
+                                                  });
+                                                  Navigator.pop(context);
+                                                },
+                                                child: const Text('Cancel'),
+                                              )
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+
+                                  ),
+                                );
+                              },
+                            ),
+                          );
                       },
                     );
                   },
+              );
+            }
+            else if(title == "Documents"){
+              showDialog(
+                context: context,
+                builder: (context){
+                  return StatefulBuilder(
+                    builder: (context, setState){
+                      return AlertDialog (
+                        insetPadding: EdgeInsets.all(0),
+                        content: Builder(
+                          builder: (context) {
+                            // Get available height and width of the build area of this widget. Make a choice depending on the size.
+                            var height = MediaQuery.of(context).size.height;
+                            var width = MediaQuery.of(context).size.width;
+
+                            return Container(
+                              height: height - (height/1.8),
+                              width: width - (width/4),
+                              child: Form(
+                                key: _documentFormKey,
+                                child: Container(
+                                  margin: EdgeInsets.symmetric(vertical: 20),
+                                  child:Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: <Widget>[
+                                      Container(
+                                        padding: EdgeInsets.only(top:10,bottom:10),
+                                        child: Center(child: Text('Search for Documents',
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.w800,
+                                              fontSize: 20,
+                                              color: Colors.blue[500],
+                                            ))) ,
+                                      ),
+                                      Container(
+                                        padding: EdgeInsets.only(top:10,bottom:10),
+                                        child: TextFormField(
+                                          controller: docNameContrl,
+                                          decoration: InputDecoration(
+                                            border: OutlineInputBorder(),
+                                            labelText: 'Document Name (Optional)',
+                                          ),
+                                        ),
+                                      ),
+                                      Container(
+                                        padding: EdgeInsets.only(top:10,bottom:10),
+                                        child: InputDecorator(
+                                          decoration: InputDecoration(
+                                            labelText: 'Document Category (Optional)',
+                                            contentPadding: const EdgeInsets.only(left: 10.0),
+                                            border: const OutlineInputBorder(),
+                                          ),
+                                          child: DropdownButtonHideUnderline(
+                                            child: DropdownButton<String>(
+                                              value: _documentCategory,
+                                              style: TextStyle(color: Colors.black),
+                                              items: <String>[
+                                                '',
+                                                'A-',
+                                              ].map<DropdownMenuItem<String>>((String value) {
+                                                return DropdownMenuItem<String>(
+                                                  value: value,
+                                                  child: Text(value),
+                                                );
+                                              }).toList(),
+                                              onChanged: (String? newValue) {
+                                                setState(() {
+                                                  _documentCategory = newValue!;
+                                                });
+                                              },
+                                            ),
+                                          ),
+                                        ),
+
+                                      ),
+                                      Container(
+                                        padding: const EdgeInsets.all(10.0),
+                                        child: Row(
+                                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                          children: [
+                                            ElevatedButton(
+                                              onPressed: () {
+                                                Navigator.pushNamed(context, documentListRoute, arguments: DocumentScreenArguments(
+                                                    '',docNameContrl.text,_documentCategory),);
+                                              },
+                                              child: const Text('Submit'),
+                                            ),
+                                            ElevatedButton(
+                                              onPressed: () {
+                                                setState(() {
+                                                  docNameContrl.text = '';
+                                                  _documentCategory = '';
+                                                });
+                                                Navigator.pop(context);
+                                              },
+                                              child: const Text('Cancel'),
+                                            )
+                                          ],
+                                        ),
+                                        ),
+                                    ],
+                                  ),
+                                ),
+
+                              ),
+                            );
+                          },
+                        ),
+                      );
+                    },
+                  );
+                },
+              );
+            }
+            else if(title == "Payslips"){
+              showDialog(
+                context: context,
+                builder: (context){
+                  return StatefulBuilder(
+                    builder: (context, setState){
+                      return AlertDialog (
+                        insetPadding: EdgeInsets.all(0),
+                        content: Builder(
+                          builder: (context) {
+                            // Get available height and width of the build area of this widget. Make a choice depending on the size.
+                            var height = MediaQuery.of(context).size.height;
+                            var width = MediaQuery.of(context).size.width;
+
+                            return Container(
+                              height: height - (height/2.3),
+                              width: width - (width/4),
+                              child: Form(
+                                key: _paySlipFormKey,
+                                child: Container(
+                                  margin: EdgeInsets.symmetric(vertical: 20),
+                                  child:Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    crossAxisAlignment: CrossAxisAlignment.center,
+
+                                    children: <Widget>[
+                                      Container(
+
+                                        padding: EdgeInsets.all(10),
+                                        child: Center(child: Text('View Payslip',
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.w800,
+                                              fontSize: 20,
+                                              color: Colors.blue[500],
+                                            ))) ,
+                                      ),
+                                      Container(
+                                        padding: EdgeInsets.all(10),
+                                        child: TextFormField(
+                                          controller: monthContrl,
+                                          decoration: InputDecoration(
+                                            border: OutlineInputBorder(),
+                                            labelText: 'Payroll Period',
+                                          ),
+                                          onTap: (){
+                                            // Below line stops keyboard from appearing
+                                            FocusScope.of(context).requestFocus(new FocusNode());
+                                            _selectMonth(context,payslipSelectedDate,monthContrl);
+                                          },
+                                        ),
+                                      ),
+                                      Container(
+                                        padding: const EdgeInsets.all(10.0),
+                                        child: Row(
+                                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                          children: [
+                                            ElevatedButton(
+                                              onPressed: () {
+                                                // Validate returns true if the form is valid, or false otherwise.
+                                                if (_paySlipFormKey.currentState!.validate()) {
+                                                  // If the form is valid, display a snackbar. In the real world,
+                                                  // you'd often call a server or save the information in a database.
+                                                  Navigator.pushNamed(context, payslipDataRoute, arguments: PayslipScreenArguments(
+                                                      DateFormat('MM').format(payslipSelectedDate),DateFormat('yyyy').format(payslipSelectedDate)),
+                                                  );
+                                                }
+                                              },
+                                              child: const Text('Show my payslip'),
+                                            ),
+                                            ElevatedButton(
+                                              onPressed: () {
+                                                setState(() {
+                                                  monthContrl.text = '';
+                                                });
+                                                Navigator.pop(context);
+                                              },
+                                              child: const Text('Cancel'),
+                                            )
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+
+                              ),
+                            );
+                          },
+                        ),
+                      );
+                    },
+                  );
+                },
+              );
+            }
+            else if(title == "Attendance"){
+              showDialog(
+                context: context,
+                builder: (context){
+                  return StatefulBuilder(
+                    builder: (context, setState){
+                      return AlertDialog (
+                        insetPadding: EdgeInsets.all(0),
+                        content: Builder(
+                          builder: (context) {
+                            // Get available height and width of the build area of this widget. Make a choice depending on the size.
+                            var height = MediaQuery.of(context).size.height;
+                            var width = MediaQuery.of(context).size.width;
+
+                            return Container(
+                              height: height - (height/2.3),
+                              width: width - (width/4),
+                              child: Form(
+                                key: _attendanceFormKey,
+                                child: Container(
+                                  margin: EdgeInsets.symmetric(vertical: 20),
+                                  child:Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    crossAxisAlignment: CrossAxisAlignment.center,
+
+                                    children: <Widget>[
+                                      Container(
+                                        padding: const EdgeInsets.all(10.0),
+                                        child: Center(child: Text('View Biometric Attendance Data',
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.w800,
+                                              fontSize: 20,
+                                              color: Colors.blue[500],
+                                            ))) ,
+                                      ),
+                                      Container(
+                                        padding: const EdgeInsets.all(10.0),
+                                        child: TextFormField(
+                                          controller: attendanceFromDateContrl,
+                                          decoration: InputDecoration(
+                                            border: OutlineInputBorder(),
+                                            labelText: 'From Date',
+                                          ),
+                                          onTap: (){
+                                            // Below line stops keyboard from appearing
+                                            FocusScope.of(context).requestFocus(new FocusNode());
+                                            _selectDate(context,attendanceSelectedFromDate,attendanceFromDateContrl);
+                                          },
+                                          // The validator receives the text that the user has entered.
+                                          validator: (value) {
+                                            if (value == null || value.isEmpty) {
+                                              return 'Please enter From Date';
+                                            }
+                                            return null;
+                                          },
+                                        ),
+                                      ),
+                                      Container(
+                                        padding: const EdgeInsets.all(10.0),
+                                        child: TextFormField(
+                                          controller: attendanceToDateContrl,
+                                          decoration: InputDecoration(
+                                            border: OutlineInputBorder(),
+                                            labelText: 'To Date',
+                                          ),
+                                          onTap: (){
+                                            // Below line stops keyboard from appearing
+                                            FocusScope.of(context).requestFocus(new FocusNode());
+                                            _selectDate(context,attendanceSelectedToDate,attendanceToDateContrl);
+                                          },
+                                          // The validator receives the text that the user has entered.
+                                          validator: (value) {
+                                            if (value == null || value.isEmpty) {
+                                              return 'Please enter To Date';
+                                            }
+                                            return null;
+                                          },
+                                        ),
+                                      ),
+                                      Container(
+                                        padding: const EdgeInsets.all(10.0),
+                                        child: Row(
+                                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                          children: [
+                                            ElevatedButton(
+                                              onPressed: () {
+                                                // Validate returns true if the form is valid, or false otherwise.
+                                                if (_attendanceFormKey.currentState!.validate()) {
+                                                  Navigator.pushNamed(context, attendanceListRoute, arguments: ScreenArguments(
+                                                      attendanceFromDateContrl.text,attendanceToDateContrl.text ,''),
+                                                  );
+                                                }
+                                              },
+                                              child: const Text('Show biometric data'),
+                                            ),
+                                            ElevatedButton(
+                                              onPressed: () {
+                                                setState(() {
+                                                  attendanceFromDateContrl.text = '';
+                                                  attendanceToDateContrl.text = '';
+                                                });
+                                                Navigator.pop(context);
+                                              },
+                                              child: const Text('Cancel'),
+                                            )
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+
+                              ),
+                            );
+                          },
+                        ),
+                      );
+                    },
+                  );
+                },
+              );
+            }
+            else if(title == "Shift Roster"){
+              showDialog(
+                context: context,
+                builder: (context){
+                  return StatefulBuilder(
+                    builder: (context, setState){
+                      return AlertDialog (
+                        insetPadding: EdgeInsets.all(0),
+                        content: Builder(
+                          builder: (context) {
+                            // Get available height and width of the build area of this widget. Make a choice depending on the size.
+                            var height = MediaQuery.of(context).size.height;
+                            var width = MediaQuery.of(context).size.width;
+
+                            return Container(
+                              height: height - (height/2.3),
+                              width: width - (width/4),
+                              child: Form(
+                                key: _shiftRosterFormKey,
+                                child: Container(
+                                  margin: EdgeInsets.symmetric(vertical: 20),
+                                  child:Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    crossAxisAlignment: CrossAxisAlignment.center,
+
+                                    children: <Widget>[
+                                      Container(
+
+                                        padding: EdgeInsets.all(10),
+                                        child: Center(child: Text('View Shift Roster',
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.w800,
+                                              fontSize: 20,
+                                              color: Colors.blue[500],
+                                            ))) ,
+                                      ),
+                                      Container(
+                                        padding: EdgeInsets.all(10),
+                                        child: TextFormField(
+                                          controller: shiftFromDateContrl,
+                                          decoration: InputDecoration(
+                                            border: OutlineInputBorder(),
+                                            labelText: 'From Date',
+                                          ),
+                                          onTap: (){
+                                            // Below line stops keyboard from appearing
+                                            FocusScope.of(context).requestFocus(new FocusNode());
+                                            _selectDate(context,shiftSelectedFromDate,shiftFromDateContrl);
+                                          },
+                                          // The validator receives the text that the user has entered.
+                                          validator: (value) {
+                                            if (value == null || value.isEmpty) {
+                                              return 'Please enter From Date';
+                                            }
+                                            return null;
+                                          },
+                                        ),
+                                      ),
+                                      Container(
+                                        padding: EdgeInsets.all(10),
+                                        child: TextFormField(
+                                          controller: shiftToDateContrl,
+                                          decoration: InputDecoration(
+                                            border: OutlineInputBorder(),
+                                            labelText: 'To Date',
+                                          ),
+                                          onTap: (){
+                                            // Below line stops keyboard from appearing
+                                            FocusScope.of(context).requestFocus(new FocusNode());
+                                            _selectDate(context,shiftSelectedToDate,shiftToDateContrl);
+                                          },
+                                          // The validator receives the text that the user has entered.
+                                          validator: (value) {
+                                            if (value == null || value.isEmpty) {
+                                              return 'Please enter To Date';
+                                            }
+                                            return null;
+                                          },
+                                        ),
+                                      ),
+                                      Container(
+                                        padding: const EdgeInsets.all(10.0),
+                                        child: Row(
+                                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                          children: [
+                                            ElevatedButton(
+                                              onPressed: () {
+                                                // Validate returns true if the form is valid, or false otherwise.
+                                                if (_shiftRosterFormKey.currentState!.validate()) {
+                                                  // If the form is valid, display a snackbar. In the real world,
+                                                  // you'd often call a server or save the information in a database.
+                                                  Navigator.pushNamed(context, shiftRosterListRoute, arguments: ScreenArguments(
+                                                      shiftFromDateContrl.text,shiftToDateContrl.text , ''),
+                                                  );
+                                                }
+                                              },
+                                              child: const Text('Show Shift Roster'),
+                                            ),
+                                            ElevatedButton(
+                                              onPressed: () {
+                                                setState(() {
+                                                  shiftFromDateContrl.text = '';
+                                                  shiftToDateContrl.text = '';
+                                                });
+                                                Navigator.pop(context);
+                                              },
+                                              child: const Text('Cancel'),
+                                            )
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+
+                              ),
+                            );
+                          },
+                        ),
+                      );
+                    },
+                  );
+                },
+              );
+            }
+            else if(title == "Claims"){
+              showDialog(
+                context: context,
+                builder: (context){
+                  return StatefulBuilder(
+                    builder: (context, setState){
+                      return AlertDialog (
+                        insetPadding: EdgeInsets.all(0),
+                        content: Builder(
+                          builder: (context) {
+                            // Get available height and width of the build area of this widget. Make a choice depending on the size.
+                            var height = MediaQuery.of(context).size.height;
+                            var width = MediaQuery.of(context).size.width;
+
+                            return Container(
+                              height: height - (height/2.3),
+                              width: width - (width/4),
+                              child: Form(
+                                key: _claimsFormKey,
+                                child: Container(
+                                  margin: EdgeInsets.symmetric(vertical: 20),
+                                  child:Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    crossAxisAlignment: CrossAxisAlignment.center,
+
+                                    children: <Widget>[
+                                      Container(
+
+                                        padding: EdgeInsets.all(10),
+                                        child: Center(child: Text('View Claims',
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.w800,
+                                              fontSize: 20,
+                                              color: Colors.blue[500],
+                                            ))) ,
+                                      ),
+                                      Container(
+                                        padding: EdgeInsets.only(top:10,bottom:10),
+                                        child: TextFormField(
+                                          controller: claimsFromDateContrl,
+                                          decoration: InputDecoration(
+                                            border: OutlineInputBorder(),
+                                            labelText: 'From Date',
+                                          ),
+                                          onTap: (){
+                                            // Below line stops keyboard from appearing
+                                            FocusScope.of(context).requestFocus(new FocusNode());
+                                            _selectDate(context,claimsSelectedFromDate,claimsFromDateContrl);
+                                          },
+                                          // The validator receives the text that the user has entered.
+                                          validator: (value) {
+                                            if (value == null || value.isEmpty) {
+                                              return 'Please enter From Date';
+                                            }
+                                            return null;
+                                          },
+                                        ),
+                                      ),
+                                      Container(
+                                        padding: EdgeInsets.only(top:10,bottom:10),
+                                        child: TextFormField(
+                                          controller: claimsToDateContrl,
+                                          decoration: InputDecoration(
+                                            border: OutlineInputBorder(),
+                                            labelText: 'To Date',
+                                          ),
+                                          onTap: (){
+                                            // Below line stops keyboard from appearing
+                                            FocusScope.of(context).requestFocus(new FocusNode());
+                                            _selectDate(context,claimsSelectedToDate,claimsToDateContrl);
+                                          },
+                                          // The validator receives the text that the user has entered.
+                                          validator: (value) {
+                                            if (value == null || value.isEmpty) {
+                                              return 'Please enter To Date';
+                                            }
+                                            return null;
+                                          },
+                                        ),
+                                      ),
+                                      Container(
+                                        padding: EdgeInsets.only(top:10,bottom:10),
+                                        child: InputDecorator(
+                                          decoration: InputDecoration(
+                                            labelText: 'Claim Type',
+                                            contentPadding: const EdgeInsets.only(left: 10.0),
+                                            border: const OutlineInputBorder(),
+                                          ),
+                                          child: DropdownButtonHideUnderline(
+                                            child: DropdownButton<String>(
+                                              value: _claimsType,
+                                              style: TextStyle(color: Colors.black),
+                                              items: <String>[
+                                                '',
+                                                'A-',
+                                              ].map<DropdownMenuItem<String>>((String value) {
+                                                return DropdownMenuItem<String>(
+                                                  value: value,
+                                                  child: Text(value),
+                                                );
+                                              }).toList(),
+                                              onChanged: (String? newValue) {
+                                                setState(() {
+                                                  _claimsType = newValue!;
+                                                });
+                                              },
+                                            ),
+                                          ),
+                                        ),
+
+                                      ),
+                                      Container(
+                                        padding: const EdgeInsets.all(10.0),
+                                        child: Row(
+                                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                          children: [
+                                            ElevatedButton(
+                                              onPressed: () {
+                                                // Validate returns true if the form is valid, or false otherwise.
+                                                if (_claimsFormKey.currentState!.validate()) {
+                                                  // If the form is valid, display a snackbar. In the real world,
+                                                  // you'd often call a server or save the information in a database.
+                                                  Navigator.pushNamed(context, payslipDataRoute, arguments: ScreenArguments(
+                                                    claimsFromDateContrl.text,claimsToDateContrl.text,_claimsType),
+                                                  );
+                                                }
+                                              },
+                                              child: const Text('Show my claims'),
+                                            ),
+                                            ElevatedButton(
+                                              onPressed: () {
+                                                setState(() {
+                                                  claimsFromDateContrl.text = '';
+                                                  claimsToDateContrl.text = '';
+                                                  _claimsType = '';
+                                                });
+                                                Navigator.pop(context);
+                                              },
+                                              child: const Text('Cancel'),
+                                            )
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+
+                              ),
+                            );
+                          },
+                        ),
+                      );
+                    },
+                  );
+                },
               );
             }
             else{
@@ -120,183 +956,41 @@ class HomeState extends State<Home>  {
     );
   }
 
-  Form PeopleFinderForm(){
-    return Form(
-      key: _formKey,
-      child: Container(
-        margin: EdgeInsets.symmetric(vertical: 20),
-        child:Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-
-          children: <Widget>[
-            Container(
-
-              padding: EdgeInsets.all(10),
-              child: Center(child: Text('Find Employees',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w800,
-                    fontSize: 20,
-                    color: Colors.blue[500],
-                  ))) ,
-            ),
-            Container(
-
-              padding: EdgeInsets.all(10),
-              child: TextFormField(
-                controller: empNameContrl,
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(),
-                  labelText: 'Employee Name (Optional)',
-                ),
-                // The validator receives the text that the user has entered.
-                // validator: (value) {
-                //   if (value == null || value.isEmpty) {
-                //     return 'Please enter some text';
-                //   }
-                //   return null;
-                // },
-              ),
-            ),
-            Container(
-              padding: EdgeInsets.all(10),
-              child: InputDecorator(
-                decoration: InputDecoration(
-                  labelText: 'Unit (Optional)',
-                  contentPadding: const EdgeInsets.only(left: 10.0),
-                  border: const OutlineInputBorder(),
-                  isDense: true,
-                ),
-                child: DropdownButtonHideUnderline(
-                  child: DropdownButton<String>(
-
-                    isExpanded: true,
-                    icon: Icon(Icons.keyboard_arrow_down),
-                    value: _empUnit,
-                    style: TextStyle(color: Colors.black),
-                    items: <String>[
-                      '',
-                      'Civil',
-                      'C&P',
-                      'Company Secretary',
-                      'IT',
-                      'Law',
-                      'Marketing',
-                      'Security',
-                    ].map<DropdownMenuItem<String>>((String value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(value),
-                      );
-                    }).toList(),
-
-                    onChanged: (String? newValue) {
-                      setState(() {
-                        _empUnit = newValue!;
-                      });
-                    },
-                  ),
-                ),
-              ),
-            ),
-            Container(
-              padding: EdgeInsets.all(10),
-              child: InputDecorator(
-                decoration: InputDecoration(
-                  labelText: 'Discipline (Optional)',
-                  contentPadding: const EdgeInsets.only(left: 10.0),
-                  border: const OutlineInputBorder(),
-                ),
-                child: DropdownButtonHideUnderline(
-                  child: DropdownButton<String>(
-                    value: _empDisc,
-                    style: TextStyle(color: Colors.black),
-                    items: <String>[
-                      '',
-                      'Civil',
-                      'C&P',
-                      'Company Secretary',
-                      'IT',
-                      'Law',
-                      'Marketing',
-                      'Security',
-                    ].map<DropdownMenuItem<String>>((String value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(value),
-                      );
-                    }).toList(),
-                    onChanged: (String? newValue) {
-                      setState(() {
-                        _empDisc = newValue!;
-                      });
-                    },
-                  ),
-                ),
-              ),
-
-            ),
-            Container(
-              padding: EdgeInsets.all(10),
-              child: InputDecorator(
-                decoration: InputDecoration(
-                  labelText: 'Blood Group (Optional)',
-                  //labelStyle: Theme.of(context).primaryTextTheme.caption!.copyWith(color: Colors.black),
-                  contentPadding: const EdgeInsets.only(left: 10.0),
-                  border: const OutlineInputBorder(),
-                ),
-                child: DropdownButtonHideUnderline(
-                  child: DropdownButton<String>(
-                    value: _empBldGrp,
-                    style: TextStyle(color: Colors.black),
-                    items: <String>[
-                      '',
-                      'A-',
-                      'A+',
-                      'AB-',
-                      'AB+',
-                      'B-',
-                      'B+',
-                      'O-',
-                      'O+',
-                    ].map<DropdownMenuItem<String>>((String value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(value),
-                      );
-                    }).toList(),
-                    onChanged: (String? newValue) {
-                      setState(() {
-                        _empBldGrp = newValue!;
-                      });
-                    },
-                  ),
-                ),
-              ),
-
-            ),
-            Container(
-              padding: const EdgeInsets.all(10.0),
-              child: Center( child: ElevatedButton(
-                onPressed: () {
-                  Navigator.pushNamed(context, peopleListRoute, arguments: PeolpeScreenArguments(
-                      '',empNameContrl.text,_empUnit,_empDisc,_empBldGrp,
-                      '','','','',''
-                  ),);
-                },
-                child: const Text('Submit'),
-              ),
-              ),
-            ),
-          ],
-        ),
-      ),
-
+  Future<Null> _selectMonth(BuildContext context, DateTime date, var textController) async {
+    final selected = await showMonthPicker(
+        context: context,
+        initialDate: DateTime.now(),
+        firstDate: DateTime(2018),
+        lastDate: DateTime.now()
     );
+    if (selected != null)
+      setState(() {
+        date = selected;
+        textController.text = DateFormat('MMM-yyyy').format(selected);
+      });
+  }
+  Future<Null> _selectDate(BuildContext context,DateTime date, var textController) async {
+    final selected = await showDatePicker(
+        context: context,
+        initialDate: DateTime.now(),
+        initialDatePickerMode: DatePickerMode.day,
+        firstDate: DateTime(2018),
+        lastDate: DateTime(2101));
+    if (selected != null)
+      setState(() {
+        date = selected;
+        textController.text = "${selected.toLocal()}".split(' ')[0];
+      });
   }
 }
 
+class ScreenArguments {
+  final String fromDate;
+  final String toDate;
+  final String claimType;
 
+  ScreenArguments(this.fromDate, this.toDate, this.claimType);
+}
 class AppDrawer extends StatefulWidget {
   @override
   State<AppDrawer> createState() => AppDrawerState();

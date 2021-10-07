@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/painting.dart';
 import 'package:flutter_projects/services/webservice.dart';
 import 'constants.dart';
 import 'home.dart';
@@ -216,92 +217,90 @@ class _attendanceListState extends State<attendanceList>{
           ),
         ),
 
-      ) : ListView.builder(
-          itemCount: _attendanceData.length,
-          itemBuilder: (context, index) {
-            return Card(
-              child: DataTable(
-                columns: const <DataColumn>[
-                  DataColumn(
-                    label: Text(
-                      'Date',
-                      style: TextStyle(fontStyle: FontStyle.italic),
-                    ),
-                  ),
-                  DataColumn(
-                    label: Text(
-                      'Punch Date',
-                      style: TextStyle(fontStyle: FontStyle.italic),
-                    ),
-                  ),
-                  DataColumn(
-                    label: Text(
-                      'Punch Time',
-                      style: TextStyle(fontStyle: FontStyle.italic),
-                    ),
-                  ),
-                  DataColumn(
-                    label: Text(
-                      'Device',
-                      style: TextStyle(fontStyle: FontStyle.italic),
-                    ),
-                  ),
-                ],
-                rows: <DataRow>[
-                  DataRow(
-                    cells: <DataCell>[
-                      DataCell(Text(_attendanceData[index].date)),
-                      DataCell(Text(_attendanceData[index].punchDate)),
-                      DataCell(Text(_attendanceData[index].punchTime)),
-                      DataCell(Text(_attendanceData[index].deviceName)),
-                    ],
-                  ),
-                ],
-              ),
-            );
-          }
-      ),
+      ) : getAttendanceList()
+
     );
   }
 
-  // FutureBuilder getAttendanceData(){
-  //   return FutureBuilder<List<AttendanceData>>(
-  //     future: _attendanceData,
-  //     builder: (BuildContext context, AsyncSnapshot<List<AttendanceData>> snapshot){
-  //       if (snapshot.hasData) {
-  //         List<AttendanceData>? data = snapshot.data;
-  //         return createListAttendance(data);
-  //       } else if (snapshot.hasError) {
-  //         return Text("${snapshot.error}");
-  //       }
-  //       return SizedBox(
-  //         height: MediaQuery.of(context).size.height / 1.3,
-  //         child: Center(
-  //           child: Column(
-  //             mainAxisAlignment: MainAxisAlignment.center,
-  //             crossAxisAlignment: CrossAxisAlignment.center,
-  //             children: <Widget>[
-  //               CircularProgressIndicator(),
-  //               Container(
-  //                 padding: EdgeInsets.all(10),
-  //                 child:Text('Fetching Data. Please Wait...',style: TextStyle(
-  //                   fontWeight: FontWeight.w500,
-  //                   fontSize: 18,
-  //                 ),),
-  //               ),
-  //             ],
-  //           ),
-  //
-  //         ),
-  //       );
-  //     },
-  //   );
-  // }
+  Column getAttendanceList(){
+    return Column(
+      children: [
+        Container(
+          decoration: BoxDecoration(
+            color:Color.fromRGBO(165, 231, 206, 1.0),
+          ),
+          height: 40.0,
+          child: Row(
+            children: <Widget>[
+              Expanded(
+                flex: 1,
+                child: Center(
+                  child: Text("Date",style: TextStyle(fontSize: 18,fontWeight: FontWeight.bold)),
+                ),
+              ),
+              Expanded(
+                flex: 1,
+                child: Center(
+                  child: Text("Punch Date",style: TextStyle(fontSize: 18,fontWeight: FontWeight.bold)),
+                ),
+              ),
+              Expanded(
+                flex: 1,
+                child: Center(
+                  child: Text("Punch Time",style: TextStyle(fontSize: 18,fontWeight: FontWeight.bold)),
+                ),
+              ),
+            ],
+          ),
+        ),
+        Expanded(
+          child: createListAttendance(_attendanceData),
+        ),
+      ],
+    );
+  }
+  ListView createListAttendance(data){
+    return ListView.builder(
+        itemCount: data.length,
+        itemBuilder: (context, index) {
+          return Card(
+            child: Row(
+              children: [
+                Expanded(
+                  flex: 1, // takes 30% of available width
+                  child: Center(
+                    child: Container(
+                      padding: EdgeInsets.all(10),
+                      child: Text(data[index].date ?? ''),
+                    ),
+                  ),
 
+                ),
+                Expanded(
+                  flex: 1, // takes 30% of available width
+                  child: Center(
+                    child: Container(
+                      padding: EdgeInsets.all(10),
+                      child: Text(data[index].punchDate ?? ''),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  flex: 1, // takes 30% of available width
+                  child: Center(
+                    child: Container(
+                      padding: EdgeInsets.all(10),
+                      child: Text(data[index].punchTime ?? ''),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+    );
+  }
 
-  // ListView createListAttendance1(data) {
-  //   return
-  // }
 }
 class AttendanceScreenArguments {
   final String fromDate;
