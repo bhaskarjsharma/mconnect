@@ -20,3 +20,4 @@ const String feedbackRoute = '/AppFeedback';
 const String aboutAppRoute = '/AboutApp';
 const String downloadsRoute = '/DownloadDirectory';
 const String claimsRoute = '/Claims';
+const String peoples = '/Peoples';

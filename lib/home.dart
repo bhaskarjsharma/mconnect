@@ -31,6 +31,10 @@ class Home extends StatefulWidget {
 }
 
 class HomeState extends State<Home>  {
+  late DioClient _dio;
+  late var _endpointProvider;
+  late Future<APIResponseData> _apiResponseData;
+
   late  FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
   final _peopleFormKey = GlobalKey<FormState>();
   final _documentFormKey = GlobalKey<FormState>();
@@ -49,7 +53,7 @@ class HomeState extends State<Home>  {
 
   final monthContrl = TextEditingController();
   final yearContrl = TextEditingController();
-  DateTime payslipSelectedDate = DateTime.now();
+  late DateTime payslipSelectedDate;
 
   final attendanceFromDateContrl = TextEditingController();
   final attendanceToDateContrl = TextEditingController();
@@ -67,9 +71,19 @@ class HomeState extends State<Home>  {
   DateTime claimsSelectedFromDate = DateTime.now();
   DateTime claimsSelectedToDate = DateTime.now();
 
+  bool isLoading = false;
+
+  late List<Employee> peopleData;
+  late List<Document> documentList;
+  late List<ClaimData> claimsData;
+  late List<PayrollData> payrollData;
+  late List<AttendanceData> attendanceData;
+  late List<ShiftRoster> shiftRosterData;
 
   @override
   void initState(){
+    _dio = new DioClient();
+    _endpointProvider = new EndPointProvider(_dio.init());
     super.initState();
   }
 
@@ -138,7 +152,9 @@ class HomeState extends State<Home>  {
                                 return Container(
                                   height: height - (height/2.3),
                                   width: width - (width/4),
-                                  child: Form(
+                                  child: isLoading ? waiting() :
+
+                                  Form(
                                     key: _peopleFormKey,
                                     child: Column(
                                       mainAxisAlignment: MainAxisAlignment.center,
@@ -288,10 +304,38 @@ class HomeState extends State<Home>  {
                                             children: [
                                               ElevatedButton(
                                                 onPressed: () {
-                                                  Navigator.pushNamed(context, peopleListRoute, arguments: PeolpeScreenArguments(
-                                                      '',empNameContrl.text,_empUnit,_empDisc,_empBldGrp,
-                                                      '','','','',''
-                                                  ),);
+                                                  setState(() {
+                                                    isLoading = true;
+                                                  });
+
+                                                  _apiResponseData = _endpointProvider.fetchEmployees(empNameContrl.text,_empUnit,_empDisc,_empBldGrp);
+                                                  _apiResponseData.then((result) {
+                                                    if(result.isAuthenticated && result.status){
+                                                      final parsed = jsonDecode(result.data ?? '').cast<Map<String, dynamic>>();
+                                                      setState(() {
+                                                        empNameContrl.text = '';
+                                                        _empUnit = '';
+                                                        _empDisc = '';
+                                                        _empBldGrp = '';
+                                                        peopleData =  parsed.map<Employee>((json) => Employee.fromJson(json)).toList();
+                                                        isLoading = false;
+                                                        Navigator.pop(context);
+                                                        Navigator.pushNamed(context, peopleRoute, arguments: peopleData,);
+                                                      });
+                                                    }
+                                                    else{
+                                                      setState(() {
+                                                        empNameContrl.text = '';
+                                                        _empUnit = '';
+                                                        _empDisc = '';
+                                                        _empBldGrp = '';
+                                                      });
+                                                      Navigator.pop(context);
+                                                      ScaffoldMessenger.of(context).showSnackBar(
+                                                        SnackBar(content: Text("Error in data fetching")),
+                                                      );
+                                                    }
+                                                  });
                                                 },
                                                 child: const Text('Submit'),
                                               ),
@@ -306,6 +350,9 @@ class HomeState extends State<Home>  {
                                                   Navigator.pop(context);
                                                 },
                                                 child: const Text('Cancel'),
+                                                style: ButtonStyle(
+                                                  backgroundColor: MaterialStateProperty.all(Colors.red),
+                                                ),
                                               )
                                             ],
                                           ),
@@ -340,7 +387,7 @@ class HomeState extends State<Home>  {
                             return Container(
                               height: height - (height/1.8),
                               width: width - (width/4),
-                              child: Form(
+                              child: isLoading ? waiting() : Form(
                                 key: _documentFormKey,
                                 child: Container(
                                   margin: EdgeInsets.symmetric(vertical: 20),
@@ -404,8 +451,34 @@ class HomeState extends State<Home>  {
                                           children: [
                                             ElevatedButton(
                                               onPressed: () {
-                                                Navigator.pushNamed(context, documentListRoute, arguments: DocumentScreenArguments(
-                                                    '',docNameContrl.text,_documentCategory),);
+                                                setState(() {
+                                                  isLoading = true;
+                                                });
+
+                                                _apiResponseData = _endpointProvider.fetchDocuments(docNameContrl.text,_documentCategory);
+                                                _apiResponseData.then((result) {
+                                                  if(result.isAuthenticated && result.status){
+                                                    final parsed = jsonDecode(result.data ?? '').cast<Map<String, dynamic>>();
+                                                    setState(() {
+                                                      docNameContrl.text = '';
+                                                      _documentCategory = '';
+                                                      documentList =  parsed.map<Document>((json) => Document.fromJson(json)).toList();
+                                                      isLoading = false;
+                                                      Navigator.pop(context);
+                                                      Navigator.pushNamed(context, documentsRoute, arguments: documentList,);
+                                                    });
+                                                  }
+                                                  else{
+                                                    setState(() {
+                                                      docNameContrl.text = '';
+                                                      _documentCategory = '';
+                                                    });
+                                                    Navigator.pop(context);
+                                                    ScaffoldMessenger.of(context).showSnackBar(
+                                                      SnackBar(content: Text("Error in data fetching")),
+                                                    );
+                                                  }
+                                                });
                                               },
                                               child: const Text('Submit'),
                                             ),
@@ -418,6 +491,9 @@ class HomeState extends State<Home>  {
                                                 Navigator.pop(context);
                                               },
                                               child: const Text('Cancel'),
+                                              style: ButtonStyle(
+                                                backgroundColor: MaterialStateProperty.all(Colors.red),
+                                              ),
                                             )
                                           ],
                                         ),
@@ -453,7 +529,7 @@ class HomeState extends State<Home>  {
                             return Container(
                               height: height - (height/2.3),
                               width: width - (width/4),
-                              child: Form(
+                              child: isLoading ? waiting() : Form(
                                 key: _paySlipFormKey,
                                 child: Container(
                                   margin: EdgeInsets.symmetric(vertical: 20),
@@ -496,11 +572,33 @@ class HomeState extends State<Home>  {
                                               onPressed: () {
                                                 // Validate returns true if the form is valid, or false otherwise.
                                                 if (_paySlipFormKey.currentState!.validate()) {
-                                                  // If the form is valid, display a snackbar. In the real world,
-                                                  // you'd often call a server or save the information in a database.
-                                                  Navigator.pushNamed(context, payslipDataRoute, arguments: PayslipScreenArguments(
-                                                      DateFormat('MM').format(payslipSelectedDate),DateFormat('yyyy').format(payslipSelectedDate)),
-                                                  );
+
+                                                  setState(() {
+                                                    isLoading = true;
+                                                  });
+
+                                                  _apiResponseData = _endpointProvider.fetchPayrollData("1219",DateFormat('MM').format(payslipSelectedDate),DateFormat('yyyy').format(payslipSelectedDate));
+                                                  _apiResponseData.then((result) {
+                                                    if(result.isAuthenticated && result.status){
+                                                      final parsed = jsonDecode(result.data ?? '').cast<Map<String, dynamic>>();
+                                                      setState(() {
+                                                        monthContrl.text = '';
+                                                        payrollData =  parsed.map<PayrollData>((json) => PayrollData.fromJson(json)).toList();
+                                                        isLoading = false;
+                                                        Navigator.pop(context);
+                                                        Navigator.pushNamed(context, payslipRoute, arguments: payrollData,);
+                                                      });
+                                                    }
+                                                    else{
+                                                      setState(() {
+                                                        monthContrl.text = '';
+                                                      });
+                                                      Navigator.pop(context);
+                                                      ScaffoldMessenger.of(context).showSnackBar(
+                                                        SnackBar(content: Text("Error in data fetching")),
+                                                      );
+                                                    }
+                                                  });
                                                 }
                                               },
                                               child: const Text('Show my payslip'),
@@ -513,6 +611,9 @@ class HomeState extends State<Home>  {
                                                 Navigator.pop(context);
                                               },
                                               child: const Text('Cancel'),
+                                              style: ButtonStyle(
+                                                backgroundColor: MaterialStateProperty.all(Colors.red),
+                                              ),
                                             )
                                           ],
                                         ),
@@ -548,7 +649,7 @@ class HomeState extends State<Home>  {
                             return Container(
                               height: height - (height/2.3),
                               width: width - (width/4),
-                              child: Form(
+                              child: isLoading ? waiting() : Form(
                                 key: _attendanceFormKey,
                                 child: Container(
                                   margin: EdgeInsets.symmetric(vertical: 20),
@@ -619,9 +720,34 @@ class HomeState extends State<Home>  {
                                               onPressed: () {
                                                 // Validate returns true if the form is valid, or false otherwise.
                                                 if (_attendanceFormKey.currentState!.validate()) {
-                                                  Navigator.pushNamed(context, attendanceListRoute, arguments: ScreenArguments(
-                                                      attendanceFromDateContrl.text,attendanceToDateContrl.text ,''),
-                                                  );
+                                                  setState(() {
+                                                    isLoading = true;
+                                                  });
+
+                                                  _apiResponseData = _endpointProvider.fetchAttendanceData(empno,attendanceFromDateContrl.text,attendanceToDateContrl.text);
+                                                  _apiResponseData.then((result) {
+                                                    if(result.isAuthenticated && result.status){
+                                                      final parsed = jsonDecode(result.data ?? '').cast<Map<String, dynamic>>();
+                                                      setState(() {
+                                                        attendanceFromDateContrl.text = '';
+                                                        attendanceToDateContrl.text = '';
+                                                        attendanceData =  parsed.map<AttendanceData>((json) => AttendanceData.fromJson(json)).toList();
+                                                        isLoading = false;
+                                                        Navigator.pop(context);
+                                                        Navigator.pushNamed(context, attendanceRoute, arguments: attendanceData,);
+                                                      });
+                                                    }
+                                                    else{
+                                                      setState(() {
+                                                        attendanceFromDateContrl.text = '';
+                                                        attendanceToDateContrl.text = '';
+                                                      });
+                                                      Navigator.pop(context);
+                                                      ScaffoldMessenger.of(context).showSnackBar(
+                                                        SnackBar(content: Text("Error in data fetching")),
+                                                      );
+                                                    }
+                                                  });
                                                 }
                                               },
                                               child: const Text('Show biometric data'),
@@ -635,6 +761,9 @@ class HomeState extends State<Home>  {
                                                 Navigator.pop(context);
                                               },
                                               child: const Text('Cancel'),
+                                              style: ButtonStyle(
+                                                backgroundColor: MaterialStateProperty.all(Colors.red),
+                                              ),
                                             )
                                           ],
                                         ),
@@ -670,7 +799,7 @@ class HomeState extends State<Home>  {
                             return Container(
                               height: height - (height/2.3),
                               width: width - (width/4),
-                              child: Form(
+                              child: isLoading ? waiting() : Form(
                                 key: _shiftRosterFormKey,
                                 child: Container(
                                   margin: EdgeInsets.symmetric(vertical: 20),
@@ -742,11 +871,34 @@ class HomeState extends State<Home>  {
                                               onPressed: () {
                                                 // Validate returns true if the form is valid, or false otherwise.
                                                 if (_shiftRosterFormKey.currentState!.validate()) {
-                                                  // If the form is valid, display a snackbar. In the real world,
-                                                  // you'd often call a server or save the information in a database.
-                                                  Navigator.pushNamed(context, shiftRosterListRoute, arguments: ScreenArguments(
-                                                      shiftFromDateContrl.text,shiftToDateContrl.text , ''),
-                                                  );
+                                                  setState(() {
+                                                    isLoading = true;
+                                                  });
+
+                                                  _apiResponseData = _endpointProvider.fetchShiftRosterData(empno,shiftFromDateContrl.text,shiftToDateContrl.text);
+                                                  _apiResponseData.then((result) {
+                                                    if(result.isAuthenticated && result.status){
+                                                      final parsed = jsonDecode(result.data ?? '').cast<Map<String, dynamic>>();
+                                                      setState(() {
+                                                        shiftFromDateContrl.text = '';
+                                                        shiftToDateContrl.text = '';
+                                                        shiftRosterData =  parsed.map<ShiftRoster>((json) => ShiftRoster.fromJson(json)).toList();
+                                                        isLoading = false;
+                                                        Navigator.pop(context);
+                                                        Navigator.pushNamed(context, shiftRosterRoute, arguments: shiftRosterData,);
+                                                      });
+                                                    }
+                                                    else{
+                                                      setState(() {
+                                                        shiftFromDateContrl.text = '';
+                                                        shiftToDateContrl.text = '';
+                                                      });
+                                                      Navigator.pop(context);
+                                                      ScaffoldMessenger.of(context).showSnackBar(
+                                                        SnackBar(content: Text("Error in data fetching")),
+                                                      );
+                                                    }
+                                                  });
                                                 }
                                               },
                                               child: const Text('Show Shift Roster'),
@@ -760,6 +912,9 @@ class HomeState extends State<Home>  {
                                                 Navigator.pop(context);
                                               },
                                               child: const Text('Cancel'),
+                                              style: ButtonStyle(
+                                                backgroundColor: MaterialStateProperty.all(Colors.red),
+                                              ),
                                             )
                                           ],
                                         ),
@@ -795,7 +950,7 @@ class HomeState extends State<Home>  {
                             return Container(
                               height: height - (height/2.3),
                               width: width - (width/4),
-                              child: Form(
+                              child: isLoading ? waiting() : Form(
                                 key: _claimsFormKey,
                                 child: Container(
                                   margin: EdgeInsets.symmetric(vertical: 20),
@@ -898,11 +1053,36 @@ class HomeState extends State<Home>  {
                                               onPressed: () {
                                                 // Validate returns true if the form is valid, or false otherwise.
                                                 if (_claimsFormKey.currentState!.validate()) {
-                                                  // If the form is valid, display a snackbar. In the real world,
-                                                  // you'd often call a server or save the information in a database.
-                                                  Navigator.pushNamed(context, payslipDataRoute, arguments: ScreenArguments(
-                                                    claimsFromDateContrl.text,claimsToDateContrl.text,_claimsType),
-                                                  );
+                                                  setState(() {
+                                                    isLoading = true;
+                                                  });
+
+                                                  _apiResponseData = _endpointProvider.fetchAttendanceData(empno,claimsFromDateContrl.text,claimsToDateContrl.text,_claimsType);
+                                                  _apiResponseData.then((result) {
+                                                    if(result.isAuthenticated && result.status){
+                                                      final parsed = jsonDecode(result.data ?? '').cast<Map<String, dynamic>>();
+                                                      setState(() {
+                                                        claimsFromDateContrl.text = '';
+                                                        claimsToDateContrl.text = '';
+                                                        _claimsType = '';
+                                                        claimsData =  parsed.map<AttendanceData>((json) => AttendanceData.fromJson(json)).toList();
+                                                        isLoading = false;
+                                                        Navigator.pop(context);
+                                                        Navigator.pushNamed(context, claimsRoute, arguments: claimsData,);
+                                                      });
+                                                    }
+                                                    else{
+                                                      setState(() {
+                                                        claimsFromDateContrl.text = '';
+                                                        claimsToDateContrl.text = '';
+                                                        _claimsType = '';
+                                                      });
+                                                      Navigator.pop(context);
+                                                      ScaffoldMessenger.of(context).showSnackBar(
+                                                        SnackBar(content: Text("Error in data fetching")),
+                                                      );
+                                                    }
+                                                  });
                                                 }
                                               },
                                               child: const Text('Show my claims'),
@@ -917,6 +1097,9 @@ class HomeState extends State<Home>  {
                                                 Navigator.pop(context);
                                               },
                                               child: const Text('Cancel'),
+                                              style: ButtonStyle(
+                                                backgroundColor: MaterialStateProperty.all(Colors.red),
+                                              ),
                                             )
                                           ],
                                         ),
@@ -966,7 +1149,7 @@ class HomeState extends State<Home>  {
     if (selected != null)
       setState(() {
         date = selected;
-        textController.text = DateFormat('MMM-yyyy').format(selected);
+        textController.text = DateFormat('MMM-yyyy').format(date);
       });
   }
   Future<Null> _selectDate(BuildContext context,DateTime date, var textController) async {
@@ -982,7 +1165,29 @@ class HomeState extends State<Home>  {
         textController.text = "${selected.toLocal()}".split(' ')[0];
       });
   }
+
+  Widget waiting(){
+    return Container(
+      height: MediaQuery.of(context).size.height / 1.3,
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(),
+            Container(
+              padding: EdgeInsets.all(10),
+              child:Text('Getting your data. Please wait...',style: TextStyle(
+                fontWeight: FontWeight.w500,fontSize: 18,),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
+
 
 class ScreenArguments {
   final String fromDate;

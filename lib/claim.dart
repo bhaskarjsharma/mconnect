@@ -5,11 +5,6 @@ import 'package:flutter/material.dart';
 import 'home.dart';
 
 class Claims extends StatefulWidget {
-  final String fromDate;
-  final String toDate;
-  final String claimType;
-
-  Claims(this.fromDate, this.toDate, this.claimType);
 
   @override
   State<Claims> createState() => _ClaimsState();

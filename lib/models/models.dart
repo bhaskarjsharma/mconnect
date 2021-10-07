@@ -63,8 +63,7 @@ class NewsContent{
   }
 }
 
-class NewsAttachment
-{
+class NewsAttachment {
   final int attachmentID ;
   final String attachmentFileName ;
   final String attachmentFileType ;
@@ -245,6 +244,17 @@ class PayrollData{
       WageTypeText: json['WageTypeText'],
       WageTypeType: json['WageTypeType'],
       WageTypeAmount: json['WageTypeAmount'],
+    );
+  }
+}
+class ClaimData{
+  final String claim_type;
+
+  ClaimData({required this.claim_type});
+
+  factory ClaimData.fromJson(Map<String, dynamic> json) {
+    return ClaimData(
+      claim_type: json['claim_type'],
     );
   }
 }
