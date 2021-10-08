@@ -67,7 +67,6 @@ class HomeState extends State<Home>  {
 
   final claimsFromDateContrl = TextEditingController();
   final claimsToDateContrl = TextEditingController();
-  String _claimsType = '';
   DateTime claimsSelectedFromDate = DateTime.now();
   DateTime claimsSelectedToDate = DateTime.now();
 
@@ -79,6 +78,27 @@ class HomeState extends State<Home>  {
   late List<PayrollData> payrollData;
   late List<AttendanceData> attendanceData;
   late List<ShiftRoster> shiftRosterData;
+
+  String _claimsType = '';
+  ClaimType? _claimsTypeObj;
+  static String claimTypeData = '''
+  [
+    {"claimType":"Z6C1", "claimDesc":"(6.10.C.i) Light Refreshment"},
+    {"claimType":"Z6C2", "claimDesc":"(6.10.C.ii) Working Meal"},
+    {"claimType":"Z6C3", "claimDesc":"(6.10.C.iii) Entertainment & Others"},
+    {"claimType":"ZBAG", "claimDesc":"Briefcase/Handbag Reimbursement"},
+    {"claimType":"COFF", "claimDesc":"Coff Encashment"},
+    {"claimType":"LEEN", "claimDesc":"Leave Encashment"},
+    {"claimType":"ZHO1", "claimDesc":"Medical Reimbursement"},
+    {"claimType":"ZMOI", "claimDesc":"Mobile Handset Reimbursement"},
+    {"claimType":"ZOPE", "claimDesc":"Out of Pocket Expense"},
+    {"claimType":"ZOTM", "claimDesc":"Overtime Allowance"},
+    {"claimType":"ZSPE", "claimDesc":"Spectacle Reimbursement"},
+    {"claimType":"ZMOB", "claimDesc":"Tel/Cell Call Charges Reimbursement"}
+    ]
+  ''';
+
+  List<ClaimType> claimTypes = List<ClaimType>.from(json.decode(claimTypeData).map((x) => ClaimType.fromJson(x)));
 
   @override
   void initState(){
@@ -329,6 +349,7 @@ class HomeState extends State<Home>  {
                                                         _empUnit = '';
                                                         _empDisc = '';
                                                         _empBldGrp = '';
+                                                        isLoading = false;
                                                       });
                                                       Navigator.pop(context);
                                                       ScaffoldMessenger.of(context).showSnackBar(
@@ -472,6 +493,7 @@ class HomeState extends State<Home>  {
                                                     setState(() {
                                                       docNameContrl.text = '';
                                                       _documentCategory = '';
+                                                      isLoading = false;
                                                     });
                                                     Navigator.pop(context);
                                                     ScaffoldMessenger.of(context).showSnackBar(
@@ -559,7 +581,7 @@ class HomeState extends State<Home>  {
                                           onTap: (){
                                             // Below line stops keyboard from appearing
                                             FocusScope.of(context).requestFocus(new FocusNode());
-                                            _selectMonth(context,payslipSelectedDate,monthContrl);
+                                            _selectMonth(context,monthContrl);
                                           },
                                         ),
                                       ),
@@ -592,6 +614,7 @@ class HomeState extends State<Home>  {
                                                     else{
                                                       setState(() {
                                                         monthContrl.text = '';
+                                                        isLoading = false;
                                                       });
                                                       Navigator.pop(context);
                                                       ScaffoldMessenger.of(context).showSnackBar(
@@ -741,6 +764,7 @@ class HomeState extends State<Home>  {
                                                       setState(() {
                                                         attendanceFromDateContrl.text = '';
                                                         attendanceToDateContrl.text = '';
+                                                        isLoading = false;
                                                       });
                                                       Navigator.pop(context);
                                                       ScaffoldMessenger.of(context).showSnackBar(
@@ -892,6 +916,7 @@ class HomeState extends State<Home>  {
                                                       setState(() {
                                                         shiftFromDateContrl.text = '';
                                                         shiftToDateContrl.text = '';
+                                                        isLoading = false;
                                                       });
                                                       Navigator.pop(context);
                                                       ScaffoldMessenger.of(context).showSnackBar(
@@ -1017,28 +1042,33 @@ class HomeState extends State<Home>  {
                                         padding: EdgeInsets.only(top:10,bottom:10),
                                         child: InputDecorator(
                                           decoration: InputDecoration(
-                                            labelText: 'Claim Type',
-                                            contentPadding: const EdgeInsets.only(left: 10.0),
+                                             labelText: 'Claim Type',
+                                             contentPadding: const EdgeInsets.only(left: 10.0),
                                             border: const OutlineInputBorder(),
                                           ),
                                           child: DropdownButtonHideUnderline(
-                                            child: DropdownButton<String>(
-                                              value: _claimsType,
+                                            child: DropdownButtonFormField<ClaimType>(
+                                              value: _claimsTypeObj,
+                                              //hint: Text('Mandatory'),
                                               style: TextStyle(color: Colors.black),
-                                              items: <String>[
-                                                '',
-                                                'A-',
-                                              ].map<DropdownMenuItem<String>>((String value) {
-                                                return DropdownMenuItem<String>(
+                                              items: claimTypes.map<DropdownMenuItem<ClaimType>>((ClaimType value) {
+                                                return DropdownMenuItem<ClaimType>(
                                                   value: value,
-                                                  child: Text(value),
+                                                  child: Text(value.claimDesc),
                                                 );
                                               }).toList(),
-                                              onChanged: (String? newValue) {
+                                              onChanged: (ClaimType? newValue) {
                                                 setState(() {
-                                                  _claimsType = newValue!;
+                                                  _claimsTypeObj = newValue!;
+                                                  _claimsType = newValue.claimType;
                                                 });
                                               },
+                                               validator: (value) {
+                                                 if (value == null) {
+                                                   return 'Please select claim type';
+                                                 }
+                                                 return null;
+                                               },
                                             ),
                                           ),
                                         ),
@@ -1057,7 +1087,7 @@ class HomeState extends State<Home>  {
                                                     isLoading = true;
                                                   });
 
-                                                  _apiResponseData = _endpointProvider.fetchAttendanceData(empno,claimsFromDateContrl.text,claimsToDateContrl.text,_claimsType);
+                                                  _apiResponseData = _endpointProvider.fetchClaimsData(empno,_claimsType,claimsFromDateContrl.text,claimsToDateContrl.text);
                                                   _apiResponseData.then((result) {
                                                     if(result.isAuthenticated && result.status){
                                                       final parsed = jsonDecode(result.data ?? '').cast<Map<String, dynamic>>();
@@ -1065,7 +1095,8 @@ class HomeState extends State<Home>  {
                                                         claimsFromDateContrl.text = '';
                                                         claimsToDateContrl.text = '';
                                                         _claimsType = '';
-                                                        claimsData =  parsed.map<AttendanceData>((json) => AttendanceData.fromJson(json)).toList();
+                                                        _claimsTypeObj = null;
+                                                        claimsData =  parsed.map<ClaimData>((json) => ClaimData.fromJson(json)).toList();
                                                         isLoading = false;
                                                         Navigator.pop(context);
                                                         Navigator.pushNamed(context, claimsRoute, arguments: claimsData,);
@@ -1075,7 +1106,9 @@ class HomeState extends State<Home>  {
                                                       setState(() {
                                                         claimsFromDateContrl.text = '';
                                                         claimsToDateContrl.text = '';
+                                                        _claimsTypeObj = null;
                                                         _claimsType = '';
+                                                        isLoading = false;
                                                       });
                                                       Navigator.pop(context);
                                                       ScaffoldMessenger.of(context).showSnackBar(
@@ -1093,6 +1126,7 @@ class HomeState extends State<Home>  {
                                                   claimsFromDateContrl.text = '';
                                                   claimsToDateContrl.text = '';
                                                   _claimsType = '';
+                                                  _claimsTypeObj = null;
                                                 });
                                                 Navigator.pop(context);
                                               },
@@ -1139,7 +1173,7 @@ class HomeState extends State<Home>  {
     );
   }
 
-  Future<Null> _selectMonth(BuildContext context, DateTime date, var textController) async {
+  Future<Null> _selectMonth(BuildContext context, var textController) async {
     final selected = await showMonthPicker(
         context: context,
         initialDate: DateTime.now(),
@@ -1148,8 +1182,8 @@ class HomeState extends State<Home>  {
     );
     if (selected != null)
       setState(() {
-        date = selected;
-        textController.text = DateFormat('MMM-yyyy').format(date);
+        payslipSelectedDate = selected;
+        textController.text = DateFormat('MMM-yyyy').format(payslipSelectedDate);
       });
   }
   Future<Null> _selectDate(BuildContext context,DateTime date, var textController) async {
@@ -1187,7 +1221,6 @@ class HomeState extends State<Home>  {
     );
   }
 }
-
 
 class ScreenArguments {
   final String fromDate;
@@ -1936,6 +1969,19 @@ class RandomColorModel {
     return Color.fromARGB(random.nextInt(300), random.nextInt(300),
         random.nextInt(300), random.nextInt(300));
   }
+}
+class ClaimType {
+  String claimType;
+  String claimDesc;
+
+  ClaimType( {required this.claimType,required this.claimDesc});
+
+   factory ClaimType.fromJson(Map<String, dynamic> json) {
+     return ClaimType(
+       claimType: json['claimType'],
+       claimDesc: json['claimDesc'],
+     );
+   }
 }
 
 

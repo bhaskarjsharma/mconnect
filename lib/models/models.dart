@@ -248,13 +248,41 @@ class PayrollData{
   }
 }
 class ClaimData{
-  final String claim_type;
+  final String Begda;
+  final String Pernr;
+  final String ClaimType;
+  final String Endda;
+  final String CreationDt;
+  final String SubmitDt;
+  final String Period;
+  final String DocNo;
+  final String ClaimStatus;
+  final String ProcessDt;
+  final String ClaimAmt;
+  final String AprrovedAmt;
+  final String PaymentDate;
+  final String Remarks;
 
-  ClaimData({required this.claim_type});
+  ClaimData({required this.Begda,required this.Pernr ,required this.ClaimType ,required this.Endda ,required this.CreationDt
+  ,required this.SubmitDt ,required this.Period ,required this.DocNo ,required this.ClaimStatus ,required this.ProcessDt ,required this.ClaimAmt
+  ,required this.AprrovedAmt ,required this.PaymentDate ,required this.Remarks});
 
   factory ClaimData.fromJson(Map<String, dynamic> json) {
     return ClaimData(
-      claim_type: json['claim_type'],
+      Begda   : json['Begda'],
+      Pernr : json['Pernr'],
+      ClaimType  : json['ClaimType'],
+      Endda   : json['Endda'],
+      CreationDt  : json['CreationDt'],
+      SubmitDt  : json['SubmitDt'],
+      Period    : json['Period'],
+      DocNo  : json['DocNo'],
+      ClaimStatus   : json['ClaimStatus'],
+      ProcessDt   : json['ProcessDt'],
+      ClaimAmt   : json['ClaimAmt'],
+      AprrovedAmt   : json['AprrovedAmt'],
+      PaymentDate   : json['PaymentDate'],
+      Remarks  : json['Remarks'],
     );
   }
 }

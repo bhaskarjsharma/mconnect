@@ -126,7 +126,7 @@ class _DocumentsState extends State<Documents>{
     final isPermissionStatusGranted = await requestStoragePermissions();
     if (isPermissionStatusGranted) {
       try {
-        final Dio _dio = Dio()..interceptors.add(ApiInterceptors());
+        final Dio _dio = Dio();
         var response = await _dio.download(url,
             finalSavePath, onReceiveProgress: (int received, int total) {
               if (total != -1) {

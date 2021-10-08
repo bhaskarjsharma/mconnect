@@ -55,17 +55,17 @@ class EndPointProvider{
     }
   }
 
-  Future<List<NewsContent>> fetchContent() async{
-    final response = await _client.get('https://connect.bcplindia.co.in/MobileAppAPI/News_Events');
-
-    if (response.statusCode == 200) {
-      List jsonResponse = response.data;
-      return jsonResponse.map((newscontent) => new NewsContent.fromJson(newscontent)).toList();
-    } else {
-      print("The error message is: ${response.data}");
-      throw Exception('Failed to authenticate.');
-    }
-  }
+  // Future<List<NewsContent>> fetchContent() async{
+  //   final response = await _client.post('https://connect.bcplindia.co.in/MobileAppAPI/News_Events');
+  //
+  //   if (response.statusCode == 200) {
+  //     List jsonResponse = response.data;
+  //     return jsonResponse.map((newscontent) => new NewsContent.fromJson(newscontent)).toList();
+  //   } else {
+  //     print("The error message is: ${response.data}");
+  //     throw Exception('Failed to authenticate.');
+  //   }
+  // }
   Future<APIResponseData> fetchContentAttachments(int contentId, String contentType) async{
     final response = await _client.post('https://connect.bcplindia.co.in/MobileAppAPI/ContentAttachments',
         data: {'contentId': contentId, 'contentType': contentType});
@@ -112,7 +112,7 @@ class EndPointProvider{
     }
   }
   Future<APIResponseData> fetchHolidayList() async{
-    final response = await _client.get('https://connect.bcplindia.co.in/MobileAppAPI/GetHolidayList');
+    final response = await _client.post('https://connect.bcplindia.co.in/MobileAppAPI/GetHolidayList');
     if (response.statusCode == 200) {
       return APIResponseData.fromJson(response.data);
     } else {
@@ -145,6 +145,18 @@ class EndPointProvider{
   Future<APIResponseData> fetchPayrollData(String empno, String month, String year) async{
     final response = await _client.post('https://connect.bcplindia.co.in/MobileAppAPI/GetPayrollResult',
         data: {'empno': empno, 'month': month, 'year': year});
+
+    if (response.statusCode == 200) {
+      return APIResponseData.fromJson(response.data);
+
+    } else {
+      print("The error message is: ${response.data}");
+      throw Exception('Failed to retrieve data.');
+    }
+  }
+  Future<APIResponseData> fetchClaimsData(String empno, String claimType, String fromDate, String toDate) async{
+    final response = await _client.post('https://connect.bcplindia.co.in/MobileAppAPI/GetClaimDetails',
+        data: {'empno': empno, 'claimType': claimType, 'fromDate': fromDate, 'toDate': toDate});
 
     if (response.statusCode == 200) {
       return APIResponseData.fromJson(response.data);
