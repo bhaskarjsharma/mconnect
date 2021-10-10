@@ -286,5 +286,18 @@ class ClaimData{
     );
   }
 }
+class ITACMasterData{
+  final List<String> data1;
+  final List<String> data2;
+
+  ITACMasterData({required this.data1, required this.data2});
+
+  factory ITACMasterData.fromJson(Map<String, dynamic> json) {
+    return ITACMasterData(
+      data1: (json['data1'] as List).map((e) => e as String).toList(),
+      data2: (json['data2'] as List).map((e) => e as String).toList(),
+    );
+  }
+}
 
 

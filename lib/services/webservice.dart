@@ -166,6 +166,41 @@ class EndPointProvider{
       throw Exception('Failed to retrieve data.');
     }
   }
+  Future<APIResponseData> postAttendRegulRequest(String empno, String inTime, String outTime, String reason) async{
+    final response = await _client.post('https://connect.bcplindia.co.in/MobileAppAPI/AttendanceRegularisationRequest',
+        data: {'empno': empno, 'inTime': inTime, 'outTime': outTime, 'reason': reason});
+
+    if (response.statusCode == 200) {
+      return APIResponseData.fromJson(response.data);
+
+    } else {
+      print("The error message is: ${response.data}");
+      throw Exception('Failed to post data.');
+    }
+  }
+  Future<APIResponseData> fetchITACMasterData() async{
+    final response = await _client.get('https://connect.bcplindia.co.in/MobileAppAPI/ITACMaster');
+
+    if (response.statusCode == 200) {
+      return APIResponseData.fromJson(response.data);
+
+    } else {
+      print("The error message is: ${response.data}");
+      throw Exception('Failed to retrieve data.');
+    }
+  }
+  Future<APIResponseData> postITACRequest(String empno, String srType, String location, String title, String description) async{
+    final response = await _client.post('https://connect.bcplindia.co.in/MobileAppAPI/ITACRequest',
+        data: {'empno': empno, 'SRType': srType, 'location': location, 'contactNo': 'mobile', 'title': title, 'description': description});
+
+    if (response.statusCode == 200) {
+      return APIResponseData.fromJson(response.data);
+
+    } else {
+      print("The error message is: ${response.data}");
+      throw Exception('Failed to post data.');
+    }
+  }
 }
 
 Future<String> getDownloadDirectory() async {

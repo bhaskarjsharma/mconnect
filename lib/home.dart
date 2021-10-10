@@ -1,7 +1,10 @@
 
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_projects/people.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -24,6 +27,7 @@ import 'models/models.dart';
 import 'dart:io' as io;
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path/path.dart' as path;
+//import 'package:data_connection_checker/data_connection_checker.dart';
 
 class Home extends StatefulWidget {
   @override
@@ -31,6 +35,12 @@ class Home extends StatefulWidget {
 }
 
 class HomeState extends State<Home>  {
+
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey();
+  bool isConnected = false;
+  ConnectivityResult _connectionStatus = ConnectivityResult.none;
+  final Connectivity _connectivity = Connectivity();
+  late StreamSubscription<ConnectivityResult> _connectivitySubscription;
   late DioClient _dio;
   late var _endpointProvider;
   late Future<APIResponseData> _apiResponseData;
@@ -42,6 +52,8 @@ class HomeState extends State<Home>  {
   final _attendanceFormKey = GlobalKey<FormState>();
   final _shiftRosterFormKey = GlobalKey<FormState>();
   final _claimsFormKey = GlobalKey<FormState>();
+  final _attRegulFormKey = GlobalKey<FormState>();
+  final _itacFormKey = GlobalKey<FormState>();
 
   final empNameContrl = TextEditingController();
   String _empUnit = '';
@@ -70,6 +82,12 @@ class HomeState extends State<Home>  {
   DateTime claimsSelectedFromDate = DateTime.now();
   DateTime claimsSelectedToDate = DateTime.now();
 
+  final attRegInTimeContrl = TextEditingController();
+  final attRegOutTimeContrl = TextEditingController();
+  final attRegReasonContrl = TextEditingController();
+  String attRegIntime = '';
+  String attRegOutTime = '';
+
   bool isLoading = false;
 
   late List<Employee> peopleData;
@@ -78,6 +96,14 @@ class HomeState extends State<Home>  {
   late List<PayrollData> payrollData;
   late List<AttendanceData> attendanceData;
   late List<ShiftRoster> shiftRosterData;
+
+  ITACMasterData? itacMasterData;
+  List<String> ITACSRType = [];
+  List<String> ITACSRLocation = [];
+  String? itacSRType;
+  String? itacLocation;
+  final itacSRTitleContrl = TextEditingController();
+  final itacSRDescContrl = TextEditingController();
 
   String _claimsType = '';
   ClaimType? _claimsTypeObj;
@@ -102,15 +128,22 @@ class HomeState extends State<Home>  {
 
   @override
   void initState(){
+    super.initState();
     _dio = new DioClient();
     _endpointProvider = new EndPointProvider(_dio.init());
-    super.initState();
+    initConnectivity();
+    _connectivitySubscription = _connectivity.onConnectivityChanged.listen(_updateConnectionStatus);
   }
-
+  @override
+  void dispose() {
+    _connectivitySubscription.cancel();
+    super.dispose();
+  }
   @override
   Widget build(BuildContext context) {
 
     return Scaffold(
+      key: _scaffoldKey,
       appBar: AppBar(
         leading: Container(
           width: 40,
@@ -119,7 +152,7 @@ class HomeState extends State<Home>  {
         title: Text('Connect'),
       ),
       endDrawer: AppDrawer(),
-      body: Container(
+      body: _connectionStatus == ConnectivityResult.none? noConnectivityError() : Container(
         padding:EdgeInsets.only(top: 10),
         //decoration: BoxDecoration(color:Colors.amberAccent),
         child: GridView.count(
@@ -135,16 +168,45 @@ class HomeState extends State<Home>  {
             makeDashboardItem("Leave Quota",const Icon(Icons.info,size:30, color:Colors.orange),Colors.orange,leaveQuotaRoute),
             makeDashboardItem("Holiday List",const Icon(ConnectAppIcon.calendar,size:30, color:Colors.brown),Colors.brown,holidayListRoute),
             makeDashboardItem("Payslips", const Icon(ConnectAppIcon.rupee_sign,size:30, color:Colors.cyan),Colors.cyan,payslipRoute),
-            makeDashboardItem("Attendance",const Icon(Icons.fingerprint,size:30, color:Colors.deepPurple),Colors.deepPurple,attendanceRoute),
+            makeDashboardItem("Punch Time",const Icon(Icons.fingerprint,size:30, color:Colors.deepPurple),Colors.deepPurple,attendanceRoute),
             makeDashboardItem("Shift Roster",const Icon(ConnectAppIcon.calendar_alt,size:30, color:Colors.teal),Colors.teal,shiftRosterRoute),
-            makeDashboardItem("Claims",const Icon(ConnectAppIcon.file_alt,size:30, color:Colors.red),Colors.red,homeRoute),
+            makeDashboardItem("Regularise Attendance",const Icon(Icons.schedule,size:30, color:Colors.red),Colors.red,homeRoute),
+            makeDashboardItem("ITAC",const Icon(Icons.computer,size:30, color:Colors.red),Colors.red,homeRoute),
 
+          ],
+        ),
+      ),
+
+
+    );
+  }
+  Widget noConnectivityError(){
+    return Container (
+      height: MediaQuery.of(context).size.height / 1.3,
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Icon(Icons.signal_wifi_connected_no_internet_4,size:30, color:Colors.red),
+            Container(
+              padding: EdgeInsets.all(10),
+              child:Text('Error: No Internet connection. Please check your data/wifi settings',style: TextStyle(
+                fontWeight: FontWeight.w500,fontSize: 18,),
+              ),
+            ),
           ],
         ),
       ),
     );
   }
-
+   // networkSnackBar(){
+   //  if(_connectionStatus == ConnectivityResult.none){
+   //    ScaffoldMessenger.of(context).showSnackBar( new SnackBar(content: Text('Error: No Internet Connection'),
+   //      backgroundColor: Colors.red,
+   //      duration: Duration(seconds: 3),),);
+   //  }
+   // }
   Card makeDashboardItem(String title, Widget icon, MaterialColor colour, String routeName){
     return Card(
       //elevation: 1.0,
@@ -356,6 +418,18 @@ class HomeState extends State<Home>  {
                                                         SnackBar(content: Text("Error in data fetching")),
                                                       );
                                                     }
+                                                  }).catchError( (error) {
+                                                    setState(() {
+                                                      empNameContrl.text = '';
+                                                      _empUnit = '';
+                                                      _empDisc = '';
+                                                      _empBldGrp = '';
+                                                      isLoading = false;
+                                                    });
+                                                    Navigator.pop(context);
+                                                    ScaffoldMessenger.of(context).showSnackBar(
+                                                      SnackBar(content: Text("Error in data fetching")),
+                                                    );
                                                   });
                                                 },
                                                 child: const Text('Submit'),
@@ -500,6 +574,16 @@ class HomeState extends State<Home>  {
                                                       SnackBar(content: Text("Error in data fetching")),
                                                     );
                                                   }
+                                                }).catchError( (error) {
+                                                  setState(() {
+                                                    docNameContrl.text = '';
+                                                    _documentCategory = '';
+                                                    isLoading = false;
+                                                  });
+                                                  Navigator.pop(context);
+                                                  ScaffoldMessenger.of(context).showSnackBar(
+                                                    SnackBar(content: Text("Error in data fetching")),
+                                                  );
                                                 });
                                               },
                                               child: const Text('Submit'),
@@ -621,6 +705,15 @@ class HomeState extends State<Home>  {
                                                         SnackBar(content: Text("Error in data fetching")),
                                                       );
                                                     }
+                                                  }).catchError( (error) {
+                                                    setState(() {
+                                                      monthContrl.text = '';
+                                                      isLoading = false;
+                                                    });
+                                                    Navigator.pop(context);
+                                                    ScaffoldMessenger.of(context).showSnackBar(
+                                                      SnackBar(content: Text("Error in data fetching")),
+                                                    );
                                                   });
                                                 }
                                               },
@@ -655,7 +748,7 @@ class HomeState extends State<Home>  {
                 },
               );
             }
-            else if(title == "Attendance"){
+            else if(title == "Punch Time"){
               showDialog(
                 context: context,
                 builder: (context){
@@ -771,6 +864,16 @@ class HomeState extends State<Home>  {
                                                         SnackBar(content: Text("Error in data fetching")),
                                                       );
                                                     }
+                                                  }).catchError( (error) {
+                                                    setState(() {
+                                                      attendanceFromDateContrl.text = '';
+                                                      attendanceToDateContrl.text = '';
+                                                      isLoading = false;
+                                                    });
+                                                    Navigator.pop(context);
+                                                    ScaffoldMessenger.of(context).showSnackBar(
+                                                      SnackBar(content: Text("Error in data fetching")),
+                                                    );
                                                   });
                                                 }
                                               },
@@ -923,6 +1026,16 @@ class HomeState extends State<Home>  {
                                                         SnackBar(content: Text("Error in data fetching")),
                                                       );
                                                     }
+                                                  }).catchError( (error) {
+                                                    setState(() {
+                                                      shiftFromDateContrl.text = '';
+                                                      shiftToDateContrl.text = '';
+                                                      isLoading = false;
+                                                    });
+                                                    Navigator.pop(context);
+                                                    ScaffoldMessenger.of(context).showSnackBar(
+                                                      SnackBar(content: Text("Error in data fetching")),
+                                                    );
                                                   });
                                                 }
                                               },
@@ -1115,6 +1228,18 @@ class HomeState extends State<Home>  {
                                                         SnackBar(content: Text("Error in data fetching")),
                                                       );
                                                     }
+                                                  }).catchError( (error) {
+                                                    setState(() {
+                                                      claimsFromDateContrl.text = '';
+                                                      claimsToDateContrl.text = '';
+                                                      _claimsTypeObj = null;
+                                                      _claimsType = '';
+                                                      isLoading = false;
+                                                    });
+                                                    Navigator.pop(context);
+                                                    ScaffoldMessenger.of(context).showSnackBar(
+                                                      SnackBar(content: Text("Error in data fetching")),
+                                                    );
                                                   });
                                                 }
                                               },
@@ -1138,6 +1263,422 @@ class HomeState extends State<Home>  {
                                           ],
                                         ),
                                       ),
+                                    ],
+                                  ),
+                                ),
+
+                              ),
+                            );
+                          },
+                        ),
+                      );
+                    },
+                  );
+                },
+              );
+            }
+            else if(title == "Regularise Attendance"){
+              showDialog(
+                context: context,
+                builder: (context){
+                  return StatefulBuilder(
+                    builder: (context, setState){
+                      return AlertDialog (
+                        insetPadding: EdgeInsets.all(0),
+                        content: Builder(
+                          builder: (context) {
+                            // Get available height and width of the build area of this widget. Make a choice depending on the size.
+                            var height = MediaQuery.of(context).size.height;
+                            var width = MediaQuery.of(context).size.width;
+
+                            return Container(
+                              height: height - (height/3),
+                              width: width - (width/4),
+                              child: isLoading ? waiting() : Form(
+                                key: _attRegulFormKey,
+                                child: Container(
+                                  margin: EdgeInsets.symmetric(vertical: 20),
+                                  child:Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    crossAxisAlignment: CrossAxisAlignment.center,
+
+                                    children: <Widget>[
+                                      Container(
+
+                                        padding: EdgeInsets.all(10),
+                                        child: Center(child: Text('Attendance Regularisation Request',
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.w800,
+                                              fontSize: 20,
+                                              color: Colors.blue[500],
+                                            ))) ,
+                                      ),
+                                      Container(
+                                        padding: EdgeInsets.all(10),
+                                        child: TextFormField(
+                                          controller: attRegInTimeContrl,
+                                          decoration: InputDecoration(
+                                            border: OutlineInputBorder(),
+                                            labelText: 'In Date & Time',
+                                          ),
+                                          onTap: (){
+                                            // Below line stops keyboard from appearing
+                                            FocusScope.of(context).requestFocus(new FocusNode());
+                                            _selectDateTime(context,attRegIntime,attRegInTimeContrl);
+                                          },
+                                          // The validator receives the text that the user has entered.
+                                          validator: (value) {
+                                            if (value == null || value.isEmpty) {
+                                              return 'Please enter In Date & Time';
+                                            }
+                                            return null;
+                                          },
+                                        ),
+                                      ),
+                                      Container(
+                                        padding: EdgeInsets.all(10),
+                                        child: TextFormField(
+                                          controller: attRegOutTimeContrl,
+                                          decoration: InputDecoration(
+                                            border: OutlineInputBorder(),
+                                            labelText: 'Out Date & Time',
+                                          ),
+                                          onTap: (){
+                                            // Below line stops keyboard from appearing
+                                            FocusScope.of(context).requestFocus(new FocusNode());
+                                            _selectDateTime(context,attRegOutTime,attRegOutTimeContrl);
+                                          },
+                                          // The validator receives the text that the user has entered.
+                                          validator: (value) {
+                                            if (value == null || value.isEmpty) {
+                                              return 'Please enter Out Date & Time';
+                                            }
+                                            return null;
+                                          },
+                                        ),
+                                      ),
+                                      Container(
+                                        padding: EdgeInsets.all(10),
+                                        child: TextFormField(
+                                          controller: attRegReasonContrl,
+                                          maxLines: 3,
+                                          decoration: InputDecoration(
+                                            border: OutlineInputBorder(),
+                                            labelText: 'Reason for regularisation',
+                                          ),
+                                          // The validator receives the text that the user has entered.
+                                          validator: (value) {
+                                            if (value == null || value.isEmpty) {
+                                              return 'Please enter your reason for fegularisation';
+                                            }
+                                            return null;
+                                          },
+                                        ),
+                                      ),
+                                      Container(
+                                        padding: const EdgeInsets.all(10.0),
+                                        child: Row(
+                                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                          children: [
+                                            ElevatedButton(
+                                              onPressed: () {
+                                                // Validate returns true if the form is valid, or false otherwise.
+                                                if (_attRegulFormKey.currentState!.validate()) {
+                                                  setState(() {
+                                                    isLoading = true;
+                                                  });
+
+                                                  _apiResponseData = _endpointProvider.postAttendRegulRequest(empno,attRegIntime,attRegOutTime,
+                                                      attRegReasonContrl.text);
+
+                                                  _apiResponseData.then((result) {
+                                                    if(result.isAuthenticated && result.status){
+                                                      setState(() {
+                                                        attRegInTimeContrl.text = '';
+                                                        attRegOutTimeContrl.text = '';
+                                                        isLoading = false;
+                                                      });
+                                                      Navigator.pop(context);
+                                                      ScaffoldMessenger.of(context).showSnackBar(
+                                                        SnackBar(content: Text("Request successfully submitted")),
+                                                      );
+                                                    }
+                                                    else{
+                                                      setState(() {
+                                                        attRegInTimeContrl.text = '';
+                                                        attRegOutTimeContrl.text = '';
+                                                        isLoading = false;
+                                                      });
+                                                      Navigator.pop(context);
+                                                      ScaffoldMessenger.of(context).showSnackBar(
+                                                        SnackBar(content: Text("Error in submitting request")),
+                                                      );
+                                                    }
+                                                  }).catchError( (error) {
+                                                    setState(() {
+                                                      attRegInTimeContrl.text = '';
+                                                      attRegOutTimeContrl.text = '';
+                                                      isLoading = false;
+                                                    });
+                                                    Navigator.pop(context);
+                                                    ScaffoldMessenger.of(context).showSnackBar(
+                                                      SnackBar(content: Text("Error in submitting request")),
+                                                    );
+                                                  });
+                                                }
+                                              },
+                                              child: const Text('Submit Request'),
+                                            ),
+                                            ElevatedButton(
+                                              onPressed: () {
+                                                setState(() {
+                                                  attRegInTimeContrl.text = '';
+                                                  attRegOutTimeContrl.text = '';
+                                                });
+                                                Navigator.pop(context);
+                                              },
+                                              child: const Text('Cancel'),
+                                              style: ButtonStyle(
+                                                backgroundColor: MaterialStateProperty.all(Colors.red),
+                                              ),
+                                            )
+                                          ],
+                                        ),
+                                      ),
+
+                                    ],
+                                  ),
+                                ),
+
+                              ),
+                            );
+                          },
+                        ),
+                      );
+                    },
+                  );
+                },
+              );
+            }
+            else if(title == "ITAC"){
+              getITACMasterData();
+              showDialog(
+                context: context,
+                builder: (context){
+                  return StatefulBuilder(
+                    builder: (context, setState){
+                      return AlertDialog (
+                        insetPadding: EdgeInsets.all(0),
+                        content: Builder(
+                          builder: (context) {
+                            // Get available height and width of the build area of this widget. Make a choice depending on the size.
+                            var height = MediaQuery.of(context).size.height;
+                            var width = MediaQuery.of(context).size.width;
+
+                            return Container(
+                              height: height - (height/3),
+                              width: width - (width/4),
+                              child: isLoading ? waiting() : Form(
+                                key: _itacFormKey,
+                                child: Container(
+                                  margin: EdgeInsets.symmetric(vertical: 20),
+                                  child:Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    crossAxisAlignment: CrossAxisAlignment.center,
+
+                                    children: <Widget>[
+                                      Container(
+
+                                        padding: EdgeInsets.all(10),
+                                        child: Center(child: Text('ITAC Request',
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.w800,
+                                              fontSize: 20,
+                                              color: Colors.blue[500],
+                                            ))) ,
+                                      ),
+                                      Container(
+                                        padding: EdgeInsets.only(top:10,bottom:10),
+                                        child: InputDecorator(
+                                          decoration: InputDecoration(
+                                            labelText: 'Type',
+                                            contentPadding: const EdgeInsets.only(left: 10.0),
+                                            border: const OutlineInputBorder(),
+                                          ),
+                                          child: DropdownButtonHideUnderline(
+                                            child: DropdownButtonFormField<String>(
+                                              //value: itacSRType,
+                                              //hint: Text('Mandatory'),
+                                              style: TextStyle(color: Colors.black),
+                                              items: ITACSRType.map<DropdownMenuItem<String>>((String value) {
+                                                return DropdownMenuItem<String>(
+                                                  value: value,
+                                                  child: Text(value),
+                                                );
+                                              }).toList(),
+                                              onChanged: (String? newValue) {
+                                                setState(() {
+                                                  itacSRType = newValue!;
+                                                });
+                                              },
+                                              validator: (value) {
+                                                if (value == null) {
+                                                  return 'Please select SR type';
+                                                }
+                                                return null;
+                                              },
+                                            ),
+                                          ),
+                                        ),
+
+                                      ),
+                                      Container(
+                                        padding: EdgeInsets.only(top:10,bottom:10),
+                                        child: InputDecorator(
+                                          decoration: InputDecoration(
+                                            labelText: 'Location',
+                                            contentPadding: const EdgeInsets.only(left: 10.0),
+                                            border: const OutlineInputBorder(),
+                                          ),
+                                          child: DropdownButtonHideUnderline(
+                                            child: DropdownButtonFormField<String>(
+                                              //value: itacLocation,
+                                              //hint: Text('Mandatory'),
+                                              style: TextStyle(color: Colors.black),
+                                              items: ITACSRLocation.map<DropdownMenuItem<String>>((String value) {
+                                                return DropdownMenuItem<String>(
+                                                  value: value,
+                                                  child: Text(value),
+                                                );
+                                              }).toList(),
+                                              onChanged: (String? newValue) {
+                                                setState(() {
+                                                  itacLocation = newValue!;
+                                                });
+                                              },
+                                              validator: (value) {
+                                                if (value == null) {
+                                                  return 'Please select location';
+                                                }
+                                                return null;
+                                              },
+                                            ),
+                                          ),
+                                        ),
+
+                                      ),
+                                      Container(
+                                        padding: EdgeInsets.only(top:10,bottom:10),
+                                        child: TextFormField(
+                                          controller: itacSRTitleContrl,
+                                          decoration: InputDecoration(
+                                            border: OutlineInputBorder(),
+                                            labelText: 'Title',
+                                          ),
+                                          validator: (value) {
+                                            if (value == null || value.isEmpty) {
+                                              return 'Please enter title';
+                                            }
+                                            return null;
+                                          },
+                                        ),
+                                      ),
+                                      Container(
+                                        padding: EdgeInsets.only(top:10,bottom:10),
+                                        child: TextFormField(
+                                          controller: itacSRDescContrl,
+                                          maxLines: 3,
+                                          decoration: InputDecoration(
+                                            border: OutlineInputBorder(),
+                                            labelText: 'Description',
+                                          ),
+                                          // The validator receives the text that the user has entered.
+                                          validator: (value) {
+                                            if (value == null || value.isEmpty) {
+                                              return 'Please enter your request description';
+                                            }
+                                            return null;
+                                          },
+                                        ),
+                                      ),
+                                      Container(
+                                        padding: const EdgeInsets.all(10.0),
+                                        child: Row(
+                                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                          children: [
+                                            ElevatedButton(
+                                              onPressed: () {
+                                                // Validate returns true if the form is valid, or false otherwise.
+                                                if (_itacFormKey.currentState!.validate()) {
+                                                  setState(() {
+                                                    isLoading = true;
+                                                  });
+
+                                                  _apiResponseData = _endpointProvider.postITACRequest(empno,itacSRType,itacLocation,
+                                                      itacSRTitleContrl.text, itacSRDescContrl.text);
+                                                  _apiResponseData.then((result) {
+                                                    if(result.isAuthenticated && result.status){
+                                                      setState(() {
+                                                        itacSRType = '';
+                                                        itacLocation = '';
+                                                        itacSRTitleContrl.text = '';
+                                                        itacSRDescContrl.text = '';
+                                                        isLoading = false;
+                                                      });
+                                                      Navigator.pop(context);
+                                                      ScaffoldMessenger.of(context).showSnackBar(
+                                                        SnackBar(content: Text("Request successfully submitted")),
+                                                      );
+                                                    }
+                                                    else{
+                                                      setState(() {
+                                                        itacSRType = '';
+                                                        itacLocation = '';
+                                                        itacSRTitleContrl.text = '';
+                                                        itacSRDescContrl.text = '';
+                                                        isLoading = false;
+                                                      });
+                                                      Navigator.pop(context);
+                                                      ScaffoldMessenger.of(context).showSnackBar(
+                                                        SnackBar(content: Text("Error in submitting request")),
+                                                      );
+                                                    }
+                                                  }).catchError( (error) {
+                                                    setState(() {
+                                                      itacSRType = '';
+                                                      itacLocation = '';
+                                                      itacSRTitleContrl.text = '';
+                                                      itacSRDescContrl.text = '';
+                                                      isLoading = false;
+                                                    });
+                                                    Navigator.pop(context);
+                                                    ScaffoldMessenger.of(context).showSnackBar(
+                                                      SnackBar(content: Text("Error in submitting request")),
+                                                    );
+                                                  });
+                                                }
+                                              },
+                                              child: const Text('Submit Request'),
+                                            ),
+                                            ElevatedButton(
+                                              onPressed: () {
+                                                setState(() {
+                                                  itacSRType = '';
+                                                  itacLocation = '';
+                                                  itacSRTitleContrl.text = '';
+                                                  itacSRDescContrl.text = '';
+                                                });
+                                                Navigator.pop(context);
+                                              },
+                                              child: const Text('Cancel'),
+                                              style: ButtonStyle(
+                                                backgroundColor: MaterialStateProperty.all(Colors.red),
+                                              ),
+                                            )
+                                          ],
+                                        ),
+                                      ),
+
                                     ],
                                   ),
                                 ),
@@ -1200,6 +1741,40 @@ class HomeState extends State<Home>  {
       });
   }
 
+  Future<Null> _selectDateTime(BuildContext context,String dateValue, var textController) async {
+    final datePicked = await showDatePicker(
+        context: context,
+        initialDate: DateTime.now(),
+        firstDate: DateTime(2021),
+        lastDate: DateTime(2101));
+    if (datePicked != null){
+      final timePicked = await showTimePicker(
+        context: context,
+        initialTime: TimeOfDay(hour: 00, minute: 00),
+      );
+      if(timePicked != null){
+        setState(() {
+          DateTime date = DateTime(datePicked.year, datePicked.month, datePicked.day, timePicked.hour,timePicked.minute);
+          textController.text = DateFormat('dd-MM-yyyy hh:mm aaa').format(date);
+          dateValue = date.toString();
+        });
+      }
+    }
+  }
+
+  getITACMasterData(){
+    _apiResponseData = _endpointProvider.fetchITACMasterData();
+    _apiResponseData.then((result) {
+      if(result.isAuthenticated && result.status){
+        setState(() {
+          itacMasterData =  ITACMasterData.fromJson(jsonDecode(result.data ?? ''));
+          ITACSRType = itacMasterData!.data1;
+          ITACSRLocation = itacMasterData!.data2;
+        });
+      }
+    });
+  }
+
   Widget waiting(){
     return Container(
       height: MediaQuery.of(context).size.height / 1.3,
@@ -1211,7 +1786,7 @@ class HomeState extends State<Home>  {
             CircularProgressIndicator(),
             Container(
               padding: EdgeInsets.all(10),
-              child:Text('Getting your data. Please wait...',style: TextStyle(
+              child:Text('Serving your request. Please wait...',style: TextStyle(
                 fontWeight: FontWeight.w500,fontSize: 18,),
               ),
             ),
@@ -1219,6 +1794,58 @@ class HomeState extends State<Home>  {
         ),
       ),
     );
+  }
+
+  Future<void> initConnectivity() async {
+    late ConnectivityResult result;
+    // Platform messages may fail, so we use a try/catch PlatformException.
+    try {
+      result = await _connectivity.checkConnectivity();
+    } on PlatformException catch (e) {
+      print(e.toString());
+      return;
+    }
+    if (!mounted) {
+      return Future.value(null);
+    }
+    return _updateConnectionStatus(result);
+  }
+  Future<void> _updateConnectionStatus(ConnectivityResult result) async {
+
+     if(result != ConnectivityResult.none){
+       // connectivity detected
+       if (Platform.isAndroid) {
+         // Android- check if there is actual internet connection
+         bool isDeviceConnected = false;
+         try {
+           final result = await InternetAddress.lookup('google.com');
+           if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
+             isDeviceConnected = true;
+           } else {
+             isDeviceConnected = false;
+           }
+         } on SocketException catch(_) {
+           isDeviceConnected = false;
+         }
+         //isDeviceConnected = await DataConnectionChecker().hasConnection;
+         if(isDeviceConnected){
+           setState(() {
+             _connectionStatus = result;
+           });
+         }
+       } else if (Platform.isIOS) {
+         // result from default connectivity check can be updated
+         setState(() {
+           _connectionStatus = result;
+         });
+       }
+     }
+     else{
+       // No connectivity
+       setState(() {
+         _connectionStatus = result;
+       });
+     }
   }
 }
 
@@ -1352,7 +1979,6 @@ class _LeaveQuotaState extends State<LeaveQuotas>{
   late LeaveQuota _leaveQuotaData;
   late Future<APIResponseData> _apiResponseData;
   bool isLoading = true;
-
   @override
   void initState(){
     super.initState();
@@ -1406,7 +2032,6 @@ class _LeaveQuotaState extends State<LeaveQuotas>{
           descSection("Half Pay Leave (HPL)",_leaveQuotaData.QuotaHPL,Icons.star),
           descSection("Restricted Holiday Leave (RH)",_leaveQuotaData.QuotaRH,Icons.star),
           descSection("Compensatory Off Leave (COFF)",_leaveQuotaData.QuotaCOFF,Icons.star),
-
         ],
       ),
     );

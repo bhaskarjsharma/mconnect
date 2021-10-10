@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:open_file/open_file.dart';
@@ -76,8 +77,6 @@ void main() async{
   }
 
 }
-
-
 
 Future<void> showNotification(Map<String, dynamic> downloadStatus) async {
   final android = AndroidNotificationDetails(
