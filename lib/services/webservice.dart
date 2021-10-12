@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
 import '../home.dart';
 import 'package:flutter_projects/models/models.dart';
 import 'package:flutter_projects/services/permissions.dart';
@@ -32,6 +33,9 @@ class ApiInterceptors extends Interceptor {
       // API token validation failed. Force Logout.
       prefs.clear();
       storage.deleteAll();
+      ScaffoldMessenger.of(navigatorKey.currentState!.context).showSnackBar(
+        SnackBar(content: Text("Session expired. Please login again")),
+      );
       navigatorKey.currentState!.pushNamed('/Login');
     }
     else{
@@ -192,6 +196,30 @@ class EndPointProvider{
   Future<APIResponseData> postITACRequest(String empno, String srType, String location, String title, String description) async{
     final response = await _client.post('https://connect.bcplindia.co.in/MobileAppAPI/ITACRequest',
         data: {'empno': empno, 'SRType': srType, 'location': location, 'contactNo': 'mobile', 'title': title, 'description': description});
+
+    if (response.statusCode == 200) {
+      return APIResponseData.fromJson(response.data);
+
+    } else {
+      print("The error message is: ${response.data}");
+      throw Exception('Failed to post data.');
+    }
+  }
+  Future<APIResponseData> fetchHosCrLtrMasterData() async{
+    final response = await _client.get('https://connect.bcplindia.co.in/MobileAppAPI/getHospCrLetterMaster');
+
+    if (response.statusCode == 200) {
+      return APIResponseData.fromJson(response.data);
+
+    } else {
+      print("The error message is: ${response.data}");
+      throw Exception('Failed to retrieve data.');
+    }
+  }
+  Future<APIResponseData> postHosCrLtrRequest(String empno, var formDataMap) async{
+    FormData formData = FormData.fromMap(formDataMap);
+    final response = await _client.post('https://connect.bcplindia.co.in/MobileAppAPI/HospCreditLetter',
+        data: formData);
 
     if (response.statusCode == 200) {
       return APIResponseData.fromJson(response.data);

@@ -4,10 +4,12 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_projects/people.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:mat_month_picker_dialog/mat_month_picker_dialog.dart';
 import 'package:open_file/open_file.dart';
@@ -27,6 +29,7 @@ import 'models/models.dart';
 import 'dart:io' as io;
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path/path.dart' as path;
+import 'package:flutter_form_builder/flutter_form_builder.dart';
 //import 'package:data_connection_checker/data_connection_checker.dart';
 
 class Home extends StatefulWidget {
@@ -38,7 +41,7 @@ class HomeState extends State<Home>  {
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey();
   bool isConnected = false;
-  ConnectivityResult _connectionStatus = ConnectivityResult.none;
+  ConnectivityResult _connectionStatus = ConnectivityResult.mobile;
   final Connectivity _connectivity = Connectivity();
   late StreamSubscription<ConnectivityResult> _connectivitySubscription;
   late DioClient _dio;
@@ -85,8 +88,8 @@ class HomeState extends State<Home>  {
   final attRegInTimeContrl = TextEditingController();
   final attRegOutTimeContrl = TextEditingController();
   final attRegReasonContrl = TextEditingController();
-  String attRegIntime = '';
-  String attRegOutTime = '';
+  DateTime attRegIntime = DateTime.now();
+  DateTime attRegOutTime = DateTime.now();
 
   bool isLoading = false;
 
@@ -165,13 +168,15 @@ class HomeState extends State<Home>  {
             makeDashboardItem("News & Events",const Icon(ConnectAppIcon.newspaper,size:30, color:Colors.blue),Colors.blue,newsRoute),
             makeDashboardItem("People",const Icon(ConnectAppIcon.users,size:30, color:Colors.pink),Colors.pink,peopleRoute),
             makeDashboardItem("Documents",const Icon(ConnectAppIcon.article_alt,size:30, color:Colors.green),Colors.green,documentsRoute),
-            makeDashboardItem("Leave Quota",const Icon(Icons.info,size:30, color:Colors.orange),Colors.orange,leaveQuotaRoute),
+            makeDashboardItem("Leave Quota",const Icon(Icons.info,size:30, color:Colors.cyan),Colors.orange,leaveQuotaRoute),
             makeDashboardItem("Holiday List",const Icon(ConnectAppIcon.calendar,size:30, color:Colors.brown),Colors.brown,holidayListRoute),
-            makeDashboardItem("Payslips", const Icon(ConnectAppIcon.rupee_sign,size:30, color:Colors.cyan),Colors.cyan,payslipRoute),
-            makeDashboardItem("Punch Time",const Icon(Icons.fingerprint,size:30, color:Colors.deepPurple),Colors.deepPurple,attendanceRoute),
+            makeDashboardItem("Payslips", const Icon(ConnectAppIcon.rupee_sign,size:30, color:Colors.orange),Colors.cyan,payslipRoute),
+            makeDashboardItem("Punch Time",const Icon(Icons.fingerprint,size:30, color:Colors.red),Colors.deepPurple,attendanceRoute),
             makeDashboardItem("Shift Roster",const Icon(ConnectAppIcon.calendar_alt,size:30, color:Colors.teal),Colors.teal,shiftRosterRoute),
-            makeDashboardItem("Regularise Attendance",const Icon(Icons.schedule,size:30, color:Colors.red),Colors.red,homeRoute),
-            makeDashboardItem("ITAC",const Icon(Icons.computer,size:30, color:Colors.red),Colors.red,homeRoute),
+            makeDashboardItem("Regularise Attendance",const Icon(Icons.schedule,size:30, color:Colors.deepPurple),Colors.red,homeRoute),
+            makeDashboardItem("ITAC",const Icon(Icons.computer,size:30, color:Colors.blue),Colors.red,homeRoute),
+            makeDashboardItem("ECOFF & Overtime",const Icon(Icons.payments,size:30, color:Colors.lime),Colors.red,homeRoute),
+            makeDashboardItem("Hosp. Credit Letter",const Icon(Icons.medical_services,size:30, color:Colors.red),Colors.red,hosCrLtrRoute),
 
           ],
         ),
@@ -192,7 +197,7 @@ class HomeState extends State<Home>  {
             Container(
               padding: EdgeInsets.all(10),
               child:Text('Error: No Internet connection. Please check your data/wifi settings',style: TextStyle(
-                fontWeight: FontWeight.w500,fontSize: 18,),
+                fontWeight: FontWeight.w500,fontSize: 16,),
               ),
             ),
           ],
@@ -234,7 +239,7 @@ class HomeState extends State<Home>  {
                                 return Container(
                                   height: height - (height/2.3),
                                   width: width - (width/4),
-                                  child: isLoading ? waiting() :
+                                  child: isLoading ? waiting(context) :
 
                                   Form(
                                     key: _peopleFormKey,
@@ -482,7 +487,7 @@ class HomeState extends State<Home>  {
                             return Container(
                               height: height - (height/1.8),
                               width: width - (width/4),
-                              child: isLoading ? waiting() : Form(
+                              child: isLoading ? waiting(context) : Form(
                                 key: _documentFormKey,
                                 child: Container(
                                   margin: EdgeInsets.symmetric(vertical: 20),
@@ -635,7 +640,7 @@ class HomeState extends State<Home>  {
                             return Container(
                               height: height - (height/2.3),
                               width: width - (width/4),
-                              child: isLoading ? waiting() : Form(
+                              child: isLoading ? waiting(context) : Form(
                                 key: _paySlipFormKey,
                                 child: Container(
                                   margin: EdgeInsets.symmetric(vertical: 20),
@@ -765,7 +770,7 @@ class HomeState extends State<Home>  {
                             return Container(
                               height: height - (height/2.3),
                               width: width - (width/4),
-                              child: isLoading ? waiting() : Form(
+                              child: isLoading ? waiting(context) : Form(
                                 key: _attendanceFormKey,
                                 child: Container(
                                   margin: EdgeInsets.symmetric(vertical: 20),
@@ -926,7 +931,7 @@ class HomeState extends State<Home>  {
                             return Container(
                               height: height - (height/2.3),
                               width: width - (width/4),
-                              child: isLoading ? waiting() : Form(
+                              child: isLoading ? waiting(context) : Form(
                                 key: _shiftRosterFormKey,
                                 child: Container(
                                   margin: EdgeInsets.symmetric(vertical: 20),
@@ -1088,7 +1093,7 @@ class HomeState extends State<Home>  {
                             return Container(
                               height: height - (height/2.3),
                               width: width - (width/4),
-                              child: isLoading ? waiting() : Form(
+                              child: isLoading ? waiting(context) : Form(
                                 key: _claimsFormKey,
                                 child: Container(
                                   margin: EdgeInsets.symmetric(vertical: 20),
@@ -1294,7 +1299,7 @@ class HomeState extends State<Home>  {
                             return Container(
                               height: height - (height/3),
                               width: width - (width/4),
-                              child: isLoading ? waiting() : Form(
+                              child: isLoading ? waiting(context) : Form(
                                 key: _attRegulFormKey,
                                 child: Container(
                                   margin: EdgeInsets.symmetric(vertical: 20),
@@ -1324,7 +1329,7 @@ class HomeState extends State<Home>  {
                                           onTap: (){
                                             // Below line stops keyboard from appearing
                                             FocusScope.of(context).requestFocus(new FocusNode());
-                                            _selectDateTime(context,attRegIntime,attRegInTimeContrl);
+                                            _selectDateTimeInTime(context,attRegInTimeContrl);
                                           },
                                           // The validator receives the text that the user has entered.
                                           validator: (value) {
@@ -1346,7 +1351,7 @@ class HomeState extends State<Home>  {
                                           onTap: (){
                                             // Below line stops keyboard from appearing
                                             FocusScope.of(context).requestFocus(new FocusNode());
-                                            _selectDateTime(context,attRegOutTime,attRegOutTimeContrl);
+                                            _selectDateTimeOutTime(context,attRegOutTimeContrl);
                                           },
                                           // The validator receives the text that the user has entered.
                                           validator: (value) {
@@ -1388,7 +1393,7 @@ class HomeState extends State<Home>  {
                                                     isLoading = true;
                                                   });
 
-                                                  _apiResponseData = _endpointProvider.postAttendRegulRequest(empno,attRegIntime,attRegOutTime,
+                                                  _apiResponseData = _endpointProvider.postAttendRegulRequest(empno,attRegIntime.toString(),attRegOutTime.toString(),
                                                       attRegReasonContrl.text);
 
                                                   _apiResponseData.then((result) {
@@ -1478,7 +1483,7 @@ class HomeState extends State<Home>  {
                             return Container(
                               height: height - (height/3),
                               width: width - (width/4),
-                              child: isLoading ? waiting() : Form(
+                              child: isLoading ? waiting(context) : Form(
                                 key: _itacFormKey,
                                 child: Container(
                                   margin: EdgeInsets.symmetric(vertical: 20),
@@ -1741,7 +1746,7 @@ class HomeState extends State<Home>  {
       });
   }
 
-  Future<Null> _selectDateTime(BuildContext context,String dateValue, var textController) async {
+  Future<Null> _selectDateTimeInTime(BuildContext context,var textController) async {
     final datePicked = await showDatePicker(
         context: context,
         initialDate: DateTime.now(),
@@ -1754,9 +1759,28 @@ class HomeState extends State<Home>  {
       );
       if(timePicked != null){
         setState(() {
-          DateTime date = DateTime(datePicked.year, datePicked.month, datePicked.day, timePicked.hour,timePicked.minute);
-          textController.text = DateFormat('dd-MM-yyyy hh:mm aaa').format(date);
-          dateValue = date.toString();
+          attRegIntime = DateTime(datePicked.year, datePicked.month, datePicked.day, timePicked.hour,timePicked.minute);
+          textController.text = DateFormat('dd-MM-yyyy hh:mm aaa').format(attRegIntime);
+        });
+      }
+    }
+  }
+
+  Future<Null> _selectDateTimeOutTime(BuildContext context,var textController) async {
+    final datePicked = await showDatePicker(
+        context: context,
+        initialDate: DateTime.now(),
+        firstDate: DateTime(2021),
+        lastDate: DateTime(2101));
+    if (datePicked != null){
+      final timePicked = await showTimePicker(
+        context: context,
+        initialTime: TimeOfDay(hour: 00, minute: 00),
+      );
+      if(timePicked != null){
+        setState(() {
+          attRegOutTime = DateTime(datePicked.year, datePicked.month, datePicked.day, timePicked.hour,timePicked.minute);
+          textController.text = DateFormat('dd-MM-yyyy hh:mm aaa').format(attRegOutTime);
         });
       }
     }
@@ -1774,28 +1798,6 @@ class HomeState extends State<Home>  {
       }
     });
   }
-
-  Widget waiting(){
-    return Container(
-      height: MediaQuery.of(context).size.height / 1.3,
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            CircularProgressIndicator(),
-            Container(
-              padding: EdgeInsets.all(10),
-              child:Text('Serving your request. Please wait...',style: TextStyle(
-                fontWeight: FontWeight.w500,fontSize: 18,),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   Future<void> initConnectivity() async {
     late ConnectivityResult result;
     // Platform messages may fail, so we use a try/catch PlatformException.
@@ -2578,6 +2580,402 @@ class _DownloadDirectoryState extends State<DownloadDirectory>{
 
 }
 
+class HospitalCreditLetter extends StatefulWidget{
+  @override
+  State<HospitalCreditLetter> createState() => _HospitalCreditLetterState();
+}
+class _HospitalCreditLetterState extends State<HospitalCreditLetter>{
+  final _crLtrFormKey = GlobalKey<FormBuilderState>();
+  bool isLoading = false;
+  late Future<APIResponseData> _apiResponseData;
+  late var _endpointProvider;
+  late DioClient _dio;
+  HospCrLtrMasterData? masterData;
+  List<HospCrLtrHospitalMasterData> hospitals = [];
+  List<HospCrLtrEmpDepMasterData> patient = [];
+  final ImagePicker _picker = ImagePicker();
+  File? _attachment;
+  String _attachmentName = '';
+
+  @override
+  void initState(){
+    super.initState();
+    _dio = new DioClient();
+    _endpointProvider = new EndPointProvider(_dio.init());
+    getHospCrLtrMasterData();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        leading: Container(
+          width: 40,
+          child: Image.asset('images/bcpl_logo.png'),
+        ),
+        title: Text('Connect'),
+      ),
+      endDrawer: AppDrawer(),
+      body: isLoading ? waiting(context) : hospCrLetterForm(),
+    );
+  }
+
+  Widget hospCrLetterForm(){
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          SizedBox(height:10),
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.yellow,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            padding: EdgeInsets.all(10),
+            child: Text('Request for Hospitalisation Credit Letter',style: TextStyle(
+              fontWeight: FontWeight.w500,fontSize: 18,),),
+          ),
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white30,
+            ),
+            padding: EdgeInsets.all(15),
+            child: FormBuilder(
+              key: _crLtrFormKey,
+              autovalidateMode: AutovalidateMode.onUserInteraction,
+              child: Column(
+                children: [
+                  FormBuilderDropdown(
+                    name: 'patient',
+                    decoration: InputDecoration(
+                      labelText: 'Patient Name',
+                    ),
+                    allowClear: true,
+                    //hint: Text('Select Name'),
+                    validator: FormBuilderValidators.compose(
+                        [FormBuilderValidators.required(context)]),
+                    items: patient.map((patient) => DropdownMenuItem(
+                      value: patient,
+                      child: Text('${patient.patientName}'),
+                    ))
+                        .toList(),
+                    // onChanged: (HospCrLtrEmpDepMasterData? newValue) {
+                    //   setState(() {
+                    //     _patientName = newValue!.dependentName;
+                    //   });
+                    // },
+                  ),
+                  FormBuilderDateRangePicker(
+                    name: 'date_range',
+                    firstDate: DateTime(2021),
+                    lastDate: DateTime(2100),
+                    format: DateFormat('yyyy-MM-dd'),
+                    //onChanged: _onChanged,
+                    decoration: InputDecoration(
+                      labelText: 'Period (From Date - To Date)',
+                      //helperText: 'Enter Period',
+                      // hintText: 'Enter Period',
+                    ),
+                  ),
+                  FormBuilderTextField(
+                    name: 'period_days',
+                    decoration: InputDecoration(
+                      labelText:
+                      'Period in Days',
+                    ),
+                    //onChanged: _onChanged,
+                    // valueTransformer: (text) => num.tryParse(text),
+                    validator: FormBuilderValidators.compose([
+                      FormBuilderValidators.required(context),
+                      FormBuilderValidators.numeric(context),
+                      FormBuilderValidators.max(context, 7),
+                    ]),
+                    keyboardType: TextInputType.number,
+                  ),
+                  FormBuilderChoiceChip(
+                    name: 'outstation',
+                    decoration: InputDecoration(
+                      labelText: 'Outstation Facility',
+                    ),
+                    options: [
+                      FormBuilderFieldOption(
+                          value: 'Yes', child: Text('Yes')),
+                      FormBuilderFieldOption(
+                          value: 'No', child: Text('No')),
+                    ],
+                  ),
+                  FormBuilderChoiceChip(
+                    name: 'dr_recom',
+                    decoration: InputDecoration(
+                      labelText: 'Doctor Recommendation',
+                    ),
+                    options: [
+                      FormBuilderFieldOption(
+                          value: 'Yes', child: Text('Yes')),
+                      FormBuilderFieldOption(
+                          value: 'No', child: Text('No')),
+                    ],
+                  ),
+                  FormBuilderTextField(
+                    name: 'disease',
+                    decoration: InputDecoration(
+                      labelText:
+                      'Nature of disease/surgery',
+                    ),
+                    //onChanged: _onChanged,
+                    // valueTransformer: (text) => num.tryParse(text),
+                    validator: FormBuilderValidators.compose([
+                      FormBuilderValidators.required(context),
+                    ]),
+                  ),
+                  FormBuilderTextField(
+                    name: 'dr_details',
+                    decoration: InputDecoration(
+                      labelText:
+                      'Doctor name & address',
+                    ),
+                    //onChanged: _onChanged,
+                    // valueTransformer: (text) => num.tryParse(text),
+                    validator: FormBuilderValidators.compose([
+                      FormBuilderValidators.required(context),
+                    ]),
+                  ),
+                  FormBuilderDropdown(
+                    name: 'hospital',
+                    decoration: InputDecoration(
+                      labelText: 'Empanelled Institute',
+                    ),
+                    // initialValue: 'Male',
+                    allowClear: true,
+                    //hint: Text('Empanelled institute'),
+                    validator: FormBuilderValidators.compose(
+                        [FormBuilderValidators.required(context)]),
+                    items: hospitals.map((hospital) => DropdownMenuItem(
+                      value: hospital,
+                      child: Text('${hospital.hospitalName}, ${hospital.hospitalCity}, ${hospital.hospitalSt}'),
+                    ))
+                        .toList(),
+                    // onChanged: (HospCrLtrHospitalMasterData? newValue) {
+                    //   setState(() {
+                    //     _hosptalName = newValue!.hospitalName;
+                    //   });
+                    // },
+                  ),
+
+                  FormBuilderTextField(
+                    name: 'request',
+                    decoration: InputDecoration(
+                      labelText:
+                      'Request',
+                    ),
+                    //onChanged: _onChanged,
+                    // valueTransformer: (text) => num.tryParse(text),
+                    validator: FormBuilderValidators.compose([
+                      FormBuilderValidators.required(context),
+                    ]),
+                  ),
+                  FormBuilderTextField(
+                    name: 'sp_request',
+                    decoration: InputDecoration(
+                      labelText:
+                      'Special Request',
+                    ),
+                    //onChanged: _onChanged,
+                    // valueTransformer: (text) => num.tryParse(text),
+                    validator: FormBuilderValidators.compose([
+                      //FormBuilderValidators.required(context),
+                    ]),
+                  ),
+                  // Image Picker for Attachments
+                  FormBuilderField(
+                    name: "attach_files",
+                    validator: FormBuilderValidators.compose([
+                      FormBuilderValidators.required(context),
+                    ]),
+                    builder: (FormFieldState<dynamic> field) {
+                      return InputDecorator(
+                        decoration: InputDecoration(
+                          labelText: "Upload Prescription",
+                          contentPadding:
+                          EdgeInsets.only(top: 10.0, bottom: 0.0),
+                          border: InputBorder.none,
+                          errorText: field.errorText,
+                        ),
+                        child: GestureDetector(
+                          onTap: (){
+                            _showPicker(context);
+                          },
+                          child: Container(
+                            height: 70,
+                            decoration: BoxDecoration(
+                              color: Colors.black12,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Column(
+                              mainAxisAlignment : MainAxisAlignment.center,
+                              children: [
+                                Text('Tap to upload',style: TextStyle(color: Colors.red),),
+                                Text(_attachmentName,style: TextStyle(color: Colors.black),),
+                              ],
+                            ),
+                          ),
+
+                        ),
+                      );
+                    },
+                  ),
+
+                  Row(
+                    children: <Widget>[
+                      Expanded(
+                        child: MaterialButton(
+                          color: Theme.of(context).accentColor,
+                          child: Text(
+                            "Submit",
+                            style: TextStyle(color: Colors.white),
+                          ),
+                          onPressed: () {
+                            _crLtrFormKey.currentState!.save();
+                            if (_crLtrFormKey.currentState!.validate()) {
+                              var formDataMap = _crLtrFormKey.currentState!.value;
+                              formDataMap['empno'] = empno;
+                              formDataMap['file'] =  MultipartFile.fromFile(_attachment!.path, filename:_attachmentName);
+
+                              //debugPrint(formData['date_range'].end.toString());
+                              // formData.forEach((key, value) {
+                              //   debugPrint(key + ":" + value.toString());
+                              // });
+
+                              /// From notepad
+
+                              setState(() {
+                                isLoading = true;
+                              });
+                              _apiResponseData = _endpointProvider.postHosCrLtrRequest(empno,formDataMap);
+
+                              _apiResponseData.then((result) {
+                                if(result.isAuthenticated && result.status){
+                                  _crLtrFormKey.currentState!.reset();
+                                  setState(() {
+                                    isLoading = false;
+                                  });
+                                  Navigator.pop(context);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text("Request successfully submitted")),
+                                  );
+                                }
+                                else{
+                                  _crLtrFormKey.currentState!.reset();
+                                  setState(() {
+                                    isLoading = false;
+                                  });
+                                  Navigator.pop(context);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text("Error in submitting request")),
+                                  );
+                                }
+                              }).catchError( (error) {
+                                _crLtrFormKey.currentState!.reset();
+                                setState(() {
+                                  isLoading = false;
+                                });
+                                Navigator.pop(context);
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text("Error in submitting request")),
+                                );
+                              });
+
+
+                            } else {
+                              print("validation failed");
+                            }
+                          },
+                        ),
+                      ),
+                      SizedBox(width: 20),
+                      Expanded(
+                        child: MaterialButton(
+                          color: Colors.red,
+                          child: Text(
+                            "Reset",
+                            style: TextStyle(color: Colors.white),
+                          ),
+                          onPressed: () {
+                            _crLtrFormKey.currentState!.reset();
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  getHospCrLtrMasterData(){
+    _apiResponseData = _endpointProvider.fetchHosCrLtrMasterData();
+    _apiResponseData.then((result) {
+      if(result.isAuthenticated && result.status){
+        setState(() {
+          masterData =  HospCrLtrMasterData.fromJson(jsonDecode(result.data ?? ''));
+          hospitals = masterData!.hospitals;
+          patient.add(HospCrLtrEmpDepMasterData(patientName: user, relationWithEmp: 'Self'));
+          patient.addAll(masterData!.patient);
+        });
+      }
+    });
+  }
+
+  void _showPicker(context) {
+    showModalBottomSheet(
+        context: context,
+        builder: (BuildContext bc) {
+          return SafeArea(
+            child: Container(
+              child: new Wrap(
+                children: <Widget>[
+                  new ListTile(
+                      leading: new Icon(Icons.photo_library),
+                      title: new Text('Photo Gallery'),
+                      onTap: () {
+                        _imgFromGallery();
+                        Navigator.of(context).pop();
+                      }),
+                  new ListTile(
+                    leading: new Icon(Icons.photo_camera),
+                    title: new Text('Camera'),
+                    onTap: () {
+                      _imgFromCamera();
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+    );
+  }
+  _imgFromCamera() async {
+    final XFile? image = await _picker.pickImage(source: ImageSource.camera);
+     setState(() {
+       _attachment = File(image!.path);
+       _attachmentName = path.basename(_attachment!.path);
+     });
+  }
+
+  _imgFromGallery() async {
+    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+    setState(() {
+      _attachment = File(image!.path);
+      _attachmentName = path.basename(_attachment!.path);
+    });
+  }
+}
+
 Widget divider(){
   return Divider(
     color:Colors.grey,
@@ -2607,6 +3005,27 @@ class ClaimType {
        claimDesc: json['claimDesc'],
      );
    }
+}
+
+Widget waiting(BuildContext context){
+  return Container(
+    height: MediaQuery.of(context).size.height / 1.3,
+    child: Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          CircularProgressIndicator(),
+          Container(
+            padding: EdgeInsets.all(10),
+            child:Text('Serving your request. Please wait...',style: TextStyle(
+              fontWeight: FontWeight.w500,fontSize: 16,),
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
 }
 
 

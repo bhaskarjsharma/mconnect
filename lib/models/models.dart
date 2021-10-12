@@ -1,4 +1,6 @@
 
+import 'dart:convert';
+
 class APIResponseData{
   final bool isAuthenticated;
   final bool status;
@@ -296,6 +298,52 @@ class ITACMasterData{
     return ITACMasterData(
       data1: (json['data1'] as List).map((e) => e as String).toList(),
       data2: (json['data2'] as List).map((e) => e as String).toList(),
+    );
+  }
+}
+class HospCrLtrMasterData{
+  final List<HospCrLtrHospitalMasterData> hospitals;
+  final List<HospCrLtrEmpDepMasterData> patient;
+
+  HospCrLtrMasterData({required this.hospitals, required this.patient});
+
+  factory HospCrLtrMasterData.fromJson(Map<String, dynamic> json) {
+
+    return HospCrLtrMasterData(
+      hospitals: (json['hospitals'] as List).map((e) => HospCrLtrHospitalMasterData.fromJson(e)).toList(),
+      patient: (json['patient'] as List).map((e) => HospCrLtrEmpDepMasterData.fromJson(e)).toList(),
+    );
+  }
+}
+class HospCrLtrEmpDepMasterData{
+  final String patientName;
+  final String relationWithEmp;
+
+  HospCrLtrEmpDepMasterData({required this.patientName, required this.relationWithEmp});
+
+  factory HospCrLtrEmpDepMasterData.fromJson(Map<String, dynamic> json) {
+    return HospCrLtrEmpDepMasterData(
+      patientName   : json['patientName'],
+      relationWithEmp   : json['relationWithEmp'],
+    );
+  }
+}
+class HospCrLtrHospitalMasterData{
+  final int hospitalId;
+  final String hospitalName;
+  final String hospitalCity;
+  final String hospitalSt;
+  final String hospitalAddress;
+
+  HospCrLtrHospitalMasterData({required this.hospitalId, required this.hospitalName, required this.hospitalCity, required this.hospitalSt, required this.hospitalAddress});
+
+  factory HospCrLtrHospitalMasterData.fromJson(Map<String, dynamic> json) {
+    return HospCrLtrHospitalMasterData(
+      hospitalId   : json['hospitalId'],
+      hospitalName   : json['hospitalName'],
+      hospitalCity   : json['hospitalCity'],
+      hospitalSt   : json['hospitalState'],
+      hospitalAddress   : json['hospitalAddress'],
     );
   }
 }

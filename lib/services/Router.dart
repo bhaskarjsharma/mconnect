@@ -49,6 +49,8 @@ class NavigationRouter {
         return MaterialPageRoute(builder: (_) => LeaveQuotas());
       case holidayListRoute:
         return MaterialPageRoute(builder: (_) => Holidays());
+      case hosCrLtrRoute:
+        return MaterialPageRoute(builder: (_) => HospitalCreditLetter());
       case newsDetailsRoute:
         final args = settings.arguments as NewsContentArguments;
         return MaterialPageRoute(builder: (BuildContext context) => NewsDetails(args.contentId,args.contentType,args.contentTitle,args.contentDescription,args.creationDate));
