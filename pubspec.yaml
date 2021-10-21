@@ -55,6 +55,7 @@ dependencies:
   flutter_form_builder: ^6.1.0+1
   image_picker: ^0.8.4+2
   firebase_messaging: ^10.0.8
+  firebase_core: ^1.7.0
 
   
 flutter_icons:

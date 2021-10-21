@@ -5,6 +5,8 @@ import 'dart:io';
 import 'dart:math';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_projects/people.dart';
@@ -40,6 +42,7 @@ class Home extends StatefulWidget {
 class HomeState extends State<Home>  {
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey();
+  late FirebaseMessaging messaging;
   bool isConnected = false;
   ConnectivityResult _connectionStatus = ConnectivityResult.mobile;
   final Connectivity _connectivity = Connectivity();
@@ -47,6 +50,10 @@ class HomeState extends State<Home>  {
   late DioClient _dio;
   late var _endpointProvider;
   late Future<APIResponseData> _apiResponseData;
+
+  String notTitle = '';
+  String notBody = '';
+  bool notification = false;
 
   late  FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
   final _peopleFormKey = GlobalKey<FormState>();
@@ -128,6 +135,38 @@ class HomeState extends State<Home>  {
     _endpointProvider = new EndPointProvider(_dio.init());
     initConnectivity();
     _connectivitySubscription = _connectivity.onConnectivityChanged.listen(_updateConnectionStatus);
+
+    //Firebase configs starts
+    messaging = FirebaseMessaging.instance;
+    checkForInitialMessage();
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      setState((){
+        notTitle = message.notification!.title!;
+        notBody = message.notification!.body!;
+        notification = true;
+      });
+    });
+
+    //Firebase configs ends
+  }
+  // For handling notification when the app is in terminated state
+  checkForInitialMessage() async {
+    RemoteMessage? initialMessage =
+    await FirebaseMessaging.instance.getInitialMessage();
+
+    if (initialMessage != null) {
+      _handleMessage(initialMessage);
+    }
+    // Also handle any interaction when the app is in the background  but not terminated via a
+    // Stream listener
+    FirebaseMessaging.onMessageOpenedApp.listen(_handleMessage);
+  }
+  void _handleMessage(RemoteMessage message) {
+    setState((){
+      notTitle = message.notification!.title!;
+      notBody = message.notification!.body!;
+      notification = true;
+    });
   }
   @override
   void dispose() {
@@ -151,10 +190,11 @@ class HomeState extends State<Home>  {
             IconButton(
               icon: Icon(Icons.notifications),
               onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Notification in development')));
+                setState((){
+                  notification = false;
+                });
               },
-              color: Colors.white,
+              color: notification ? Colors.red : Colors.white,
             )
           ],
         ),
@@ -183,7 +223,8 @@ class HomeState extends State<Home>  {
             makeDashboardItem("ITAC",const Icon(Icons.computer,size:30, color:Colors.blue),Colors.red,itacRoute),
             makeDashboardItem("ECOFF & Overtime",const Icon(Icons.payments,size:30, color:Colors.lime),Colors.red,ecofOTRoute),
             makeDashboardItem("Hosp. Credit Letter",const Icon(Icons.medical_services,size:30, color:Colors.red),Colors.red,hosCrLtrRoute),
-
+            Text('title: $notTitle'),
+            Text('body: $notBody'),
           ],
         ),
       ),

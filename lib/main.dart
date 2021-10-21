@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:open_file/open_file.dart';
@@ -9,10 +10,10 @@ import 'constants.dart';
 import 'home.dart';
 import 'package:flutter_projects/services/Router.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 late var prefs;
 late var storage;
-late FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
 String empno = '';
 String user = '';
 String designation = '';
@@ -21,14 +22,54 @@ String grade = '';
 String auth_token = '';
 late GlobalKey<NavigatorState> navigatorKey;
 
+/// Create a [AndroidNotificationChannel] for heads up notifications
+late AndroidNotificationChannel channel;
+/// Initialize the [FlutterLocalNotificationsPlugin] package.
+late FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
+
+/// Define a top-level named handler which background/terminated messages will
+/// call.
+///
+/// To verify things are working, check out the native platform logs.
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  print('Handling a background message ${message.notification!.body}');
+}
+
 void main() async{
   // handle exceptions caused by making main async
   WidgetsFlutterBinding.ensureInitialized();
-
   navigatorKey = new GlobalKey<NavigatorState>();
 
-  flutterLocalNotificationsPlugin =
-      FlutterLocalNotificationsPlugin();
+  //Firebase configs start
+  await Firebase.initializeApp();
+  // Set the background messaging handler early on, as a named top-level function
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+  channel = const AndroidNotificationChannel(
+    'high_importance_channel', // id
+    'High Importance Notifications', // title
+    'This channel is used for important notifications.', // description
+    importance: Importance.high,
+  );
+  /// Create an Android Notification Channel.
+  ///
+  /// We use this channel in the `AndroidManifest.xml` file to override the
+  /// default FCM channel to enable heads up notifications.
+/*  await flutterLocalNotificationsPlugin
+      .resolvePlatformSpecificImplementation<
+      AndroidFlutterLocalNotificationsPlugin>()
+      ?.createNotificationChannel(channel);*/
+
+  /// Update the iOS foreground notification presentation options to allow
+  /// heads up notifications.
+  await FirebaseMessaging.instance
+      .setForegroundNotificationPresentationOptions(
+    alert: true,
+    badge: true,
+    sound: true,
+  );
+  // Firebase configs end
+
+
   flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
   final android = AndroidInitializationSettings('@mipmap/ic_launcher');
   final iOS = IOSInitializationSettings();
