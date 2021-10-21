@@ -220,8 +220,8 @@ class NewsDetails extends StatefulWidget {
 class _NewsDetailsState extends State<NewsDetails> {
   String _progress = "";
   late Future<APIResponseData> _apiResponseData;
-  late Future<List<NewsAttachment>> _attachmentDataFuture;
-  late List<NewsAttachment> _attachmentData;
+  //late Future<List<NewsAttachment>> _attachmentDataFuture;
+  List<NewsAttachment> _attachmentData = [];
   int gridImageCount = 1;
 
   @override
@@ -233,9 +233,14 @@ class _NewsDetailsState extends State<NewsDetails> {
       if(result.isAuthenticated && result.status){
         final parsed = jsonDecode(result.data ?? '').cast<Map<String, dynamic>>();
         setState(() {
-          _attachmentData =  parsed.map<NewsContent>((json) => NewsContent.fromJson(json)).toList();
+          _attachmentData =  parsed.map<NewsAttachment>((json) => NewsAttachment.fromJson(json)).toList();
         });
       }
+    }).catchError( (error) {
+      Navigator.pop(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error in fetching data")),
+      );
     });
     super.initState();
   }
@@ -443,115 +448,127 @@ class _NewsDetailsState extends State<NewsDetails> {
         ),
     );
   }
-  Widget getImage1() {
+/*  Widget getImage1() {
     return SliverGrid(
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2),
       delegate: SliverChildBuilderDelegate(
             (BuildContext context, int index) {
           return FutureBuilder(
-
-            future: _attachmentDataFuture,
-            builder: (context, AsyncSnapshot<List<NewsAttachment>> snapshot) {
+            future: _apiResponseData,
+            builder: (context, AsyncSnapshot<APIResponseData> snapshot) {
               if (snapshot.connectionState == ConnectionState.done &&
                   snapshot.hasData) {
                 WidgetsBinding.instance!.addPostFrameCallback((_) {
+                  final parsed = jsonDecode(snapshot.data!.data ?? '').cast<Map<String, dynamic>>();
                   setState(() {
-                    gridImageCount = snapshot.data!.length;
+                    _attachmentData =  parsed.map<NewsAttachment>((json) => NewsAttachment.fromJson(json)).toList();
+                    gridImageCount = _attachmentData.length;
                   });
+*//*                  setState(() {
+                    gridImageCount = snapshot.data!.length;
+                  });*//*
                 });
 
-                String attachmentUrl = "https://connect.bcplindia.co.in/MobileAppAPI/Download?id=" +
-                    snapshot.data![index].attachmentID.toString();
-                String fileName = snapshot.data![index].attachmentFileName;
+                if(_attachmentData.isNotEmpty){
+                  String attachmentUrl = "https://connect.bcplindia.co.in/MobileAppAPI/Download?id=" +
+                      _attachmentData![index].attachmentID.toString();
+                  String fileName = _attachmentData![index].attachmentFileName;
 
-                if (snapshot.data![index].attachmentFileType.contains(
-                    "image/")) {
-                  return InkWell(
-                    onTap: () {
-                      showDialog(attachmentUrl);
-                    },
-                    child: CachedNetworkImage(
-                      imageUrl: attachmentUrl,
-                      placeholder: (context, url) =>
-                          SizedBox(width: 50,
-                              height: 50,
-                              child: CircularProgressIndicator()),
-                      errorWidget: (context, url, error) => Icon(Icons.error),
-                    ),
-                  );
-                }
-                else if (snapshot.data![index].attachmentFileType ==
-                    "application/pdf") {
-                  return InkWell(
-                    onTap: () {
-                      downloadFile(attachmentUrl, fileName);
-                    },
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(ConnectAppIcon.file_pdf, size: 40, color: Colors.red),
-                        Text('Download PDF',
-                            style: TextStyle(fontSize: 15, color: Colors.black),
-                            textAlign: TextAlign.center),
-                        Text('$_progress', style: TextStyle(
-                            color: Colors.red, fontSize: 15),),
-                      ],
-                    ),
+                  if (_attachmentData![index].attachmentFileType.contains(
+                      "image/")) {
+                    return InkWell(
+                      onTap: () {
+                        showDialog(attachmentUrl);
+                      },
+                      child: CachedNetworkImage(
+                        imageUrl: attachmentUrl,
+                        placeholder: (context, url) =>
+                            SizedBox(width: 50,
+                                height: 50,
+                                child: CircularProgressIndicator()),
+                        errorWidget: (context, url, error) => Icon(Icons.error),
+                      ),
+                    );
+                  }
+                  else if (_attachmentData![index].attachmentFileType ==
+                      "application/pdf") {
+                    return InkWell(
+                      onTap: () {
+                        downloadFile(attachmentUrl, fileName);
+                      },
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(ConnectAppIcon.file_pdf, size: 40, color: Colors.red),
+                          Text('Download PDF',
+                              style: TextStyle(fontSize: 15, color: Colors.black),
+                              textAlign: TextAlign.center),
+                          Text('$_progress', style: TextStyle(
+                              color: Colors.red, fontSize: 15),),
+                        ],
+                      ),
 
-                  );
-                }
-                else if (snapshot.data![index].attachmentFileType ==
-                    "application/msword") {
-                  return InkWell(
-                    onTap: () {
-                      downloadFile(attachmentUrl, fileName);
-                    },
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(ConnectAppIcon.file_word, size: 40, color: Colors
-                            .blue),
-                        Text('Download PDF',
-                            style: TextStyle(fontSize: 15, color: Colors.black),
-                            textAlign: TextAlign.center),
-                        Text('$_progress', style: TextStyle(
-                            color: Colors.red, fontSize: 15),),
-                      ],
-                    ),
-                  );
-                }
-                else if (snapshot.data![index].attachmentFileType ==
-                    "application/vnd.ms-excel") {
-                  return InkWell(
-                    onTap: () {
-                      downloadFile(attachmentUrl, fileName);
-                    },
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(ConnectAppIcon.file_excel, size: 40,
-                            color: Colors.green),
-                        Text('Download PDF',
-                            style: TextStyle(fontSize: 15, color: Colors.black),
-                            textAlign: TextAlign.center),
-                        Text('$_progress',
-                          style: TextStyle(color: Colors.red, fontSize: 15),),
-                      ],
-                    ),
-                  );
-                }
-                else if (snapshot.data![index].attachmentFileType.contains(
-                    "video/")) {
-                  return Center(
-                    child: Text('Video'),
-                  );
+                    );
+                  }
+                  else if (_attachmentData![index].attachmentFileType ==
+                      "application/msword") {
+                    return InkWell(
+                      onTap: () {
+                        downloadFile(attachmentUrl, fileName);
+                      },
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(ConnectAppIcon.file_word, size: 40, color: Colors
+                              .blue),
+                          Text('Download PDF',
+                              style: TextStyle(fontSize: 15, color: Colors.black),
+                              textAlign: TextAlign.center),
+                          Text('$_progress', style: TextStyle(
+                              color: Colors.red, fontSize: 15),),
+                        ],
+                      ),
+                    );
+                  }
+                  else if (_attachmentData![index].attachmentFileType ==
+                      "application/vnd.ms-excel") {
+                    return InkWell(
+                      onTap: () {
+                        downloadFile(attachmentUrl, fileName);
+                      },
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(ConnectAppIcon.file_excel, size: 40,
+                              color: Colors.green),
+                          Text('Download PDF',
+                              style: TextStyle(fontSize: 15, color: Colors.black),
+                              textAlign: TextAlign.center),
+                          Text('$_progress',
+                            style: TextStyle(color: Colors.red, fontSize: 15),),
+                        ],
+                      ),
+                    );
+                  }
+                  else if (_attachmentData![index].attachmentFileType.contains(
+                      "video/")) {
+                    return Center(
+                      child: Text('Video'),
+                    );
+                  }
+                  else {
+                    return Center(
+                      child: Text('Invalid Type'),
+                    );
+                  }
                 }
                 else {
                   return Center(
-                    child: Text('Invalid Type'),
+                    child: Text('Please Wait...'),
                   );
                 }
+
               }
               else {
                 return Center(
@@ -564,7 +581,7 @@ class _NewsDetailsState extends State<NewsDetails> {
         childCount: gridImageCount,
       ),
     );
-  }
+  }*/
 
   showDialog(String url) {
     showGeneralDialog(

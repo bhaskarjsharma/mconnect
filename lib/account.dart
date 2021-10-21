@@ -61,6 +61,7 @@ class _LoginState extends State<Login> {
                   controller: unameController,
                   decoration: InputDecoration(
                     border: OutlineInputBorder(),
+
                     labelText: 'User Name',
                   ),
                 ),
@@ -101,6 +102,7 @@ class _LoginState extends State<Login> {
                         await storage.write(key: 'name', value: emp.emp_name);
                         await storage.write(key: 'desg', value: emp.emp_desg);
                         await storage.write(key: 'disc', value: emp.emp_disc);
+                        await storage.write(key: 'grade', value: emp.emp_grade);
                         await storage.write(key: 'auth_token', value: emp.auth_jwt);
 
                         //Set variables for first time view
@@ -109,6 +111,7 @@ class _LoginState extends State<Login> {
                           user = emp.emp_name!;
                           designation = emp.emp_desg!;
                           discipline = emp.emp_disc!;
+                          grade = emp.emp_grade!;
                           auth_token = emp.auth_jwt!;
                         });
 

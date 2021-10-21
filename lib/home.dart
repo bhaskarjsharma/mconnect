@@ -100,14 +100,6 @@ class HomeState extends State<Home>  {
   late List<AttendanceData> attendanceData;
   late List<ShiftRoster> shiftRosterData;
 
-  ITACMasterData? itacMasterData;
-  List<String> ITACSRType = [];
-  List<String> ITACSRLocation = [];
-  String? itacSRType;
-  String? itacLocation;
-  final itacSRTitleContrl = TextEditingController();
-  final itacSRDescContrl = TextEditingController();
-
   String _claimsType = '';
   ClaimType? _claimsTypeObj;
   static String claimTypeData = '''
@@ -152,7 +144,20 @@ class HomeState extends State<Home>  {
           width: 40,
           child: Image.asset('images/bcpl_logo.png'),
         ),
-        title: Text('Connect'),
+        title: Row(
+          children:[
+            Text('Connect'),
+            Spacer(),
+            IconButton(
+              icon: Icon(Icons.notifications),
+              onPressed: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Notification in development')));
+              },
+              color: Colors.white,
+            )
+          ],
+        ),
       ),
       endDrawer: AppDrawer(),
       body: _connectionStatus == ConnectivityResult.none? noConnectivityError() : Container(
@@ -173,16 +178,15 @@ class HomeState extends State<Home>  {
             makeDashboardItem("Payslips", const Icon(ConnectAppIcon.rupee_sign,size:30, color:Colors.orange),Colors.cyan,payslipRoute),
             makeDashboardItem("Punch Time",const Icon(Icons.fingerprint,size:30, color:Colors.red),Colors.deepPurple,attendanceRoute),
             makeDashboardItem("Shift Roster",const Icon(ConnectAppIcon.calendar_alt,size:30, color:Colors.teal),Colors.teal,shiftRosterRoute),
+            makeDashboardItem("Claims",const Icon(Icons.receipt,size:30, color:Colors.deepPurple),Colors.red,homeRoute),
             makeDashboardItem("Regularise Attendance",const Icon(Icons.schedule,size:30, color:Colors.deepPurple),Colors.red,homeRoute),
-            makeDashboardItem("ITAC",const Icon(Icons.computer,size:30, color:Colors.blue),Colors.red,homeRoute),
-            makeDashboardItem("ECOFF & Overtime",const Icon(Icons.payments,size:30, color:Colors.lime),Colors.red,homeRoute),
+            makeDashboardItem("ITAC",const Icon(Icons.computer,size:30, color:Colors.blue),Colors.red,itacRoute),
+            makeDashboardItem("ECOFF & Overtime",const Icon(Icons.payments,size:30, color:Colors.lime),Colors.red,ecofOTRoute),
             makeDashboardItem("Hosp. Credit Letter",const Icon(Icons.medical_services,size:30, color:Colors.red),Colors.red,hosCrLtrRoute),
 
           ],
         ),
       ),
-
-
     );
   }
   Widget noConnectivityError(){
@@ -770,140 +774,306 @@ class HomeState extends State<Home>  {
                             return Container(
                               height: height - (height/2.3),
                               width: width - (width/4),
-                              child: isLoading ? waiting(context) : Form(
-                                key: _attendanceFormKey,
-                                child: Container(
-                                  margin: EdgeInsets.symmetric(vertical: 20),
-                                  child:Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    crossAxisAlignment: CrossAxisAlignment.center,
-
-                                    children: <Widget>[
-                                      Container(
-                                        padding: const EdgeInsets.all(10.0),
-                                        child: Center(child: Text('View Biometric Attendance Data',
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.w800,
-                                              fontSize: 20,
-                                              color: Colors.blue[500],
-                                            ))) ,
-                                      ),
-                                      Container(
-                                        padding: const EdgeInsets.all(10.0),
-                                        child: TextFormField(
-                                          controller: attendanceFromDateContrl,
-                                          decoration: InputDecoration(
-                                            border: OutlineInputBorder(),
-                                            labelText: 'From Date',
-                                          ),
-                                          onTap: (){
-                                            // Below line stops keyboard from appearing
-                                            FocusScope.of(context).requestFocus(new FocusNode());
-                                            _selectDate(context,attendanceSelectedFromDate,attendanceFromDateContrl);
-                                          },
-                                          // The validator receives the text that the user has entered.
-                                          validator: (value) {
-                                            if (value == null || value.isEmpty) {
-                                              return 'Please enter From Date';
-                                            }
-                                            return null;
-                                          },
+                              child: isLoading ? waiting(context) : Column(
+                                children:[
+                                  Container(
+                                    padding: const EdgeInsets.all(10.0),
+                                    child: Center(child: Text('View Biometric Punch Data',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w800,
+                                          fontSize: 20,
+                                          color: Colors.blue[500],
+                                        ))) ,
+                                  ),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                    children:[
+                                      ElevatedButton(
+                                        style: ElevatedButton.styleFrom(
+                                          padding: const EdgeInsets.symmetric(horizontal: 0),
+                                          primary: Colors.deepOrange,
+                                          shape: RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.circular(50)),
                                         ),
-                                      ),
-                                      Container(
-                                        padding: const EdgeInsets.all(10.0),
-                                        child: TextFormField(
-                                          controller: attendanceToDateContrl,
-                                          decoration: InputDecoration(
-                                            border: OutlineInputBorder(),
-                                            labelText: 'To Date',
-                                          ),
-                                          onTap: (){
-                                            // Below line stops keyboard from appearing
-                                            FocusScope.of(context).requestFocus(new FocusNode());
-                                            _selectDate(context,attendanceSelectedToDate,attendanceToDateContrl);
-                                          },
-                                          // The validator receives the text that the user has entered.
-                                          validator: (value) {
-                                            if (value == null || value.isEmpty) {
-                                              return 'Please enter To Date';
-                                            }
-                                            return null;
-                                          },
-                                        ),
-                                      ),
-                                      Container(
-                                        padding: const EdgeInsets.all(10.0),
-                                        child: Row(
-                                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                          children: [
-                                            ElevatedButton(
-                                              onPressed: () {
-                                                // Validate returns true if the form is valid, or false otherwise.
-                                                if (_attendanceFormKey.currentState!.validate()) {
-                                                  setState(() {
-                                                    isLoading = true;
-                                                  });
-
-                                                  _apiResponseData = _endpointProvider.fetchAttendanceData(empno,attendanceFromDateContrl.text,attendanceToDateContrl.text);
-                                                  _apiResponseData.then((result) {
-                                                    if(result.isAuthenticated && result.status){
-                                                      final parsed = jsonDecode(result.data ?? '').cast<Map<String, dynamic>>();
-                                                      setState(() {
-                                                        attendanceFromDateContrl.text = '';
-                                                        attendanceToDateContrl.text = '';
-                                                        attendanceData =  parsed.map<AttendanceData>((json) => AttendanceData.fromJson(json)).toList();
-                                                        isLoading = false;
-                                                        Navigator.pop(context);
-                                                        Navigator.pushNamed(context, attendanceRoute, arguments: attendanceData,);
-                                                      });
-                                                    }
-                                                    else{
-                                                      setState(() {
-                                                        attendanceFromDateContrl.text = '';
-                                                        attendanceToDateContrl.text = '';
-                                                        isLoading = false;
-                                                      });
-                                                      Navigator.pop(context);
-                                                      ScaffoldMessenger.of(context).showSnackBar(
-                                                        SnackBar(content: Text("Error in data fetching")),
-                                                      );
-                                                    }
-                                                  }).catchError( (error) {
-                                                    setState(() {
-                                                      attendanceFromDateContrl.text = '';
-                                                      attendanceToDateContrl.text = '';
-                                                      isLoading = false;
-                                                    });
-                                                    Navigator.pop(context);
-                                                    ScaffoldMessenger.of(context).showSnackBar(
-                                                      SnackBar(content: Text("Error in data fetching")),
-                                                    );
-                                                  });
-                                                }
-                                              },
-                                              child: const Text('Show biometric data'),
-                                            ),
-                                            ElevatedButton(
-                                              onPressed: () {
-                                                setState(() {
-                                                  attendanceFromDateContrl.text = '';
-                                                  attendanceToDateContrl.text = '';
-                                                });
+                                        onPressed: () {
+                                          setState(() {
+                                            isLoading = true;
+                                          });
+                                          DateTime valDate = DateTime.now();
+                                          _apiResponseData = _endpointProvider.fetchAttendanceData(empno,DateFormat('yyyy-MM-dd').format(valDate),DateFormat('yyyy-MM-dd').format(valDate));
+                                          _apiResponseData.then((result) {
+                                            if(result.isAuthenticated && result.status){
+                                              final parsed = jsonDecode(result.data ?? '').cast<Map<String, dynamic>>();
+                                              setState(() {
+                                                attendanceFromDateContrl.text = '';
+                                                attendanceToDateContrl.text = '';
+                                                attendanceData =  parsed.map<AttendanceData>((json) => AttendanceData.fromJson(json)).toList();
+                                                isLoading = false;
                                                 Navigator.pop(context);
-                                              },
-                                              child: const Text('Cancel'),
-                                              style: ButtonStyle(
-                                                backgroundColor: MaterialStateProperty.all(Colors.red),
-                                              ),
-                                            )
-                                          ],
+                                                Navigator.pushNamed(context, attendanceRoute, arguments: attendanceData,);
+                                              });
+                                            }
+                                            else{
+                                              setState(() {
+                                                attendanceFromDateContrl.text = '';
+                                                attendanceToDateContrl.text = '';
+                                                isLoading = false;
+                                              });
+                                              Navigator.pop(context);
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                SnackBar(content: Text("Error in data fetching")),
+                                              );
+                                            }
+                                          }).catchError( (error) {
+                                            setState(() {
+                                              attendanceFromDateContrl.text = '';
+                                              attendanceToDateContrl.text = '';
+                                              isLoading = false;
+                                            });
+                                            Navigator.pop(context);
+                                            ScaffoldMessenger.of(context).showSnackBar(
+                                              SnackBar(content: Text("Error in data fetching")),
+                                            );
+                                          });
+                                        },
+                                        child: const Text('Today'),
+                                      ),
+                                      ElevatedButton(
+                                        style: ElevatedButton.styleFrom(
+                                          padding: const EdgeInsets.symmetric(horizontal: 10),
+                                          primary: Colors.blueGrey,
+                                          shape: RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.circular(50)),
                                         ),
+                                        onPressed: () {
+                                          setState(() {
+                                            isLoading = true;
+                                          });
+                                          DateTime fromDate = DateTime.now().subtract(Duration(days: 7));
+                                          DateTime toDate = DateTime.now();
+                                          _apiResponseData = _endpointProvider.fetchAttendanceData(empno,DateFormat('yyyy-MM-dd').format(fromDate),DateFormat('yyyy-MM-dd').format(toDate));
+                                          _apiResponseData.then((result) {
+                                            if(result.isAuthenticated && result.status){
+                                              final parsed = jsonDecode(result.data ?? '').cast<Map<String, dynamic>>();
+                                              setState(() {
+                                                attendanceFromDateContrl.text = '';
+                                                attendanceToDateContrl.text = '';
+                                                attendanceData =  parsed.map<AttendanceData>((json) => AttendanceData.fromJson(json)).toList();
+                                                isLoading = false;
+                                                Navigator.pop(context);
+                                                Navigator.pushNamed(context, attendanceRoute, arguments: attendanceData,);
+                                              });
+                                            }
+                                            else{
+                                              setState(() {
+                                                attendanceFromDateContrl.text = '';
+                                                attendanceToDateContrl.text = '';
+                                                isLoading = false;
+                                              });
+                                              Navigator.pop(context);
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                SnackBar(content: Text("Error in data fetching")),
+                                              );
+                                            }
+                                          }).catchError( (error) {
+                                            setState(() {
+                                              attendanceFromDateContrl.text = '';
+                                              attendanceToDateContrl.text = '';
+                                              isLoading = false;
+                                            });
+                                            Navigator.pop(context);
+                                            ScaffoldMessenger.of(context).showSnackBar(
+                                              SnackBar(content: Text("Error in data fetching")),
+                                            );
+                                          });
+                                        },
+                                        child: const Text('Last 7 days'),
+                                      ),
+                                      ElevatedButton(
+                                        style: ElevatedButton.styleFrom(
+                                          padding: const EdgeInsets.symmetric(horizontal: 10),
+                                          primary: Colors.teal,
+                                          shape: RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.circular(50)),
+                                        ),
+                                        onPressed: () {
+                                          setState(() {
+                                            isLoading = true;
+                                          });
+                                          DateTime fromDate = new DateTime(DateTime.now().year,DateTime.now().month,1);
+                                          DateTime toDate = DateTime.now();
+                                          _apiResponseData = _endpointProvider.fetchAttendanceData(empno,DateFormat('yyyy-MM-dd').format(fromDate),DateFormat('yyyy-MM-dd').format(toDate));
+                                          _apiResponseData.then((result) {
+                                            if(result.isAuthenticated && result.status){
+                                              final parsed = jsonDecode(result.data ?? '').cast<Map<String, dynamic>>();
+                                              setState(() {
+                                                attendanceFromDateContrl.text = '';
+                                                attendanceToDateContrl.text = '';
+                                                attendanceData =  parsed.map<AttendanceData>((json) => AttendanceData.fromJson(json)).toList();
+                                                isLoading = false;
+                                                Navigator.pop(context);
+                                                Navigator.pushNamed(context, attendanceRoute, arguments: attendanceData,);
+                                              });
+                                            }
+                                            else{
+                                              setState(() {
+                                                attendanceFromDateContrl.text = '';
+                                                attendanceToDateContrl.text = '';
+                                                isLoading = false;
+                                              });
+                                              Navigator.pop(context);
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                SnackBar(content: Text("Error in data fetching")),
+                                              );
+                                            }
+                                          }).catchError( (error) {
+                                            setState(() {
+                                              attendanceFromDateContrl.text = '';
+                                              attendanceToDateContrl.text = '';
+                                              isLoading = false;
+                                            });
+                                            Navigator.pop(context);
+                                            ScaffoldMessenger.of(context).showSnackBar(
+                                              SnackBar(content: Text("Error in data fetching")),
+                                            );
+                                          });
+                                        },
+                                        child: const Text('Current Month'),
                                       ),
                                     ],
                                   ),
-                                ),
+                                  divider(),
+                                  Form(
+                                    key: _attendanceFormKey,
+                                    child: Container(
+                                      margin: EdgeInsets.symmetric(vertical: 20),
+                                      child:Column(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        crossAxisAlignment: CrossAxisAlignment.center,
 
+                                        children: <Widget>[
+                                          Container(
+                                            padding: const EdgeInsets.all(10.0),
+                                            child: Text('Check for other period'),
+                                          ),
+                                          Container(
+                                            padding: const EdgeInsets.all(10.0),
+                                            child: TextFormField(
+                                              controller: attendanceFromDateContrl,
+                                              decoration: InputDecoration(
+                                                border: OutlineInputBorder(),
+                                                labelText: 'From Date',
+                                              ),
+                                              onTap: (){
+                                                // Below line stops keyboard from appearing
+                                                FocusScope.of(context).requestFocus(new FocusNode());
+                                                _selectDate(context,attendanceSelectedFromDate,attendanceFromDateContrl);
+                                              },
+                                              // The validator receives the text that the user has entered.
+                                              validator: (value) {
+                                                if (value == null || value.isEmpty) {
+                                                  return 'Please enter From Date';
+                                                }
+                                                return null;
+                                              },
+                                            ),
+                                          ),
+                                          Container(
+                                            padding: const EdgeInsets.all(10.0),
+                                            child: TextFormField(
+                                              controller: attendanceToDateContrl,
+                                              decoration: InputDecoration(
+                                                border: OutlineInputBorder(),
+                                                labelText: 'To Date',
+                                              ),
+                                              onTap: (){
+                                                // Below line stops keyboard from appearing
+                                                FocusScope.of(context).requestFocus(new FocusNode());
+                                                _selectDate(context,attendanceSelectedToDate,attendanceToDateContrl);
+                                              },
+                                              // The validator receives the text that the user has entered.
+                                              validator: (value) {
+                                                if (value == null || value.isEmpty) {
+                                                  return 'Please enter To Date';
+                                                }
+                                                return null;
+                                              },
+                                            ),
+                                          ),
+                                          Container(
+                                            padding: const EdgeInsets.all(10.0),
+                                            child: Row(
+                                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                              children: [
+                                                ElevatedButton(
+                                                  onPressed: () {
+                                                    // Validate returns true if the form is valid, or false otherwise.
+                                                    if (_attendanceFormKey.currentState!.validate()) {
+                                                      setState(() {
+                                                        isLoading = true;
+                                                      });
+
+                                                      _apiResponseData = _endpointProvider.fetchAttendanceData(empno,attendanceFromDateContrl.text,attendanceToDateContrl.text);
+                                                      _apiResponseData.then((result) {
+                                                        if(result.isAuthenticated && result.status){
+                                                          final parsed = jsonDecode(result.data ?? '').cast<Map<String, dynamic>>();
+                                                          setState(() {
+                                                            attendanceFromDateContrl.text = '';
+                                                            attendanceToDateContrl.text = '';
+                                                            attendanceData =  parsed.map<AttendanceData>((json) => AttendanceData.fromJson(json)).toList();
+                                                            isLoading = false;
+                                                            Navigator.pop(context);
+                                                            Navigator.pushNamed(context, attendanceRoute, arguments: attendanceData,);
+                                                          });
+                                                        }
+                                                        else{
+                                                          setState(() {
+                                                            attendanceFromDateContrl.text = '';
+                                                            attendanceToDateContrl.text = '';
+                                                            isLoading = false;
+                                                          });
+                                                          Navigator.pop(context);
+                                                          ScaffoldMessenger.of(context).showSnackBar(
+                                                            SnackBar(content: Text("Error in data fetching")),
+                                                          );
+                                                        }
+                                                      }).catchError( (error) {
+                                                        setState(() {
+                                                          attendanceFromDateContrl.text = '';
+                                                          attendanceToDateContrl.text = '';
+                                                          isLoading = false;
+                                                        });
+                                                        Navigator.pop(context);
+                                                        ScaffoldMessenger.of(context).showSnackBar(
+                                                          SnackBar(content: Text("Error in data fetching")),
+                                                        );
+                                                      });
+                                                    }
+                                                  },
+                                                  child: const Text('Show biometric data'),
+                                                ),
+                                                ElevatedButton(
+                                                  onPressed: () {
+                                                    setState(() {
+                                                      attendanceFromDateContrl.text = '';
+                                                      attendanceToDateContrl.text = '';
+                                                    });
+                                                    Navigator.pop(context);
+                                                  },
+                                                  child: const Text('Cancel'),
+                                                  style: ButtonStyle(
+                                                    backgroundColor: MaterialStateProperty.all(Colors.red),
+                                                  ),
+                                                )
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+
+                                  ),
+                                ],
                               ),
                             );
                           },
@@ -931,142 +1101,311 @@ class HomeState extends State<Home>  {
                             return Container(
                               height: height - (height/2.3),
                               width: width - (width/4),
-                              child: isLoading ? waiting(context) : Form(
-                                key: _shiftRosterFormKey,
-                                child: Container(
-                                  margin: EdgeInsets.symmetric(vertical: 20),
-                                  child:Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    crossAxisAlignment: CrossAxisAlignment.center,
-
-                                    children: <Widget>[
-                                      Container(
-
-                                        padding: EdgeInsets.all(10),
-                                        child: Center(child: Text('View Shift Roster',
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.w800,
-                                              fontSize: 20,
-                                              color: Colors.blue[500],
-                                            ))) ,
-                                      ),
-                                      Container(
-                                        padding: EdgeInsets.all(10),
-                                        child: TextFormField(
-                                          controller: shiftFromDateContrl,
-                                          decoration: InputDecoration(
-                                            border: OutlineInputBorder(),
-                                            labelText: 'From Date',
-                                          ),
-                                          onTap: (){
-                                            // Below line stops keyboard from appearing
-                                            FocusScope.of(context).requestFocus(new FocusNode());
-                                            _selectDate(context,shiftSelectedFromDate,shiftFromDateContrl);
-                                          },
-                                          // The validator receives the text that the user has entered.
-                                          validator: (value) {
-                                            if (value == null || value.isEmpty) {
-                                              return 'Please enter From Date';
-                                            }
-                                            return null;
-                                          },
+                              child: isLoading ? waiting(context) : Column(
+                                children:[
+                                  Container(
+                                    padding: EdgeInsets.all(10),
+                                    child: Center(child: Text('View Shift Roster',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w800,
+                                          fontSize: 20,
+                                          color: Colors.blue[500],
+                                        ))) ,
+                                  ),
+                                  Wrap(
+                                    //mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                    children:[
+                                      ElevatedButton(
+                                        style: ElevatedButton.styleFrom(
+                                          padding: const EdgeInsets.symmetric(horizontal: 5),
+                                          primary: Colors.deepOrange,
+                                          shape: RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.circular(50)),
                                         ),
-                                      ),
-                                      Container(
-                                        padding: EdgeInsets.all(10),
-                                        child: TextFormField(
-                                          controller: shiftToDateContrl,
-                                          decoration: InputDecoration(
-                                            border: OutlineInputBorder(),
-                                            labelText: 'To Date',
-                                          ),
-                                          onTap: (){
-                                            // Below line stops keyboard from appearing
-                                            FocusScope.of(context).requestFocus(new FocusNode());
-                                            _selectDate(context,shiftSelectedToDate,shiftToDateContrl);
-                                          },
-                                          // The validator receives the text that the user has entered.
-                                          validator: (value) {
-                                            if (value == null || value.isEmpty) {
-                                              return 'Please enter To Date';
-                                            }
-                                            return null;
-                                          },
-                                        ),
-                                      ),
-                                      Container(
-                                        padding: const EdgeInsets.all(10.0),
-                                        child: Row(
-                                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                          children: [
-                                            ElevatedButton(
-                                              onPressed: () {
-                                                // Validate returns true if the form is valid, or false otherwise.
-                                                if (_shiftRosterFormKey.currentState!.validate()) {
-                                                  setState(() {
-                                                    isLoading = true;
-                                                  });
-
-                                                  _apiResponseData = _endpointProvider.fetchShiftRosterData(empno,shiftFromDateContrl.text,shiftToDateContrl.text);
-                                                  _apiResponseData.then((result) {
-                                                    if(result.isAuthenticated && result.status){
-                                                      final parsed = jsonDecode(result.data ?? '').cast<Map<String, dynamic>>();
-                                                      setState(() {
-                                                        shiftFromDateContrl.text = '';
-                                                        shiftToDateContrl.text = '';
-                                                        shiftRosterData =  parsed.map<ShiftRoster>((json) => ShiftRoster.fromJson(json)).toList();
-                                                        isLoading = false;
-                                                        Navigator.pop(context);
-                                                        Navigator.pushNamed(context, shiftRosterRoute, arguments: shiftRosterData,);
-                                                      });
-                                                    }
-                                                    else{
-                                                      setState(() {
-                                                        shiftFromDateContrl.text = '';
-                                                        shiftToDateContrl.text = '';
-                                                        isLoading = false;
-                                                      });
-                                                      Navigator.pop(context);
-                                                      ScaffoldMessenger.of(context).showSnackBar(
-                                                        SnackBar(content: Text("Error in data fetching")),
-                                                      );
-                                                    }
-                                                  }).catchError( (error) {
-                                                    setState(() {
-                                                      shiftFromDateContrl.text = '';
-                                                      shiftToDateContrl.text = '';
-                                                      isLoading = false;
-                                                    });
-                                                    Navigator.pop(context);
-                                                    ScaffoldMessenger.of(context).showSnackBar(
-                                                      SnackBar(content: Text("Error in data fetching")),
-                                                    );
-                                                  });
-                                                }
-                                              },
-                                              child: const Text('Show Shift Roster'),
-                                            ),
-                                            ElevatedButton(
-                                              onPressed: () {
-                                                setState(() {
-                                                  shiftFromDateContrl.text = '';
-                                                  shiftToDateContrl.text = '';
-                                                });
+                                        onPressed: () {
+                                          setState(() {
+                                            isLoading = true;
+                                          });
+                                          DateTime fromDate = DateTime.now();
+                                          DateTime toDate = DateTime.now().add(Duration(days: 8));
+                                          _apiResponseData = _endpointProvider.fetchShiftRosterData(empno,DateFormat('yyyy-MM-dd').format(fromDate),DateFormat('yyyy-MM-dd').format(toDate));
+                                          _apiResponseData.then((result) {
+                                            if(result.isAuthenticated && result.status){
+                                              final parsed = jsonDecode(result.data ?? '').cast<Map<String, dynamic>>();
+                                              setState(() {
+                                                shiftFromDateContrl.text = '';
+                                                shiftToDateContrl.text = '';
+                                                shiftRosterData =  parsed.map<ShiftRoster>((json) => ShiftRoster.fromJson(json)).toList();
+                                                isLoading = false;
                                                 Navigator.pop(context);
-                                              },
-                                              child: const Text('Cancel'),
-                                              style: ButtonStyle(
-                                                backgroundColor: MaterialStateProperty.all(Colors.red),
-                                              ),
-                                            )
-                                          ],
+                                                Navigator.pushNamed(context, shiftRosterRoute, arguments: shiftRosterData,);
+                                              });
+                                            }
+                                            else{
+                                              setState(() {
+                                                shiftFromDateContrl.text = '';
+                                                shiftToDateContrl.text = '';
+                                                isLoading = false;
+                                              });
+                                              Navigator.pop(context);
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                SnackBar(content: Text("Data not available")),
+                                              );
+                                            }
+                                          }).catchError( (error) {
+                                            setState(() {
+                                              shiftFromDateContrl.text = '';
+                                              shiftToDateContrl.text = '';
+                                              isLoading = false;
+                                            });
+                                            Navigator.pop(context);
+                                            ScaffoldMessenger.of(context).showSnackBar(
+                                              SnackBar(content: Text("Error in data fetching")),
+                                            );
+                                          });
+                                        },
+                                        child: const Text('Next 8 days'),
+                                      ),
+                                      ElevatedButton(
+                                        style: ElevatedButton.styleFrom(
+                                          padding: const EdgeInsets.symmetric(horizontal: 5),
+                                          primary: Colors.blueGrey,
+                                          shape: RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.circular(50)),
                                         ),
+                                        onPressed: () {
+                                          setState(() {
+                                            isLoading = true;
+                                          });
+                                          DateTime fromDate = new DateTime(DateTime.now().year,DateTime.now().month,1);
+                                          DateTime toDate = (DateTime.now().month < 12) ? new DateTime(DateTime.now().year, DateTime.now().month + 1, 0) : new DateTime(DateTime.now().year + 1, 1, 0);
+                                          _apiResponseData = _endpointProvider.fetchShiftRosterData(empno,DateFormat('yyyy-MM-dd').format(fromDate),DateFormat('yyyy-MM-dd').format(toDate));
+                                          _apiResponseData.then((result) {
+                                            if(result.isAuthenticated && result.status){
+                                              final parsed = jsonDecode(result.data ?? '').cast<Map<String, dynamic>>();
+                                              setState(() {
+                                                shiftFromDateContrl.text = '';
+                                                shiftToDateContrl.text = '';
+                                                shiftRosterData =  parsed.map<ShiftRoster>((json) => ShiftRoster.fromJson(json)).toList();
+                                                isLoading = false;
+                                                Navigator.pop(context);
+                                                Navigator.pushNamed(context, shiftRosterRoute, arguments: shiftRosterData,);
+                                              });
+                                            }
+                                            else{
+                                              setState(() {
+                                                shiftFromDateContrl.text = '';
+                                                shiftToDateContrl.text = '';
+                                                isLoading = false;
+                                              });
+                                              Navigator.pop(context);
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                SnackBar(content: Text("Data not available")),
+                                              );
+                                            }
+                                          }).catchError( (error) {
+                                            setState(() {
+                                              shiftFromDateContrl.text = '';
+                                              shiftToDateContrl.text = '';
+                                              isLoading = false;
+                                            });
+                                            Navigator.pop(context);
+                                            ScaffoldMessenger.of(context).showSnackBar(
+                                              SnackBar(content: Text("Error in data fetching")),
+                                            );
+                                          });
+                                        },
+                                        child: const Text('Current Month'),
+                                      ),
+                                      ElevatedButton(
+                                        style: ElevatedButton.styleFrom(
+                                          padding: const EdgeInsets.symmetric(horizontal: 5),
+                                          primary: Colors.teal,
+                                          shape: RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.circular(50)),
+                                        ),
+                                        onPressed: () {
+                                          setState(() {
+                                            isLoading = true;
+                                          });
+                                          DateTime fromDate = (DateTime.now().month < 12) ? new DateTime(DateTime.now().year, DateTime.now().month + 1, 1) : new DateTime(DateTime.now().year + 1, 1, 1);
+                                          DateTime toDate = (fromDate.month < 12) ? new DateTime(fromDate.year, fromDate.month + 1, 0) : new DateTime(fromDate.year + 1, 1, 0);
+                                          _apiResponseData = _endpointProvider.fetchShiftRosterData(empno,DateFormat('yyyy-MM-dd').format(fromDate),DateFormat('yyyy-MM-dd').format(toDate));
+                                          _apiResponseData.then((result) {
+                                            if(result.isAuthenticated && result.status){
+                                              final parsed = jsonDecode(result.data ?? '').cast<Map<String, dynamic>>();
+                                              setState(() {
+                                                shiftFromDateContrl.text = '';
+                                                shiftToDateContrl.text = '';
+                                                shiftRosterData =  parsed.map<ShiftRoster>((json) => ShiftRoster.fromJson(json)).toList();
+                                                isLoading = false;
+                                                Navigator.pop(context);
+                                                Navigator.pushNamed(context, shiftRosterRoute, arguments: shiftRosterData,);
+                                              });
+                                            }
+                                            else{
+                                              setState(() {
+                                                shiftFromDateContrl.text = '';
+                                                shiftToDateContrl.text = '';
+                                                isLoading = false;
+                                              });
+                                              Navigator.pop(context);
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                SnackBar(content: Text("Data not available")),
+                                              );
+                                            }
+                                          }).catchError( (error) {
+                                            setState(() {
+                                              shiftFromDateContrl.text = '';
+                                              shiftToDateContrl.text = '';
+                                              isLoading = false;
+                                            });
+                                            Navigator.pop(context);
+                                            ScaffoldMessenger.of(context).showSnackBar(
+                                              SnackBar(content: Text("Error in data fetching")),
+                                            );
+                                          });
+                                        },
+                                        child: const Text('Next Month'),
                                       ),
                                     ],
                                   ),
-                                ),
+                                  divider(),
+                                  Form(
+                                    key: _shiftRosterFormKey,
+                                    child: Container(
+                                      margin: EdgeInsets.symmetric(vertical: 20),
+                                      child:Column(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        crossAxisAlignment: CrossAxisAlignment.center,
 
+                                        children: <Widget>[
+                                          Container(
+                                            padding: const EdgeInsets.all(10.0),
+                                            child: Text('Check for other period'),
+                                          ),
+                                          Container(
+                                            padding: EdgeInsets.all(10),
+                                            child: TextFormField(
+                                              controller: shiftFromDateContrl,
+                                              decoration: InputDecoration(
+                                                border: OutlineInputBorder(),
+                                                labelText: 'From Date',
+                                              ),
+                                              onTap: (){
+                                                // Below line stops keyboard from appearing
+                                                FocusScope.of(context).requestFocus(new FocusNode());
+                                                _selectDate(context,shiftSelectedFromDate,shiftFromDateContrl);
+                                              },
+                                              // The validator receives the text that the user has entered.
+                                              validator: (value) {
+                                                if (value == null || value.isEmpty) {
+                                                  return 'Please enter From Date';
+                                                }
+                                                return null;
+                                              },
+                                            ),
+                                          ),
+                                          Container(
+                                            padding: EdgeInsets.all(10),
+                                            child: TextFormField(
+                                              controller: shiftToDateContrl,
+                                              decoration: InputDecoration(
+                                                border: OutlineInputBorder(),
+                                                labelText: 'To Date',
+                                              ),
+                                              onTap: (){
+                                                // Below line stops keyboard from appearing
+                                                FocusScope.of(context).requestFocus(new FocusNode());
+                                                _selectDate(context,shiftSelectedToDate,shiftToDateContrl);
+                                              },
+                                              // The validator receives the text that the user has entered.
+                                              validator: (value) {
+                                                if (value == null || value.isEmpty) {
+                                                  return 'Please enter To Date';
+                                                }
+                                                return null;
+                                              },
+                                            ),
+                                          ),
+                                          Container(
+                                            padding: const EdgeInsets.all(10.0),
+                                            child: Row(
+                                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                              children: [
+                                                ElevatedButton(
+                                                  onPressed: () {
+                                                    // Validate returns true if the form is valid, or false otherwise.
+                                                    if (_shiftRosterFormKey.currentState!.validate()) {
+                                                      setState(() {
+                                                        isLoading = true;
+                                                      });
+
+                                                      _apiResponseData = _endpointProvider.fetchShiftRosterData(empno,shiftFromDateContrl.text,shiftToDateContrl.text);
+                                                      _apiResponseData.then((result) {
+                                                        if(result.isAuthenticated && result.status){
+                                                          final parsed = jsonDecode(result.data ?? '').cast<Map<String, dynamic>>();
+                                                          setState(() {
+                                                            shiftFromDateContrl.text = '';
+                                                            shiftToDateContrl.text = '';
+                                                            shiftRosterData =  parsed.map<ShiftRoster>((json) => ShiftRoster.fromJson(json)).toList();
+                                                            isLoading = false;
+                                                            Navigator.pop(context);
+                                                            Navigator.pushNamed(context, shiftRosterRoute, arguments: shiftRosterData,);
+                                                          });
+                                                        }
+                                                        else{
+                                                          setState(() {
+                                                            shiftFromDateContrl.text = '';
+                                                            shiftToDateContrl.text = '';
+                                                            isLoading = false;
+                                                          });
+                                                          Navigator.pop(context);
+                                                          ScaffoldMessenger.of(context).showSnackBar(
+                                                            SnackBar(content: Text("Data not available")),
+                                                          );
+                                                        }
+                                                      }).catchError( (error) {
+                                                        setState(() {
+                                                          shiftFromDateContrl.text = '';
+                                                          shiftToDateContrl.text = '';
+                                                          isLoading = false;
+                                                        });
+                                                        Navigator.pop(context);
+                                                        ScaffoldMessenger.of(context).showSnackBar(
+                                                          SnackBar(content: Text("Error in data fetching")),
+                                                        );
+                                                      });
+                                                    }
+                                                  },
+                                                  child: const Text('Show Shift Roster'),
+                                                ),
+                                                ElevatedButton(
+                                                  onPressed: () {
+                                                    setState(() {
+                                                      shiftFromDateContrl.text = '';
+                                                      shiftToDateContrl.text = '';
+                                                    });
+                                                    Navigator.pop(context);
+                                                  },
+                                                  child: const Text('Cancel'),
+                                                  style: ButtonStyle(
+                                                    backgroundColor: MaterialStateProperty.all(Colors.red),
+                                                  ),
+                                                )
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+
+                                  ),
+                                ],
                               ),
+
+
+
                             );
                           },
                         ),
@@ -1465,239 +1804,6 @@ class HomeState extends State<Home>  {
                 },
               );
             }
-            else if(title == "ITAC"){
-              getITACMasterData();
-              showDialog(
-                context: context,
-                builder: (context){
-                  return StatefulBuilder(
-                    builder: (context, setState){
-                      return AlertDialog (
-                        insetPadding: EdgeInsets.all(0),
-                        content: Builder(
-                          builder: (context) {
-                            // Get available height and width of the build area of this widget. Make a choice depending on the size.
-                            var height = MediaQuery.of(context).size.height;
-                            var width = MediaQuery.of(context).size.width;
-
-                            return Container(
-                              height: height - (height/3),
-                              width: width - (width/4),
-                              child: isLoading ? waiting(context) : Form(
-                                key: _itacFormKey,
-                                child: Container(
-                                  margin: EdgeInsets.symmetric(vertical: 20),
-                                  child:Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    crossAxisAlignment: CrossAxisAlignment.center,
-
-                                    children: <Widget>[
-                                      Container(
-
-                                        padding: EdgeInsets.all(10),
-                                        child: Center(child: Text('ITAC Request',
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.w800,
-                                              fontSize: 20,
-                                              color: Colors.blue[500],
-                                            ))) ,
-                                      ),
-                                      Container(
-                                        padding: EdgeInsets.only(top:10,bottom:10),
-                                        child: InputDecorator(
-                                          decoration: InputDecoration(
-                                            labelText: 'Type',
-                                            contentPadding: const EdgeInsets.only(left: 10.0),
-                                            border: const OutlineInputBorder(),
-                                          ),
-                                          child: DropdownButtonHideUnderline(
-                                            child: DropdownButtonFormField<String>(
-                                              //value: itacSRType,
-                                              //hint: Text('Mandatory'),
-                                              style: TextStyle(color: Colors.black),
-                                              items: ITACSRType.map<DropdownMenuItem<String>>((String value) {
-                                                return DropdownMenuItem<String>(
-                                                  value: value,
-                                                  child: Text(value),
-                                                );
-                                              }).toList(),
-                                              onChanged: (String? newValue) {
-                                                setState(() {
-                                                  itacSRType = newValue!;
-                                                });
-                                              },
-                                              validator: (value) {
-                                                if (value == null) {
-                                                  return 'Please select SR type';
-                                                }
-                                                return null;
-                                              },
-                                            ),
-                                          ),
-                                        ),
-
-                                      ),
-                                      Container(
-                                        padding: EdgeInsets.only(top:10,bottom:10),
-                                        child: InputDecorator(
-                                          decoration: InputDecoration(
-                                            labelText: 'Location',
-                                            contentPadding: const EdgeInsets.only(left: 10.0),
-                                            border: const OutlineInputBorder(),
-                                          ),
-                                          child: DropdownButtonHideUnderline(
-                                            child: DropdownButtonFormField<String>(
-                                              //value: itacLocation,
-                                              //hint: Text('Mandatory'),
-                                              style: TextStyle(color: Colors.black),
-                                              items: ITACSRLocation.map<DropdownMenuItem<String>>((String value) {
-                                                return DropdownMenuItem<String>(
-                                                  value: value,
-                                                  child: Text(value),
-                                                );
-                                              }).toList(),
-                                              onChanged: (String? newValue) {
-                                                setState(() {
-                                                  itacLocation = newValue!;
-                                                });
-                                              },
-                                              validator: (value) {
-                                                if (value == null) {
-                                                  return 'Please select location';
-                                                }
-                                                return null;
-                                              },
-                                            ),
-                                          ),
-                                        ),
-
-                                      ),
-                                      Container(
-                                        padding: EdgeInsets.only(top:10,bottom:10),
-                                        child: TextFormField(
-                                          controller: itacSRTitleContrl,
-                                          decoration: InputDecoration(
-                                            border: OutlineInputBorder(),
-                                            labelText: 'Title',
-                                          ),
-                                          validator: (value) {
-                                            if (value == null || value.isEmpty) {
-                                              return 'Please enter title';
-                                            }
-                                            return null;
-                                          },
-                                        ),
-                                      ),
-                                      Container(
-                                        padding: EdgeInsets.only(top:10,bottom:10),
-                                        child: TextFormField(
-                                          controller: itacSRDescContrl,
-                                          maxLines: 3,
-                                          decoration: InputDecoration(
-                                            border: OutlineInputBorder(),
-                                            labelText: 'Description',
-                                          ),
-                                          // The validator receives the text that the user has entered.
-                                          validator: (value) {
-                                            if (value == null || value.isEmpty) {
-                                              return 'Please enter your request description';
-                                            }
-                                            return null;
-                                          },
-                                        ),
-                                      ),
-                                      Container(
-                                        padding: const EdgeInsets.all(10.0),
-                                        child: Row(
-                                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                          children: [
-                                            ElevatedButton(
-                                              onPressed: () {
-                                                // Validate returns true if the form is valid, or false otherwise.
-                                                if (_itacFormKey.currentState!.validate()) {
-                                                  setState(() {
-                                                    isLoading = true;
-                                                  });
-
-                                                  _apiResponseData = _endpointProvider.postITACRequest(empno,itacSRType,itacLocation,
-                                                      itacSRTitleContrl.text, itacSRDescContrl.text);
-                                                  _apiResponseData.then((result) {
-                                                    if(result.isAuthenticated && result.status){
-                                                      setState(() {
-                                                        itacSRType = '';
-                                                        itacLocation = '';
-                                                        itacSRTitleContrl.text = '';
-                                                        itacSRDescContrl.text = '';
-                                                        isLoading = false;
-                                                      });
-                                                      Navigator.pop(context);
-                                                      ScaffoldMessenger.of(context).showSnackBar(
-                                                        SnackBar(content: Text("Request successfully submitted")),
-                                                      );
-                                                    }
-                                                    else{
-                                                      setState(() {
-                                                        itacSRType = '';
-                                                        itacLocation = '';
-                                                        itacSRTitleContrl.text = '';
-                                                        itacSRDescContrl.text = '';
-                                                        isLoading = false;
-                                                      });
-                                                      Navigator.pop(context);
-                                                      ScaffoldMessenger.of(context).showSnackBar(
-                                                        SnackBar(content: Text("Error in submitting request")),
-                                                      );
-                                                    }
-                                                  }).catchError( (error) {
-                                                    setState(() {
-                                                      itacSRType = '';
-                                                      itacLocation = '';
-                                                      itacSRTitleContrl.text = '';
-                                                      itacSRDescContrl.text = '';
-                                                      isLoading = false;
-                                                    });
-                                                    Navigator.pop(context);
-                                                    ScaffoldMessenger.of(context).showSnackBar(
-                                                      SnackBar(content: Text("Error in submitting request")),
-                                                    );
-                                                  });
-                                                }
-                                              },
-                                              child: const Text('Submit Request'),
-                                            ),
-                                            ElevatedButton(
-                                              onPressed: () {
-                                                setState(() {
-                                                  itacSRType = '';
-                                                  itacLocation = '';
-                                                  itacSRTitleContrl.text = '';
-                                                  itacSRDescContrl.text = '';
-                                                });
-                                                Navigator.pop(context);
-                                              },
-                                              child: const Text('Cancel'),
-                                              style: ButtonStyle(
-                                                backgroundColor: MaterialStateProperty.all(Colors.red),
-                                              ),
-                                            )
-                                          ],
-                                        ),
-                                      ),
-
-                                    ],
-                                  ),
-                                ),
-
-                              ),
-                            );
-                          },
-                        ),
-                      );
-                    },
-                  );
-                },
-              );
-            }
             else{
               //Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context) => News()));
               Navigator.pushNamed(context, routeName);
@@ -1784,19 +1890,6 @@ class HomeState extends State<Home>  {
         });
       }
     }
-  }
-
-  getITACMasterData(){
-    _apiResponseData = _endpointProvider.fetchITACMasterData();
-    _apiResponseData.then((result) {
-      if(result.isAuthenticated && result.status){
-        setState(() {
-          itacMasterData =  ITACMasterData.fromJson(jsonDecode(result.data ?? ''));
-          ITACSRType = itacMasterData!.data1;
-          ITACSRLocation = itacMasterData!.data2;
-        });
-      }
-    });
   }
   Future<void> initConnectivity() async {
     late ConnectivityResult result;
@@ -2579,7 +2672,644 @@ class _DownloadDirectoryState extends State<DownloadDirectory>{
   }
 
 }
+class ITAC extends StatefulWidget{
+  @override
+  State<ITAC> createState() => _ITACState();
+}
+class _ITACState extends State<ITAC>{
+  final _itacFormKey = GlobalKey<FormBuilderState>();
+  bool isLoading = false;
+  late Future<APIResponseData> _apiResponseData;
+  late var _endpointProvider;
+  late DioClient _dio;
+  ITACMasterData? itacMasterData;
+  List<String> ITACSRType = [];
+  List<String> ITACSRLocation = [];
 
+  @override
+  void initState(){
+    super.initState();
+    _dio = new DioClient();
+    _endpointProvider = new EndPointProvider(_dio.init());
+    _apiResponseData = _endpointProvider.fetchITACMasterData();
+    _apiResponseData.then((result) {
+      if(result.isAuthenticated && result.status){
+        setState(() {
+          itacMasterData =  ITACMasterData.fromJson(jsonDecode(result.data ?? ''));
+          ITACSRType = itacMasterData!.data1;
+          ITACSRLocation = itacMasterData!.data2;
+        });
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        leading: Container(
+          width: 40,
+          child: Image.asset('images/bcpl_logo.png'),
+        ),
+        title: Text('Connect'),
+      ),
+      endDrawer: AppDrawer(),
+      body: isLoading ? waiting(context) : itacForm(),
+    );
+  }
+
+  Widget itacForm(){
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          SizedBox(height:10),
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.yellow,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            padding: EdgeInsets.all(10),
+            child: Text('ITAC Request',style: TextStyle(
+              fontWeight: FontWeight.w500,fontSize: 18,),),
+          ),
+
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white30,
+            ),
+            padding: EdgeInsets.all(15),
+            child: FormBuilder(
+              key: _itacFormKey,
+              autovalidateMode: AutovalidateMode.onUserInteraction,
+              child: Column(
+                children: [
+                  FormBuilderDropdown(
+                    name: 'SRType',
+                    decoration: InputDecoration(
+                      labelText: 'Request Type',
+                    ),
+                    // initialValue: 'Male',
+                    allowClear: true,
+                    hint: Text('Select Request'),
+                    validator: FormBuilderValidators.compose(
+                        [FormBuilderValidators.required(context)]),
+                    items: ITACSRType
+                        .map((SRType) => DropdownMenuItem(
+                      value: SRType,
+                      child: Text('$SRType'),
+                    ))
+                        .toList(),
+                  ),
+                  FormBuilderDropdown(
+                    name: 'location',
+                    decoration: InputDecoration(
+                      labelText: 'Location',
+                    ),
+                    // initialValue: 'Male',
+                    allowClear: true,
+                    hint: Text('Select Location'),
+                    validator: FormBuilderValidators.compose(
+                        [FormBuilderValidators.required(context)]),
+                    items: ITACSRLocation
+                        .map((location) => DropdownMenuItem(
+                      value: location,
+                      child: Text('$location'),
+                    ))
+                        .toList(),
+                  ),
+                  FormBuilderTextField(
+                    name: 'title',
+                    maxLines: 2,
+                    decoration: InputDecoration(
+                      labelText:
+                      'Title',
+                    ),
+                    //onChanged: _onChanged,
+                    // valueTransformer: (text) => num.tryParse(text),
+                    validator: FormBuilderValidators.compose([
+                      FormBuilderValidators.required(context),
+                    ]),
+                  ),
+                  FormBuilderTextField(
+                    name: 'description',
+                    maxLines: 5,
+                    decoration: InputDecoration(
+                      labelText:
+                      'Description',
+                    ),
+                    //onChanged: _onChanged,
+                    // valueTransformer: (text) => num.tryParse(text),
+                    validator: FormBuilderValidators.compose([
+                      FormBuilderValidators.required(context),
+                    ]),
+                  ),
+                  Row(
+                    children: <Widget>[
+                      Expanded(
+                        child: MaterialButton(
+                          color: Theme.of(context).accentColor,
+                          child: Text(
+                            "Submit",
+                            style: TextStyle(color: Colors.white),
+                          ),
+                          onPressed: () {
+                            _itacFormKey.currentState!.save();
+                            var formDataMap = _itacFormKey.currentState!.value;
+
+                            if (_itacFormKey.currentState!.validate()) {
+                              setState(() {
+                                isLoading = true;
+                              });
+                              _apiResponseData = _endpointProvider.postITACRequest(formDataMap);
+
+                              _apiResponseData.then((result) {
+                                if(result.isAuthenticated && result.status){
+                                  //_crLtrFormKey.currentState!.reset();
+                                  setState(() {
+                                    isLoading = false;
+                                  });
+                                  Navigator.pop(context);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text("Request successfully submitted")),
+                                  );
+                                }
+                                else{
+                                  //_crLtrFormKey.currentState!.reset();
+                                  setState(() {
+                                    isLoading = false;
+                                  });
+                                  Navigator.pop(context);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text("Error: ${result.error_details}")),
+                                  );
+                                }
+                              }).catchError( (error) {
+                                //_crLtrFormKey.currentState!.reset();
+                                setState(() {
+                                  isLoading = false;
+                                });
+                                Navigator.pop(context);
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text("Error in submitting request")),
+                                );
+                              });
+                            } else {
+                              print("validation failed");
+                            }
+                          },
+                        ),
+                      ),
+                      SizedBox(width: 20),
+                      Expanded(
+                        child: MaterialButton(
+                          color: Colors.red,
+                          child: Text(
+                            "Reset",
+                            style: TextStyle(color: Colors.white),
+                          ),
+                          onPressed: () {
+                            _itacFormKey.currentState!.reset();
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+}
+class ECOFF_OT extends StatefulWidget{
+  @override
+  State<ECOFF_OT> createState() => _ECOFF_OTState();
+}
+class _ECOFF_OTState extends State<ECOFF_OT>{
+  final _ecofOtFormKey = GlobalKey<FormBuilderState>();
+  final _dateFieldKey = GlobalKey<FormBuilderFieldState>();
+  bool isLoading = false;
+  late Future<APIResponseData> _apiResponseData;
+  late var _endpointProvider;
+  late DioClient _dio;
+  bool isECOFFReq = false;
+  bool isOTReq = false;
+  bool isOffDay = false;
+  bool isNationalHoliday = false;
+  DateTime lastDateforClaim = DateTime.now();
+  String? _dateError;
+
+  @override
+  void initState(){
+    super.initState();
+    _dio = new DioClient();
+    _endpointProvider = new EndPointProvider(_dio.init());
+    lastDateforClaim = new DateTime(DateTime.now().year,DateTime.now().month - 1, 20);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        leading: Container(
+          width: 40,
+          child: Image.asset('images/bcpl_logo.png'),
+        ),
+        title: Text('Connect'),
+      ),
+      endDrawer: AppDrawer(),
+      body: isLoading ? waiting(context) : ecoffOTForm(),
+    );
+  }
+
+  Widget ecoffOTForm(){
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          SizedBox(height:10),
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.yellow,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            padding: EdgeInsets.all(10),
+            child: Text('COFF Encashment / Overtime Allowance',style: TextStyle(
+              fontWeight: FontWeight.w500,fontSize: 18,),),
+          ),
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.black12,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            padding: EdgeInsets.all(10),
+            child: Text('Biometric in/out times are required. Please regularise attendance first if in/out times are not avaialble',style: TextStyle(
+              fontWeight: FontWeight.w400,fontSize: 14,),),
+          ),
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white30,
+            ),
+            padding: EdgeInsets.all(15),
+            child: FormBuilder(
+              key: _ecofOtFormKey,
+              autovalidateMode: AutovalidateMode.always,
+              child: Column(
+                children: [
+                  FormBuilderChoiceChip(
+                    name: 'request_type',
+                    decoration: InputDecoration(
+                      labelText: 'Request Type',
+                      helperText: 'Overtime allowance is for Non-Executive cadre employees only',
+                    ),
+                    options: [
+                      FormBuilderFieldOption(
+                          value: 'ECOF', child: Text('COFF Encashment')),
+                      FormBuilderFieldOption(
+                          value: 'OT', child: Text('Overtime Allowance')),
+                    ],
+                    validator: FormBuilderValidators.compose(
+                        [FormBuilderValidators.required(context)]),
+                    onChanged: (String? newValue) {
+                      if(newValue == 'ECOF'){
+                        setState(() {
+                          isECOFFReq = true;
+                          isOTReq = false;
+                        });
+                      }
+                      else if(newValue == 'OT'){
+                        setState(() {
+                          isECOFFReq = false;
+                          isOTReq = true;
+                        });
+                      }
+                      else{
+                        setState(() {
+                          isECOFFReq = false;
+                          isOTReq = false;
+                        });
+                      }
+                    },
+                  ),
+                  FormBuilderDateTimePicker(
+                    name: 'claim_date',
+                    // onChanged: _onChanged,
+                    inputType: InputType.date,
+                    decoration: InputDecoration(
+                      labelText: 'Claim Date',
+                      helperText: 'Date of Coff/Overtime',
+                    ),
+                    validator: FormBuilderValidators.compose(
+                        [FormBuilderValidators.required(context)]),
+                    lastDate: lastDateforClaim,
+                    firstDate: DateTime(2019,3,1),
+                    //initialTime: TimeOfDay(hour: 8, minute: 0),
+                    initialValue: lastDateforClaim,
+                    onChanged: (DateTime? newValue) {
+                      if ((newValue!.day == 26 && newValue!.month == 1) ||  //26th January
+                          (newValue!.day == 15 && newValue!.month == 8) ||  // 15th August
+                          (newValue!.day == 2 && newValue!.month == 10))    // 2nd October
+                          {
+                        //National Holiday. Get option whether only ecoff or ecoff+coff
+                        setState(() {
+                          isNationalHoliday = true;
+                        });
+                      }
+                      else{
+                        setState(() {
+                          isNationalHoliday = false;
+                        });
+                      }
+                    },
+                    // enabled: true,
+                  ),
+
+                  isECOFFReq ?
+                  Column(
+                    children: [
+                      FormBuilderChoiceChip(
+                        name: 'shift_type',
+                        decoration: InputDecoration(
+                          labelText: 'Shift Type',
+                        ),
+                        options: [
+                          FormBuilderFieldOption(
+                              value: 'GEN', child: Text('General Shift')),
+                          FormBuilderFieldOption(
+                              value: 'ROT', child: Text('Rotational Shift')),
+                        ],
+                        validator: FormBuilderValidators.compose(
+                            [FormBuilderValidators.required(context)]),
+                      ),
+                      FormBuilderChoiceChip(
+                        name: 'coff_type',
+                        decoration: InputDecoration(
+                          labelText: 'ECOFF Type',
+                        ),
+                        options: [
+                          FormBuilderFieldOption(
+                              value: 'SAT', child: Text('1st/3rd/5th Saturday')),
+                          FormBuilderFieldOption(
+                              value: 'OTR', child: Text('GH/NH/Off Day/Double Shift')),
+                        ],
+                        validator: FormBuilderValidators.compose([
+                              FormBuilderValidators.required(context)
+                            ]),
+                      ),
+                      FormBuilderChoiceChip(
+                        name: 'off_day',
+                        decoration: InputDecoration(
+                          labelText: 'Shift done against off day',
+                        ),
+                        options: [
+                          FormBuilderFieldOption(
+                              value: 'yes', child: Text('Yes')),
+                          FormBuilderFieldOption(
+                              value: 'no', child: Text('No')),
+                        ],
+                        validator: FormBuilderValidators.compose([
+                          FormBuilderValidators.required(context)
+                        ]),
+                        onChanged: (String? newValue) {
+                          if(newValue == 'yes'){
+                            setState(() {
+                              isOffDay = true;
+                            });
+                          }
+                          else if(newValue == 'no'){
+                            setState(() {
+                              isOffDay = false;
+                            });
+                          }
+                          else{
+                            setState(() {
+                              isOffDay = false;
+                            });
+                          }
+                        },
+                      ),
+                      isNationalHoliday? FormBuilderChoiceChip(
+                        name: 'NHOption',
+                        decoration: InputDecoration(
+                          labelText: 'ECO Count for National Holiday',
+                        ),
+                        options: [
+                          FormBuilderFieldOption(
+                              value: 'ECO', child: Text('Only ECOFF')),
+                          FormBuilderFieldOption(
+                              value: 'ECO_CO', child: Text('Equal ECOFF and COFF')),
+                        ],
+                        validator: FormBuilderValidators.compose([
+                          FormBuilderValidators.required(context)
+                        ]),
+                      ) : SizedBox(height:1),
+                      isOffDay? FormBuilderChoiceChip(
+                        name: 'performed_shift',
+                        decoration: InputDecoration(
+                          labelText: 'Shift done',
+                        ),
+                        options: [
+                          FormBuilderFieldOption(
+                              value: 'A', child: Text('A')),
+                          FormBuilderFieldOption(
+                              value: 'B', child: Text('B')),
+                          FormBuilderFieldOption(
+                              value: 'C', child: Text('C')),
+                          FormBuilderFieldOption(
+                              value: 'AB', child: Text('AB')),
+                          FormBuilderFieldOption(
+                              value: 'BC', child: Text('BC')),
+                          FormBuilderFieldOption(
+                              value: 'AC', child: Text('AC')),
+                          FormBuilderFieldOption(
+                              value: 'GC', child: Text('GC')),
+                          FormBuilderFieldOption(
+                              value: 'ABC', child: Text('ABC')),
+                        ],
+                        validator: FormBuilderValidators.compose([
+                          FormBuilderValidators.required(context)
+                        ]),
+                      ) : SizedBox(height:1),
+                      FormBuilderTextField(
+                        name: 'remarks',
+                        decoration: InputDecoration(
+                          labelText:
+                          'Remarks',
+                        ),
+                        //onChanged: _onChanged,
+                        // valueTransformer: (text) => num.tryParse(text),
+                        validator: FormBuilderValidators.compose([
+                          FormBuilderValidators.required(context),
+                        ]),
+                      ),
+                    ],
+                  ) : SizedBox(height:1),
+
+                  isOTReq ?
+                  Column(
+                    children: [
+                      FormBuilderTextField(
+                        name: 'ot_hours',
+                        decoration: InputDecoration(
+                          labelText:
+                          'Overtime Hours',
+                        ),
+                        //onChanged: _onChanged,
+                        // valueTransformer: (text) => num.tryParse(text),
+                        validator: FormBuilderValidators.compose([
+                          FormBuilderValidators.required(context),
+                          FormBuilderValidators.numeric(context),
+                          FormBuilderValidators.max(context, 24),
+                        ]),
+                        keyboardType: TextInputType.number,
+                      ),
+                      FormBuilderTextField(
+                        name: 'remarks',
+                        decoration: InputDecoration(
+                          labelText:
+                          'Reason for Overtime',
+                        ),
+                        //onChanged: _onChanged,
+                        // valueTransformer: (text) => num.tryParse(text),
+                        validator: FormBuilderValidators.compose([
+                          FormBuilderValidators.required(context),
+                        ]),
+                      ),
+                    ],
+                  )
+                  : SizedBox(height:1),
+
+                  Row(
+                    children: <Widget>[
+                      Expanded(
+                        child: MaterialButton(
+                          color: Theme.of(context).accentColor,
+                          child: Text(
+                            "Submit",
+                            style: TextStyle(color: Colors.white),
+                          ),
+                          onPressed: () {
+                            _ecofOtFormKey.currentState!.save();
+                            var formDataMap = _ecofOtFormKey.currentState!.value;
+
+                            //Custom validations for ECOFF Request
+                            if(formDataMap['request_type'] == 'ECOF'){
+                              DateTime dataDate = formDataMap['claim_date'] as DateTime;
+                              if(formDataMap['coff_type'] == 'SAT'){
+                                if(dataDate.weekday != 6){
+                                  _ecofOtFormKey.currentState!.invalidateField(name: 'request_type', errorText: 'Date is not Saturday');
+                                }
+                                if(formDataMap['shift_type'] != 'GEN'){
+                                  _ecofOtFormKey.currentState!.invalidateField(name: 'shift_type', errorText: '1st/3rd/5th Saturday ECO is for General Shift Employee only');
+                                }
+                                if (dataDate.day >= 8 && dataDate.day <= 14)
+                                {
+                                  _ecofOtFormKey.currentState!.invalidateField(name: 'claim_date', errorText: 'ECO can not be submitted for Second Saturday');
+                                }
+                                if (dataDate.day >= 22 && dataDate.day <= 28)
+                                {
+                                  _ecofOtFormKey.currentState!.invalidateField(name: 'claim_date', errorText: 'ECO can not be submitted for Fourth Saturday');
+                                }
+                              }
+                              else if(formDataMap['coff_type'] == 'OTR'){
+                                if ((dataDate.day == 26 && dataDate.month == 1) ||  //26th January
+                                    (dataDate.day == 15 && dataDate.month == 8) ||  // 15th August
+                                    (dataDate.day == 2 && dataDate.month == 10))    // 2nd October
+                                    {
+                                      //National Holiday. Not eligible for Non-Ex for ECO
+                                  if(grade.startsWith('S')){
+                                    _ecofOtFormKey.currentState!.invalidateField(name: 'claim_date', errorText: 'ECO for national holiday can not be claimed');
+                                  }
+                                }
+                              }
+                            }
+
+                            if (_ecofOtFormKey.currentState!.validate()) {
+                              setState(() {
+                                isLoading = true;
+                                isECOFFReq = false;
+                                isOTReq = false;
+                              });
+                              _apiResponseData = _endpointProvider.postECOFFOTRequest(formDataMap);
+
+                              _apiResponseData.then((result) {
+                                if(result.isAuthenticated && result.status){
+                                  //_crLtrFormKey.currentState!.reset();
+                                  setState(() {
+                                    isLoading = false;
+                                    isECOFFReq = false;
+                                    isOTReq = false;
+                                  });
+                                  Navigator.pop(context);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text("Request successfully submitted")),
+                                  );
+                                }
+                                else{
+                                  //_ecofOtFormKey.currentState!.reset();
+                                  setState(() {
+                                    isLoading = false;
+                                    isECOFFReq = false;
+                                    isOTReq = false;
+                                  });
+
+                                  Navigator.pop(context);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text("Error: ${result.error_details}")),
+                                  );
+                                }
+                              }).catchError( (error) {
+                                //_ecofOtFormKey.currentState!.reset();
+                                setState(() {
+                                  isLoading = false;
+                                  isECOFFReq = false;
+                                  isOTReq = false;
+                                });
+                                Navigator.pop(context);
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text("Error in submitting request")),
+                                );
+                              });
+                            } else {
+                              print("validation failed");
+                            }
+                          },
+                        ),
+                      ),
+                      SizedBox(width: 20),
+                      Expanded(
+                        child: MaterialButton(
+                          color: Colors.red,
+                          child: Text(
+                            "Reset",
+                            style: TextStyle(color: Colors.white),
+                          ),
+                          onPressed: () {
+                            _ecofOtFormKey.currentState!.reset();
+                            setState(() {
+                              isECOFFReq = false;
+                              isOTReq = false;
+                            });
+                          },
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+  @override
+  void dispose() {
+    super.dispose();
+  }
+}
 class HospitalCreditLetter extends StatefulWidget{
   @override
   State<HospitalCreditLetter> createState() => _HospitalCreditLetterState();
@@ -2604,7 +3334,10 @@ class _HospitalCreditLetterState extends State<HospitalCreditLetter>{
     _endpointProvider = new EndPointProvider(_dio.init());
     getHospCrLtrMasterData();
   }
-
+  @override
+  void dispose() {
+    super.dispose();
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -2658,13 +3391,13 @@ class _HospitalCreditLetterState extends State<HospitalCreditLetter>{
                       child: Text('${patient.patientName}'),
                     ))
                         .toList(),
-                    // onChanged: (HospCrLtrEmpDepMasterData? newValue) {
-                    //   setState(() {
-                    //     _patientName = newValue!.dependentName;
-                    //   });
-                    // },
+/*                     onChanged: (HospCrLtrEmpDepMasterData? newValue) {
+                       setState(() {
+                         _patientName = newValue!.dependentName;
+                       });
+                     },*/
                   ),
-                  FormBuilderDateRangePicker(
+/*                  FormBuilderDateRangePicker(
                     name: 'date_range',
                     firstDate: DateTime(2021),
                     lastDate: DateTime(2100),
@@ -2675,6 +3408,32 @@ class _HospitalCreditLetterState extends State<HospitalCreditLetter>{
                       //helperText: 'Enter Period',
                       // hintText: 'Enter Period',
                     ),
+                  ),*/
+                  FormBuilderDateTimePicker(
+                    name: 'fromDate',
+                    // onChanged: _onChanged,
+                    inputType: InputType.date,
+                    decoration: InputDecoration(
+                      labelText: 'From Date',
+                    ),
+                    validator: FormBuilderValidators.compose(
+                        [FormBuilderValidators.required(context)]),
+                    //initialTime: TimeOfDay(hour: 8, minute: 0),
+                     //initialValue: DateTime.now(),
+                    // enabled: true,
+                  ),
+                  FormBuilderDateTimePicker(
+                    name: 'toDate',
+                    // onChanged: _onChanged,
+                    inputType: InputType.date,
+                    decoration: InputDecoration(
+                      labelText: 'To Date',
+                    ),
+                    validator: FormBuilderValidators.compose(
+                        [FormBuilderValidators.required(context)]),
+                    //initialTime: TimeOfDay(hour: 8, minute: 0),
+                    //initialValue: DateTime.now(),
+                    // enabled: true,
                   ),
                   FormBuilderTextField(
                     name: 'period_days',
@@ -2751,7 +3510,7 @@ class _HospitalCreditLetterState extends State<HospitalCreditLetter>{
                         [FormBuilderValidators.required(context)]),
                     items: hospitals.map((hospital) => DropdownMenuItem(
                       value: hospital,
-                      child: Text('${hospital.hospitalName}, ${hospital.hospitalCity}, ${hospital.hospitalSt}'),
+                      child: Text('${hospital.hospitalName}, ${hospital.hospitalCity}, ${hospital.hospitalState}'),
                     ))
                         .toList(),
                     // onChanged: (HospCrLtrHospitalMasterData? newValue) {
@@ -2760,7 +3519,6 @@ class _HospitalCreditLetterState extends State<HospitalCreditLetter>{
                     //   });
                     // },
                   ),
-
                   FormBuilderTextField(
                     name: 'request',
                     decoration: InputDecoration(
@@ -2788,9 +3546,9 @@ class _HospitalCreditLetterState extends State<HospitalCreditLetter>{
                   // Image Picker for Attachments
                   FormBuilderField(
                     name: "attach_files",
-                    validator: FormBuilderValidators.compose([
-                      FormBuilderValidators.required(context),
-                    ]),
+                    // validator: FormBuilderValidators.compose([
+                    //   FormBuilderValidators.required(context),
+                    // ]),
                     builder: (FormFieldState<dynamic> field) {
                       return InputDecorator(
                         decoration: InputDecoration(
@@ -2813,7 +3571,7 @@ class _HospitalCreditLetterState extends State<HospitalCreditLetter>{
                             child: Column(
                               mainAxisAlignment : MainAxisAlignment.center,
                               children: [
-                                Text('Tap to upload',style: TextStyle(color: Colors.red),),
+                                Text('Tap to upload (Max 20MB)',style: TextStyle(color: Colors.red),),
                                 Text(_attachmentName,style: TextStyle(color: Colors.black),),
                               ],
                             ),
@@ -2837,9 +3595,15 @@ class _HospitalCreditLetterState extends State<HospitalCreditLetter>{
                             _crLtrFormKey.currentState!.save();
                             if (_crLtrFormKey.currentState!.validate()) {
                               var formDataMap = _crLtrFormKey.currentState!.value;
-                              formDataMap['empno'] = empno;
-                              formDataMap['file'] =  MultipartFile.fromFile(_attachment!.path, filename:_attachmentName);
+                              var formDataMapM = Map.of(formDataMap);
+                              formDataMapM['empno'] = empno;
 
+                              if(_attachment != null){
+                                formDataMapM['file'] =  MultipartFile.fromFileSync(_attachment!.path, filename:_attachmentName);
+                              }
+
+                              formDataMapM['patient'] = jsonEncode(formDataMap['patient']);
+                              formDataMapM['hospital'] = jsonEncode(formDataMap['hospital']);
                               //debugPrint(formData['date_range'].end.toString());
                               // formData.forEach((key, value) {
                               //   debugPrint(key + ":" + value.toString());
@@ -2850,11 +3614,11 @@ class _HospitalCreditLetterState extends State<HospitalCreditLetter>{
                               setState(() {
                                 isLoading = true;
                               });
-                              _apiResponseData = _endpointProvider.postHosCrLtrRequest(empno,formDataMap);
+                              _apiResponseData = _endpointProvider.postHosCrLtrRequest(empno,formDataMapM);
 
                               _apiResponseData.then((result) {
                                 if(result.isAuthenticated && result.status){
-                                  _crLtrFormKey.currentState!.reset();
+                                  //_crLtrFormKey.currentState!.reset();
                                   setState(() {
                                     isLoading = false;
                                   });
@@ -2864,7 +3628,7 @@ class _HospitalCreditLetterState extends State<HospitalCreditLetter>{
                                   );
                                 }
                                 else{
-                                  _crLtrFormKey.currentState!.reset();
+                                  //_crLtrFormKey.currentState!.reset();
                                   setState(() {
                                     isLoading = false;
                                   });
@@ -2874,7 +3638,7 @@ class _HospitalCreditLetterState extends State<HospitalCreditLetter>{
                                   );
                                 }
                               }).catchError( (error) {
-                                _crLtrFormKey.currentState!.reset();
+                                //_crLtrFormKey.currentState!.reset();
                                 setState(() {
                                   isLoading = false;
                                 });
@@ -2883,8 +3647,6 @@ class _HospitalCreditLetterState extends State<HospitalCreditLetter>{
                                   SnackBar(content: Text("Error in submitting request")),
                                 );
                               });
-
-
                             } else {
                               print("validation failed");
                             }
@@ -2922,8 +3684,7 @@ class _HospitalCreditLetterState extends State<HospitalCreditLetter>{
         setState(() {
           masterData =  HospCrLtrMasterData.fromJson(jsonDecode(result.data ?? ''));
           hospitals = masterData!.hospitals;
-          patient.add(HospCrLtrEmpDepMasterData(patientName: user, relationWithEmp: 'Self'));
-          patient.addAll(masterData!.patient);
+          patient = masterData!.patient;
         });
       }
     });
@@ -2960,7 +3721,7 @@ class _HospitalCreditLetterState extends State<HospitalCreditLetter>{
     );
   }
   _imgFromCamera() async {
-    final XFile? image = await _picker.pickImage(source: ImageSource.camera);
+    final XFile? image = await _picker.pickImage(source: ImageSource.camera, imageQuality: 50);
      setState(() {
        _attachment = File(image!.path);
        _attachmentName = path.basename(_attachment!.path);
@@ -2968,7 +3729,7 @@ class _HospitalCreditLetterState extends State<HospitalCreditLetter>{
   }
 
   _imgFromGallery() async {
-    final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+    final XFile? image = await _picker.pickImage(source: ImageSource.gallery, imageQuality: 50);
     setState(() {
       _attachment = File(image!.path);
       _attachmentName = path.basename(_attachment!.path);

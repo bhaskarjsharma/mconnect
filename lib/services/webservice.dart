@@ -193,9 +193,10 @@ class EndPointProvider{
       throw Exception('Failed to retrieve data.');
     }
   }
-  Future<APIResponseData> postITACRequest(String empno, String srType, String location, String title, String description) async{
+  Future<APIResponseData> postITACRequest(var formDataMap) async{
+    FormData formData = FormData.fromMap(formDataMap);
     final response = await _client.post('https://connect.bcplindia.co.in/MobileAppAPI/ITACRequest',
-        data: {'empno': empno, 'SRType': srType, 'location': location, 'contactNo': 'mobile', 'title': title, 'description': description});
+        data: formData);
 
     if (response.statusCode == 200) {
       return APIResponseData.fromJson(response.data);
@@ -220,10 +221,19 @@ class EndPointProvider{
     FormData formData = FormData.fromMap(formDataMap);
     final response = await _client.post('https://connect.bcplindia.co.in/MobileAppAPI/HospCreditLetter',
         data: formData);
-
     if (response.statusCode == 200) {
       return APIResponseData.fromJson(response.data);
-
+    } else {
+      print("The error message is: ${response.data}");
+      throw Exception('Failed to post data.');
+    }
+  }
+  Future<APIResponseData> postECOFFOTRequest(var formDataMap) async{
+    FormData formData = FormData.fromMap(formDataMap);
+    final response = await _client.post('https://connect.bcplindia.co.in/MobileAppAPI/EcoffOTRequest',
+        data: formData);
+    if (response.statusCode == 200) {
+      return APIResponseData.fromJson(response.data);
     } else {
       print("The error message is: ${response.data}");
       throw Exception('Failed to post data.');

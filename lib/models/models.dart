@@ -27,9 +27,10 @@ class EmployeeLoginData{
   final String? emp_name;
   final String? emp_desg;
   final String? emp_disc;
+  final String? emp_grade;
   final String? auth_jwt;
 
-  EmployeeLoginData({required this.status, this.emp_no,  this.emp_name,  this.emp_desg,  this.emp_disc, this.auth_jwt});
+  EmployeeLoginData({required this.status, this.emp_no,  this.emp_name,  this.emp_desg,  this.emp_disc,this.emp_grade, this.auth_jwt});
   factory EmployeeLoginData.fromJson(Map<String, dynamic> json) {
     return EmployeeLoginData(
       status: json['status'],
@@ -37,6 +38,7 @@ class EmployeeLoginData{
       emp_name: json['emp_name'],
       emp_desg: json['emp_desg'],
       emp_disc: json['emp_discipline'],
+      emp_grade: json['emp_grade'],
       auth_jwt: json['auth_token'],
     );
   }
@@ -327,25 +329,39 @@ class HospCrLtrEmpDepMasterData{
       relationWithEmp   : json['relationWithEmp'],
     );
   }
+  Map<String, dynamic> toJson() =>
+      {
+        'patientName': patientName,
+        'relationWithEmp': relationWithEmp,
+      };
 }
 class HospCrLtrHospitalMasterData{
   final int hospitalId;
   final String hospitalName;
   final String hospitalCity;
-  final String hospitalSt;
+  final String hospitalState;
   final String hospitalAddress;
 
-  HospCrLtrHospitalMasterData({required this.hospitalId, required this.hospitalName, required this.hospitalCity, required this.hospitalSt, required this.hospitalAddress});
+  HospCrLtrHospitalMasterData({required this.hospitalId, required this.hospitalName, required this.hospitalCity, required this.hospitalState, required this.hospitalAddress});
 
   factory HospCrLtrHospitalMasterData.fromJson(Map<String, dynamic> json) {
     return HospCrLtrHospitalMasterData(
       hospitalId   : json['hospitalId'],
       hospitalName   : json['hospitalName'],
       hospitalCity   : json['hospitalCity'],
-      hospitalSt   : json['hospitalState'],
+      hospitalState   : json['hospitalState'],
       hospitalAddress   : json['hospitalAddress'],
     );
   }
+  Map<String, dynamic> toJson() =>
+      {
+        'hospitalId': hospitalId,
+        'hospitalName': hospitalName,
+        'hospitalCity': hospitalCity,
+        'hospitalState': hospitalState,
+        'hospitalAddress': hospitalAddress,
+      };
 }
+
 
 

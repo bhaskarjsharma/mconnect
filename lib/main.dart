@@ -17,6 +17,7 @@ String empno = '';
 String user = '';
 String designation = '';
 String discipline = '';
+String grade = '';
 String auth_token = '';
 late GlobalKey<NavigatorState> navigatorKey;
 
@@ -42,6 +43,7 @@ void main() async{
     user = await storage.read(key: 'name');
     designation = await storage.read(key: 'desg');
     discipline = await storage.read(key: 'disc');
+    grade = await storage.read(key: 'grade');
     auth_token = await storage.read(key: 'auth_token');
 
     runApp(MaterialApp(
