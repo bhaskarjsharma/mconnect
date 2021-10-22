@@ -22,15 +22,13 @@ String grade = '';
 String auth_token = '';
 late GlobalKey<NavigatorState> navigatorKey;
 
+late FirebaseMessaging messaging;
 /// Create a [AndroidNotificationChannel] for heads up notifications
 late AndroidNotificationChannel channel;
 /// Initialize the [FlutterLocalNotificationsPlugin] package.
 late FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
 
 /// Define a top-level named handler which background/terminated messages will
-/// call.
-///
-/// To verify things are working, check out the native platform logs.
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   print('Handling a background message ${message.notification!.body}');
 }
@@ -42,23 +40,16 @@ void main() async{
 
   //Firebase configs start
   await Firebase.initializeApp();
+  messaging = FirebaseMessaging.instance;
+  messaging.subscribeToTopic('all');
   // Set the background messaging handler early on, as a named top-level function
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   channel = const AndroidNotificationChannel(
     'high_importance_channel', // id
     'High Importance Notifications', // title
     'This channel is used for important notifications.', // description
-    importance: Importance.high,
+    importance: Importance.max,
   );
-  /// Create an Android Notification Channel.
-  ///
-  /// We use this channel in the `AndroidManifest.xml` file to override the
-  /// default FCM channel to enable heads up notifications.
-/*  await flutterLocalNotificationsPlugin
-      .resolvePlatformSpecificImplementation<
-      AndroidFlutterLocalNotificationsPlugin>()
-      ?.createNotificationChannel(channel);*/
-
   /// Update the iOS foreground notification presentation options to allow
   /// heads up notifications.
   await FirebaseMessaging.instance
@@ -71,6 +62,9 @@ void main() async{
 
 
   flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+  await flutterLocalNotificationsPlugin
+      .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+      ?.createNotificationChannel(channel);
   final android = AndroidInitializationSettings('@mipmap/ic_launcher');
   final iOS = IOSInitializationSettings();
   final initSettings = InitializationSettings(android: android, iOS: iOS);
@@ -121,45 +115,68 @@ void main() async{
 
 }
 
-Future<void> showNotification(Map<String, dynamic> downloadStatus) async {
+
+Future<void> showNotification(Map<String, dynamic> notificationMessage) async {
   final android = AndroidNotificationDetails(
-      'channel id',
-      'channel name',
-      'channel description',
-      priority: Priority.high,
-      importance: Importance.max,
+    'channel id',
+    'channel name',
+    'channel description',
+    priority: Priority.high,
+    importance: Importance.max,
     playSound: true,
     enableVibration: true,
   );
   final iOS = IOSNotificationDetails();
   final platform = NotificationDetails(android: android, iOS: iOS);
-  final json = jsonEncode(downloadStatus);
-  final isSuccess = downloadStatus['isSuccess'];
+  final json = jsonEncode(notificationMessage);
+  final isSuccess = notificationMessage['isSuccess'];
+
+  String notificationTitle = '';
+  String notificationBody = '';
+
+  if(notificationMessage['contentType'] == 'FileDownload'){
+    if(isSuccess){
+      notificationTitle = 'File Download Successful';
+      notificationBody = 'Tap to Open File';
+    }
+    else{
+      notificationTitle = 'File Download Failed';
+      notificationBody = 'There was an error while downloading the file';
+    }
+  }
+  else{
+    notificationTitle = notificationMessage['title'];
+    notificationBody = notificationMessage['body'];
+  }
 
   await flutterLocalNotificationsPlugin.show(
       0, // notification id
-      isSuccess ? 'File Download Successful.' : 'File Download Failed',
-      isSuccess ? 'Tap to Open File' : 'There was an error while downloading the file.',
+      notificationTitle,
+      notificationBody,
       platform,
       payload: json
   );
 }
-
 Future onSelectNotification(String? json) async {
   //  handling clicked notification
   final obj = jsonDecode(json!);
 
-  if (obj['isSuccess']) {
-    OpenFile.open(obj['filePath']);
+  if(obj['contentType'] == 'FileDownload'){
+    if (obj['isSuccess']) {
+      OpenFile.open(obj['filePath']);
+    }
+    else{}
   }
-  else {
-    // showDialog(
-    //   context: context,
-    //   builder: (_) => AlertDialog(
-    //     title: Text('Error'),
-    //     content: Text('${obj['error']}'),
-    //   ),
-    // );
+  else if(obj['contentType'] == 'News'){
+    if (obj['contentID'] != '') {
+      navigatorKey.currentState!.pushNamed('/NewsDisplay', arguments: obj['contentID'] );
+    }
+    else{
+      navigatorKey.currentState!.pushNamed('/NotificationView');
+    }
+  }
+  else{
+    navigatorKey.currentState!.pushNamed('/NotificationView');
   }
 }
 

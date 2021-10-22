@@ -23,3 +23,5 @@ const String claimsRoute = '/Claims';
 const String itacRoute = '/ITAC';
 const String ecofOTRoute = '/ECOFF_OT';
 const String hosCrLtrRoute = '/HospitalCreditLetter';
+const String notificationRoute = '/Notification';
+const String newsDisplayRoute = '/NewsDisplay';

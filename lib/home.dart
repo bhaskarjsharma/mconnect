@@ -42,7 +42,7 @@ class Home extends StatefulWidget {
 class HomeState extends State<Home>  {
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey();
-  late FirebaseMessaging messaging;
+  //late FirebaseMessaging messaging;
   bool isConnected = false;
   ConnectivityResult _connectionStatus = ConnectivityResult.mobile;
   final Connectivity _connectivity = Connectivity();
@@ -53,7 +53,7 @@ class HomeState extends State<Home>  {
 
   String notTitle = '';
   String notBody = '';
-  bool notification = false;
+  bool notificationPresent = false;
 
   late  FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
   final _peopleFormKey = GlobalKey<FormState>();
@@ -137,37 +137,116 @@ class HomeState extends State<Home>  {
     _connectivitySubscription = _connectivity.onConnectivityChanged.listen(_updateConnectionStatus);
 
     //Firebase configs starts
-    messaging = FirebaseMessaging.instance;
+    registerNotification();
     checkForInitialMessage();
-    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+    //Instantiate Firebase Messaging //moved to main
+    //messaging = FirebaseMessaging.instance; //moved to main
+    //messaging.subscribeToTopic('all');  //moved to main
+
+    // For handling notification when the app is in background but not terminated
+    // For handling the notification tap/open function
+    FirebaseMessaging.onMessageOpenedApp.listen((message) {
+      _handleMessage(message);
+    });
+
+/*    FirebaseMessaging.onMessage.listen((RemoteMessage message) {   //moved to registerNotification
       setState((){
         notTitle = message.notification!.title!;
         notBody = message.notification!.body!;
-        notification = true;
+        notificationPresent = true;
       });
-    });
+
+      RemoteNotification? remoteNotification = message.notification;
+      AndroidNotification? android = message.notification!.android;
+      // If `onMessage` is triggered with a notification, construct our own
+      // local notification to show to users using the created channel.
+      if (remoteNotification != null && android != null) {
+        flutterLocalNotificationsPlugin.show(
+            remoteNotification.hashCode,
+            remoteNotification.title,
+            remoteNotification.body,
+            NotificationDetails(
+              android: AndroidNotificationDetails(
+                channel.id,
+                channel.name,
+                channel.description,
+                icon: android?.smallIcon,
+                // other properties...
+              ),
+            ));
+      }
+    });*/
 
     //Firebase configs ends
   }
+
+  void registerNotification() async {
+
+    NotificationSettings settings = await messaging.requestPermission(
+      alert: true,
+      badge: true,
+      provisional: false,
+      sound: true,
+    );
+
+    if (settings.authorizationStatus == AuthorizationStatus.authorized) {
+      //print('User granted permission');
+
+      // for foreground message
+      FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+        setState((){
+          notTitle = message.notification!.title!;
+          notBody = message.notification!.body!;
+          notificationPresent = true;
+        });
+        // call local notification to display notification
+        Map<String, dynamic> result = {
+          'contentType': 'PushNotification',
+          'title': message.notification!.title!,
+          'body': message.notification!.body!,
+          'contentID': '',
+        };
+
+        if(message.data['contentType'] == 'News'){
+          result['contentType'] = 'News';
+        }
+        if(message.data['contentID'] != null){
+          result['contentID'] = message.data['contentID'];
+        }
+        showNotification(result);
+
+        _handleMessage(message);
+        // Parse the message received
+/*        PushNotification notification = PushNotification(
+          title: message.notification?.title,
+          body: message.notification?.body,
+          dataTitle: message.data['title'],
+          dataBody: message.data['body'],
+        );*/
+      });
+    } else {
+      print('User declined or has not accepted permission');
+    }
+  }
+
   // For handling notification when the app is in terminated state
   checkForInitialMessage() async {
-    RemoteMessage? initialMessage =
-    await FirebaseMessaging.instance.getInitialMessage();
-
+    RemoteMessage? initialMessage = await FirebaseMessaging.instance.getInitialMessage();
     if (initialMessage != null) {
       _handleMessage(initialMessage);
     }
-    // Also handle any interaction when the app is in the background  but not terminated via a
-    // Stream listener
-    FirebaseMessaging.onMessageOpenedApp.listen(_handleMessage);
   }
+
   void _handleMessage(RemoteMessage message) {
+    //handle notification click function
     setState((){
       notTitle = message.notification!.title!;
       notBody = message.notification!.body!;
-      notification = true;
+      notificationPresent = true;
     });
+    Navigator.pushNamed(context, notificationRoute);
   }
+
   @override
   void dispose() {
     _connectivitySubscription.cancel();
@@ -191,10 +270,10 @@ class HomeState extends State<Home>  {
               icon: Icon(Icons.notifications),
               onPressed: () {
                 setState((){
-                  notification = false;
+                  notificationPresent = false;
                 });
               },
-              color: notification ? Colors.red : Colors.white,
+              color: notificationPresent ? Colors.red : Colors.white,
             )
           ],
         ),

@@ -136,6 +136,7 @@ class _DocumentsState extends State<Documents>{
   Future<void> downloadFile(String url, String fileName, int index) async {
     Map<String, dynamic> result = {
       'isSuccess': false,
+      'contentType': false,
       'filePath': null,
       'error': null,
     };
@@ -157,6 +158,7 @@ class _DocumentsState extends State<Documents>{
               }
             });
         result['isSuccess'] = response.statusCode == 200;
+        result['contentType'] = 'FileDownload';
         result['filePath'] = finalSavePath;
       } catch (ex) {
         result['error'] = ex.toString();

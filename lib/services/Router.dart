@@ -11,6 +11,7 @@ import '../content.dart';
 import '../documents.dart';
 import '../home.dart';
 import '../people.dart';
+import '../notifications.dart';
 
 class NavigationRouter {
   static Route<dynamic> generateRoute(RouteSettings settings) {
@@ -55,10 +56,14 @@ class NavigationRouter {
         return MaterialPageRoute(builder: (_) => ECOFF_OT());
       case itacRoute:
         return MaterialPageRoute(builder: (_) => ITAC());
+      case notificationRoute:
+        return MaterialPageRoute(builder: (_) => NotificationView());
       case newsDetailsRoute:
         final args = settings.arguments as NewsContentArguments;
         return MaterialPageRoute(builder: (BuildContext context) => NewsDetails(args.contentId,args.contentType,args.contentTitle,args.contentDescription,args.creationDate));
-
+      case newsDisplayRoute:
+        final args = settings.arguments;
+        return MaterialPageRoute(builder: (BuildContext context) => NewsDisplay(),settings: RouteSettings(arguments: args,),);
     // case payslipDataRoute:
       //   final args = settings.arguments as PayslipScreenArguments;
       //   return MaterialPageRoute(builder: (BuildContext context) => PayslipData(args.month,args.year));

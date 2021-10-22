@@ -67,6 +67,29 @@ class NewsContent{
   }
 }
 
+class NewsContentWithAttachment{
+  final int contentId;
+  final String contentType;
+  final String contentTitle;
+  final String contentDescription;
+  final String creationDate;
+  final List<NewsAttachment> attachments;
+
+  NewsContentWithAttachment({required this.contentId, required this.contentType, required this.contentTitle,
+    required this.contentDescription,required this.creationDate,required this.attachments});
+
+  factory NewsContentWithAttachment.fromJson(Map<String, dynamic> json) {
+    return NewsContentWithAttachment(
+      contentId: json['ContentID'],
+      contentType: json['contentType'],
+      contentTitle: json['title'],
+      contentDescription: json['description'],
+      creationDate: json['creationDate'],
+      attachments: (json['attachments'] as List).map((e) => NewsAttachment.fromJson(e)).toList(),
+    );
+  }
+}
+
 class NewsAttachment {
   final int attachmentID ;
   final String attachmentFileName ;
