@@ -97,6 +97,7 @@ flutter:
     - images/connect_logo.png
     - images/user_default.png
     - images/rupee_icon.png
+    - images/notification_icon.png
   #   - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

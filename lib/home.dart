@@ -5,34 +5,22 @@ import 'dart:io';
 import 'dart:math';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:flutter_projects/people.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:mat_month_picker_dialog/mat_month_picker_dialog.dart';
-import 'package:open_file/open_file.dart';
-import 'AttendanceView.dart';
-import 'Payslip.dart';
-import 'ShiftRosterView.dart';
-import 'documents.dart';
+import 'app_drawer.dart';
 import 'fonts_icons/connect_app_icon_icons.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_projects/services/webservice.dart';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'account.dart';
 import 'constants.dart';
 import 'main.dart';
 import 'models/models.dart';
-import 'dart:io' as io;
-import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path/path.dart' as path;
 import 'package:flutter_form_builder/flutter_form_builder.dart';
-//import 'package:data_connection_checker/data_connection_checker.dart';
+
 
 class Home extends StatefulWidget {
   @override
@@ -53,7 +41,6 @@ class HomeState extends State<Home>  {
 
   String notTitle = '';
   String notBody = '';
-  bool notificationPresent = false;
 
   late  FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
   final _peopleFormKey = GlobalKey<FormState>();
@@ -195,10 +182,45 @@ class HomeState extends State<Home>  {
       // for foreground message
       FirebaseMessaging.onMessage.listen((RemoteMessage message) {
         setState((){
-          notTitle = message.notification!.title!;
-          notBody = message.notification!.body!;
           notificationPresent = true;
         });
+
+        final String savedNotificationList = prefs.getString('savedNotification') ?? '';
+        if(savedNotificationList != ''){
+          final List<AppNotification> notList = AppNotification.decode(savedNotificationList);
+          if(notList.isNotEmpty){
+            AppNotification newNotification = new AppNotification(
+                notificationTitle: message.notification!.title!,
+                notificationBody: message.notification!.title!,
+                contentType: message.data['contentType'] ?? '',
+                contentID: message.data['contentID'] ?? '');
+            notList.add(newNotification);
+            final String encodedData = AppNotification.encode(notList);
+            prefs.setString('savedNotification', encodedData);
+          }
+          else{
+            List<AppNotification> notList = [];
+            AppNotification newNotification = new AppNotification(
+                notificationTitle: message.notification!.title!,
+                notificationBody: message.notification!.title!,
+                contentType: message.data['contentType'] ?? '',
+                contentID: message.data['contentID'] ?? '');
+            notList.add(newNotification);
+            final String encodedData = AppNotification.encode(notList);
+            prefs.setString('savedNotification', encodedData);
+          }
+        }
+        else{
+          List<AppNotification> notList = [];
+          AppNotification newNotification = new AppNotification(
+              notificationTitle: message.notification!.title!,
+              notificationBody: message.notification!.title!,
+              contentType: message.data['contentType'] ?? '',
+              contentID: message.data['contentID'] ?? '');
+          notList.add(newNotification);
+          final String encodedData = AppNotification.encode(notList);
+          prefs.setString('savedNotification', encodedData);
+        }
         // call local notification to display notification
         Map<String, dynamic> result = {
           'contentType': 'PushNotification',
@@ -215,7 +237,7 @@ class HomeState extends State<Home>  {
         }
         showNotification(result);
 
-        _handleMessage(message);
+        //_handleMessage(message);
         // Parse the message received
 /*        PushNotification notification = PushNotification(
           title: message.notification?.title,
@@ -233,17 +255,52 @@ class HomeState extends State<Home>  {
   checkForInitialMessage() async {
     RemoteMessage? initialMessage = await FirebaseMessaging.instance.getInitialMessage();
     if (initialMessage != null) {
-      _handleMessage(initialMessage);
+      setState((){
+        notificationPresent = true;
+      });
+      final String savedNotificationList = prefs.getString('savedNotification') ?? '';
+      if(savedNotificationList != ''){
+        final List<AppNotification> notList = AppNotification.decode(savedNotificationList);
+        if(notList.isNotEmpty){
+          AppNotification newNotification = new AppNotification(
+              notificationTitle: initialMessage.notification!.title!,
+              notificationBody: initialMessage.notification!.title!,
+              contentType: initialMessage.data['contentType'] ?? '',
+              contentID: initialMessage.data['contentID'] ?? '');
+          notList.add(newNotification);
+          final String encodedData = AppNotification.encode(notList);
+          prefs.setString('savedNotification', encodedData);
+        }
+        else{
+          List<AppNotification> notList = [];
+          AppNotification newNotification = new AppNotification(
+              notificationTitle: initialMessage.notification!.title!,
+              notificationBody: initialMessage.notification!.title!,
+              contentType: initialMessage.data['contentType'] ?? '',
+              contentID: initialMessage.data['contentID'] ?? '');
+          notList.add(newNotification);
+          final String encodedData = AppNotification.encode(notList);
+          prefs.setString('savedNotification', encodedData);
+        }
+      }
+      else{
+        List<AppNotification> notList = [];
+        AppNotification newNotification = new AppNotification(
+            notificationTitle: initialMessage.notification!.title!,
+            notificationBody: initialMessage.notification!.title!,
+            contentType: initialMessage.data['contentType'] ?? '',
+            contentID: initialMessage.data['contentID'] ?? '');
+        notList.add(newNotification);
+        final String encodedData = AppNotification.encode(notList);
+        prefs.setString('savedNotification', encodedData);
+      }
+      //_handleMessage(initialMessage);
     }
   }
 
   void _handleMessage(RemoteMessage message) {
     //handle notification click function
-    setState((){
-      notTitle = message.notification!.title!;
-      notBody = message.notification!.body!;
-      notificationPresent = true;
-    });
+    //open notification view page
     Navigator.pushNamed(context, notificationRoute);
   }
 
@@ -272,6 +329,7 @@ class HomeState extends State<Home>  {
                 setState((){
                   notificationPresent = false;
                 });
+                Navigator.pushNamed(context, notificationRoute);
               },
               color: notificationPresent ? Colors.red : Colors.white,
             )
@@ -302,8 +360,6 @@ class HomeState extends State<Home>  {
             makeDashboardItem("ITAC",const Icon(Icons.computer,size:30, color:Colors.blue),Colors.red,itacRoute),
             makeDashboardItem("ECOFF & Overtime",const Icon(Icons.payments,size:30, color:Colors.lime),Colors.red,ecofOTRoute),
             makeDashboardItem("Hosp. Credit Letter",const Icon(Icons.medical_services,size:30, color:Colors.red),Colors.red,hosCrLtrRoute),
-            Text('title: $notTitle'),
-            Text('body: $notBody'),
           ],
         ),
       ),
@@ -812,7 +868,7 @@ class HomeState extends State<Home>  {
                                                     isLoading = true;
                                                   });
 
-                                                  _apiResponseData = _endpointProvider.fetchPayrollData("1219",DateFormat('MM').format(payslipSelectedDate),DateFormat('yyyy').format(payslipSelectedDate));
+                                                  _apiResponseData = _endpointProvider.fetchPayrollData(DateFormat('MM').format(payslipSelectedDate),DateFormat('yyyy').format(payslipSelectedDate));
                                                   _apiResponseData.then((result) {
                                                     if(result.isAuthenticated && result.status){
                                                       final parsed = jsonDecode(result.data ?? '').cast<Map<String, dynamic>>();
@@ -920,7 +976,7 @@ class HomeState extends State<Home>  {
                                             isLoading = true;
                                           });
                                           DateTime valDate = DateTime.now();
-                                          _apiResponseData = _endpointProvider.fetchAttendanceData(empno,DateFormat('yyyy-MM-dd').format(valDate),DateFormat('yyyy-MM-dd').format(valDate));
+                                          _apiResponseData = _endpointProvider.fetchAttendanceData(DateFormat('yyyy-MM-dd').format(valDate),DateFormat('yyyy-MM-dd').format(valDate));
                                           _apiResponseData.then((result) {
                                             if(result.isAuthenticated && result.status){
                                               final parsed = jsonDecode(result.data ?? '').cast<Map<String, dynamic>>();
@@ -971,7 +1027,7 @@ class HomeState extends State<Home>  {
                                           });
                                           DateTime fromDate = DateTime.now().subtract(Duration(days: 7));
                                           DateTime toDate = DateTime.now();
-                                          _apiResponseData = _endpointProvider.fetchAttendanceData(empno,DateFormat('yyyy-MM-dd').format(fromDate),DateFormat('yyyy-MM-dd').format(toDate));
+                                          _apiResponseData = _endpointProvider.fetchAttendanceData(DateFormat('yyyy-MM-dd').format(fromDate),DateFormat('yyyy-MM-dd').format(toDate));
                                           _apiResponseData.then((result) {
                                             if(result.isAuthenticated && result.status){
                                               final parsed = jsonDecode(result.data ?? '').cast<Map<String, dynamic>>();
@@ -1022,7 +1078,7 @@ class HomeState extends State<Home>  {
                                           });
                                           DateTime fromDate = new DateTime(DateTime.now().year,DateTime.now().month,1);
                                           DateTime toDate = DateTime.now();
-                                          _apiResponseData = _endpointProvider.fetchAttendanceData(empno,DateFormat('yyyy-MM-dd').format(fromDate),DateFormat('yyyy-MM-dd').format(toDate));
+                                          _apiResponseData = _endpointProvider.fetchAttendanceData(DateFormat('yyyy-MM-dd').format(fromDate),DateFormat('yyyy-MM-dd').format(toDate));
                                           _apiResponseData.then((result) {
                                             if(result.isAuthenticated && result.status){
                                               final parsed = jsonDecode(result.data ?? '').cast<Map<String, dynamic>>();
@@ -1133,7 +1189,7 @@ class HomeState extends State<Home>  {
                                                         isLoading = true;
                                                       });
 
-                                                      _apiResponseData = _endpointProvider.fetchAttendanceData(empno,attendanceFromDateContrl.text,attendanceToDateContrl.text);
+                                                      _apiResponseData = _endpointProvider.fetchAttendanceData(attendanceFromDateContrl.text,attendanceToDateContrl.text);
                                                       _apiResponseData.then((result) {
                                                         if(result.isAuthenticated && result.status){
                                                           final parsed = jsonDecode(result.data ?? '').cast<Map<String, dynamic>>();
@@ -1248,7 +1304,7 @@ class HomeState extends State<Home>  {
                                           });
                                           DateTime fromDate = DateTime.now();
                                           DateTime toDate = DateTime.now().add(Duration(days: 8));
-                                          _apiResponseData = _endpointProvider.fetchShiftRosterData(empno,DateFormat('yyyy-MM-dd').format(fromDate),DateFormat('yyyy-MM-dd').format(toDate));
+                                          _apiResponseData = _endpointProvider.fetchShiftRosterData(DateFormat('yyyy-MM-dd').format(fromDate),DateFormat('yyyy-MM-dd').format(toDate));
                                           _apiResponseData.then((result) {
                                             if(result.isAuthenticated && result.status){
                                               final parsed = jsonDecode(result.data ?? '').cast<Map<String, dynamic>>();
@@ -1299,7 +1355,7 @@ class HomeState extends State<Home>  {
                                           });
                                           DateTime fromDate = new DateTime(DateTime.now().year,DateTime.now().month,1);
                                           DateTime toDate = (DateTime.now().month < 12) ? new DateTime(DateTime.now().year, DateTime.now().month + 1, 0) : new DateTime(DateTime.now().year + 1, 1, 0);
-                                          _apiResponseData = _endpointProvider.fetchShiftRosterData(empno,DateFormat('yyyy-MM-dd').format(fromDate),DateFormat('yyyy-MM-dd').format(toDate));
+                                          _apiResponseData = _endpointProvider.fetchShiftRosterData(DateFormat('yyyy-MM-dd').format(fromDate),DateFormat('yyyy-MM-dd').format(toDate));
                                           _apiResponseData.then((result) {
                                             if(result.isAuthenticated && result.status){
                                               final parsed = jsonDecode(result.data ?? '').cast<Map<String, dynamic>>();
@@ -1350,7 +1406,7 @@ class HomeState extends State<Home>  {
                                           });
                                           DateTime fromDate = (DateTime.now().month < 12) ? new DateTime(DateTime.now().year, DateTime.now().month + 1, 1) : new DateTime(DateTime.now().year + 1, 1, 1);
                                           DateTime toDate = (fromDate.month < 12) ? new DateTime(fromDate.year, fromDate.month + 1, 0) : new DateTime(fromDate.year + 1, 1, 0);
-                                          _apiResponseData = _endpointProvider.fetchShiftRosterData(empno,DateFormat('yyyy-MM-dd').format(fromDate),DateFormat('yyyy-MM-dd').format(toDate));
+                                          _apiResponseData = _endpointProvider.fetchShiftRosterData(DateFormat('yyyy-MM-dd').format(fromDate),DateFormat('yyyy-MM-dd').format(toDate));
                                           _apiResponseData.then((result) {
                                             if(result.isAuthenticated && result.status){
                                               final parsed = jsonDecode(result.data ?? '').cast<Map<String, dynamic>>();
@@ -1461,7 +1517,7 @@ class HomeState extends State<Home>  {
                                                         isLoading = true;
                                                       });
 
-                                                      _apiResponseData = _endpointProvider.fetchShiftRosterData(empno,shiftFromDateContrl.text,shiftToDateContrl.text);
+                                                      _apiResponseData = _endpointProvider.fetchShiftRosterData(shiftFromDateContrl.text,shiftToDateContrl.text);
                                                       _apiResponseData.then((result) {
                                                         if(result.isAuthenticated && result.status){
                                                           final parsed = jsonDecode(result.data ?? '').cast<Map<String, dynamic>>();
@@ -1664,7 +1720,7 @@ class HomeState extends State<Home>  {
                                                     isLoading = true;
                                                   });
 
-                                                  _apiResponseData = _endpointProvider.fetchClaimsData(empno,_claimsType,claimsFromDateContrl.text,claimsToDateContrl.text);
+                                                  _apiResponseData = _endpointProvider.fetchClaimsData(_claimsType,claimsFromDateContrl.text,claimsToDateContrl.text);
                                                   _apiResponseData.then((result) {
                                                     if(result.isAuthenticated && result.status){
                                                       final parsed = jsonDecode(result.data ?? '').cast<Map<String, dynamic>>();
@@ -1852,7 +1908,7 @@ class HomeState extends State<Home>  {
                                                     isLoading = true;
                                                   });
 
-                                                  _apiResponseData = _endpointProvider.postAttendRegulRequest(empno,attRegIntime.toString(),attRegOutTime.toString(),
+                                                  _apiResponseData = _endpointProvider.postAttendRegulRequest(attRegIntime.toString(),attRegOutTime.toString(),
                                                       attRegReasonContrl.text);
 
                                                   _apiResponseData.then((result) {
@@ -2071,120 +2127,6 @@ class ScreenArguments {
 
   ScreenArguments(this.fromDate, this.toDate, this.claimType);
 }
-class AppDrawer extends StatefulWidget {
-  @override
-  State<AppDrawer> createState() => AppDrawerState();
-}
-
-class AppDrawerState extends State<AppDrawer> {
-
-  @override
-  void initState(){
-    super.initState();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Drawer(
-      // Add a ListView to the drawer. This ensures the user can scroll
-      // through the options in the drawer if there isn't enough vertical
-      // space to fit everything.
-      child: ListView(
-        // Important: Remove any padding from the ListView.
-        padding: EdgeInsets.zero,
-        children: [
-          Container(
-            height: 270,
-            child: DrawerHeader(
-                decoration: BoxDecoration(
-                  color: Color.fromRGBO(165, 231, 206, 1.0),
-                ),
-                child: Column(
-                  children: [
-                    Container(
-                      padding:EdgeInsets.all(8),
-                      height:130,
-                       decoration: BoxDecoration(
-                         shape: BoxShape.circle,
-                         border: Border.all(color: Colors.black12),
-                         image: DecorationImage (
-                           image: CachedNetworkImageProvider("https://connect.bcplindia.co.in/MobileAppAPI/imageFile?empno="+empno),
-                           fit: BoxFit.contain,
-                         ),
-                       ),
-                    ),
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(user,
-                        style: TextStyle(
-                          fontWeight: FontWeight.w500,
-                          fontSize: 20,
-                        ),
-                      ),
-                    ),
-
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(designation + " (" + discipline +")",
-                        style: TextStyle(
-                          fontWeight: FontWeight.w400,
-                          fontSize: 18,
-                        ),
-                      ),
-                    ),
-                  ],
-                )
-            ),
-          ),
-
-          ListTile(
-            leading: Icon(Icons.home,color: Colors.blueAccent, size:25),
-            title: const Text('Home'),
-            onTap: () {
-              //Navigator.pushNamed(context, homeRoute);
-              Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (BuildContext context) => Home()), (Route<dynamic> route) => false);
-            },
-          ),
-          ListTile(
-            leading: Icon(Icons.download,color: Colors.green, size:25),
-            title: const Text('Downloads'),
-            onTap: () {
-              Navigator.pushNamed(context, downloadsRoute);
-            },
-          ),
-          ListTile(
-            leading: Icon(Icons.feedback,color: Colors.orange, size:25),
-            title: const Text('Feedback'),
-            onTap: () {
-              Navigator.pushNamed(context, feedbackRoute);
-            },
-          ),
-          ListTile(
-            leading: Icon(Icons.info,color: Colors.black45, size:25),
-            title: const Text('App Info & Updates'),
-            onTap: () {
-              Navigator.pushNamed(context, aboutAppRoute);
-            },
-          ),
-          ListTile(
-            leading: Icon(Icons.power_settings_new,color: Colors.redAccent, size:25),
-            title: const Text('Logout'),
-            onTap: () {
-              // Update the state of the app
-              logout();
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-  Future<void> logout() async {
-    await prefs.clear();
-    await storage.deleteAll();
-    Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (BuildContext context) => Login()), (Route<dynamic> route) => false);
-  }
-}
 
 class LeaveQuotas extends StatefulWidget {
   @override
@@ -2199,7 +2141,7 @@ class _LeaveQuotaState extends State<LeaveQuotas>{
     super.initState();
     DioClient _dio = new DioClient();
     var _endpointProvider = new EndPointProvider(_dio.init());
-    _apiResponseData = _endpointProvider.fetchLeaveQuota(empno);
+    _apiResponseData = _endpointProvider.fetchLeaveQuota();
     _apiResponseData.then((result) {
       if(result.isAuthenticated && result.status){
         setState(() {
@@ -2458,340 +2400,6 @@ class _HolidaysState extends State<Holidays> with SingleTickerProviderStateMixin
   }
 }
 
-class AppFeedback extends StatelessWidget  {
-  final _formKey = GlobalKey<FormState>();
-  final feedbackTextContrl = TextEditingController();
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        leading: Container(
-          width: 40,
-          child: Image.asset('images/bcpl_logo.png'),
-        ),
-        title: Text('Connect'),
-      ),
-      endDrawer: AppDrawer(),
-      body: feedbackForm(),
-    );
-  }
-
-  Form feedbackForm(){
-    return Form(
-      key: _formKey,
-      child: Container(
-        margin: EdgeInsets.symmetric(vertical: 20),
-        child:Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-
-          children: <Widget>[
-            Container(
-
-              padding: EdgeInsets.all(10),
-              child: Center(child: Text('Please provide your feedback',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w800,
-                    fontSize: 20,
-                    color: Colors.blue[500],
-                  ))) ,
-            ),
-            Container(
-              padding: EdgeInsets.all(10),
-              child: TextFormField(
-                controller: feedbackTextContrl,
-                maxLines: 8,
-                decoration: InputDecoration(
-                  border: OutlineInputBorder(),
-                  labelText: 'Feedback',
-                ),
-                // The validator receives the text that the user has entered.
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Please enter your feedback';
-                  }
-                  return null;
-                },
-              ),
-            ),
-            Container(
-              padding: const EdgeInsets.all(10.0),
-              child: Center( child: ElevatedButton(
-                onPressed: () {
-                  if (_formKey.currentState!.validate()) {
-                    // If the form is valid, display a snackbar. In the real world,
-                    // you'd often call a server or save the information in a database.
-                    // ScaffoldMessenger.of(context).showSnackBar(
-                    //   const SnackBar(content: Text('Thank you for your valuable feedback')),
-                    // );
-                  }
-                },
-                child: const Text('Submit'),
-              ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class AboutApp extends StatefulWidget {
-  @override
-  State<AboutApp> createState() => _AboutAppState();
-}
-class _AboutAppState extends State<AboutApp>{
-  String appName = '';
-  String packageName = '';
-  String version = '';
-  String buildNumber = '';
-
-  @override
-  void initState(){
-    getPackageInfo();
-    super.initState();
-  }
-  getPackageInfo(){
-    PackageInfo.fromPlatform().then((PackageInfo packageInfo) {
-      setState(() {
-        appName = packageInfo.appName;
-        packageName = packageInfo.packageName;
-        version = packageInfo.version;
-        buildNumber = packageInfo.buildNumber;
-      });
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        leading: Container(
-          width: 40,
-          child: Image.asset('images/bcpl_logo.png'),
-        ),
-        title: Text('Connect'),
-      ),
-      endDrawer: AppDrawer(),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Image.asset('images/bcpl_logo.png'),
-            SizedBox(height: 10),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              //crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Container(
-                  width: 100,
-                  child: Text('App Name'),
-                ),
-                Container(
-                  width: 200,
-                  child: Text(appName),
-                ),
-
-              ],
-            ),
-            SizedBox(height: 10),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              //crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Container(
-                  width: 100,
-                  child: Text('Package Name'),
-                ),
-                Container(
-                  width: 200,
-                  child: Text(packageName),
-                ),
-
-              ],
-            ),
-            SizedBox(height: 10),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              //crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Container(
-                  width: 100,
-                  child: Text('Version'),
-                ),
-                Container(
-                  width: 200,
-                  child: Text(version),
-                ),
-
-              ],
-            ),
-            SizedBox(height: 10),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              //crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Container(
-                  width: 100,
-                  child: Text('Build Number'),
-                ),
-                Container(
-                  width: 200,
-                  child: Text(buildNumber),
-                ),
-              ],
-            ),
-            SizedBox(height: 10),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              //crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Container(
-                  width: 100,
-                  child: Text('Developed By'),
-                ),
-                Container(
-                  width: 200,
-                  child: Text('Bhaskar Jyoti Sharma, Manager (IT)'),
-                ),
-              ],
-            ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: (){
-
-              },
-              child: const Text('Check for updates'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class DownloadDirectory extends StatefulWidget {
-  @override
-  State<DownloadDirectory> createState() => _DownloadDirectoryState();
-}
-class _DownloadDirectoryState extends State<DownloadDirectory>{
-  late String directory;
-  late Future<List<FileSystemEntity>> file;
-
-  @override
-  void initState(){
-    super.initState();
-    file = getDownloads();
-  }
-
-  Future<List<FileSystemEntity>> getDownloads() async {
-    directory = await getDownloadDirectory();
-    return io.Directory("$directory/").listSync();
-    // setState(() {
-    //   return file = io.Directory("$directory/resume/").listSync();  //use your folder name insted of resume.
-    // });
-  }
-
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        leading: Container(
-          width: 40,
-          child: Image.asset('images/bcpl_logo.png'),
-        ),
-        title: Text('Connect'),
-      ),
-      endDrawer: AppDrawer(),
-      body: getDownloadedFiles(),
-    );
-  }
-
-  FutureBuilder getDownloadedFiles(){
-    return FutureBuilder<List<FileSystemEntity>>(
-      future: file,
-      builder: (BuildContext context, AsyncSnapshot<List<FileSystemEntity>> snapshot){
-        if (snapshot.hasData) {
-          List<FileSystemEntity>? data = snapshot.data;
-          if(data!.isNotEmpty){
-            return Container(
-              child: Column(
-                children: <Widget>[
-                  Expanded(
-                    child: ListView.builder(
-                      itemCount: data!.length,
-                      itemBuilder: (BuildContext context, int index) {
-                        return Card(
-                          child: createDownloadList(data,index),
-                        );
-                      },
-                    ),
-                  ),
-                ],
-              ),
-            );
-          }
-          else{
-            return Center(child:Text('Downloads folder empty'),);
-          }
-
-        } else if (snapshot.hasError) {
-          return Text("${snapshot.error}");
-        }
-        return SizedBox(
-          height: MediaQuery.of(context).size.height / 1.3,
-          child: Center(
-            child: CircularProgressIndicator(),
-          ),
-        );
-      },
-    );
-  }
-
-  Row createDownloadList(data,index){
-    String extension = path.extension((data[index] as File).path);
-    String fileName = path.basenameWithoutExtension((data[index] as File).path);
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        if(extension == '.pdf')
-          Icon(ConnectAppIcon.file_pdf, size: 20, color: Colors.red),
-        if(extension == '.docx' || extension == '.doc')
-          Icon(ConnectAppIcon.file_word, size: 20, color: Colors.blue),
-        if(extension == '.xls' || extension == '.xlsx')
-          Icon(ConnectAppIcon.file_excel, size: 20, color: Colors.green),
-        InkWell(
-          onTap: (){
-            OpenFile.open((data[index] as File).path);
-          },
-          child: Text(fileName,
-            style: TextStyle(
-              fontWeight: FontWeight.w400,
-              fontSize: 15,
-            ),),
-        ),
-        InkWell(
-            onTap: (){
-              (data[index] as File).delete();
-              data.removeAt(index);
-              setState(() {
-                data = data;
-              });
-            },
-            child:CircleAvatar(
-              backgroundColor: Colors.black12,
-              child: Icon(Icons.delete,size:20,color:Colors.black38),
-            ),
-        ),
-      ],
-    );
-  }
-
-}
 class ITAC extends StatefulWidget{
   @override
   State<ITAC> createState() => _ITACState();
@@ -3004,6 +2612,7 @@ class _ITACState extends State<ITAC>{
   }
 
 }
+
 class ECOFF_OT extends StatefulWidget{
   @override
   State<ECOFF_OT> createState() => _ECOFF_OTState();
@@ -3430,6 +3039,7 @@ class _ECOFF_OTState extends State<ECOFF_OT>{
     super.dispose();
   }
 }
+
 class HospitalCreditLetter extends StatefulWidget{
   @override
   State<HospitalCreditLetter> createState() => _HospitalCreditLetterState();
@@ -3716,7 +3326,6 @@ class _HospitalCreditLetterState extends State<HospitalCreditLetter>{
                             if (_crLtrFormKey.currentState!.validate()) {
                               var formDataMap = _crLtrFormKey.currentState!.value;
                               var formDataMapM = Map.of(formDataMap);
-                              formDataMapM['empno'] = empno;
 
                               if(_attachment != null){
                                 formDataMapM['file'] =  MultipartFile.fromFileSync(_attachment!.path, filename:_attachmentName);
@@ -3887,7 +3496,6 @@ class ClaimType {
      );
    }
 }
-
 Widget waiting(BuildContext context){
   return Container(
     height: MediaQuery.of(context).size.height / 1.3,

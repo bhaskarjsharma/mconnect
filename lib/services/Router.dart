@@ -5,13 +5,13 @@ import '../AttendanceView.dart';
 import '../Payslip.dart';
 import '../ShiftRosterView.dart';
 import '../account.dart';
+import '../app_drawer.dart';
 import '../claim.dart';
 import '../constants.dart';
 import '../content.dart';
 import '../documents.dart';
 import '../home.dart';
 import '../people.dart';
-import '../notifications.dart';
 
 class NavigationRouter {
   static Route<dynamic> generateRoute(RouteSettings settings) {
@@ -40,8 +40,6 @@ class NavigationRouter {
       case claimsRoute:
         final args = settings.arguments;
         return MaterialPageRoute(builder: (BuildContext context) => Claims(),settings: RouteSettings(arguments: args,),);
-      case feedbackRoute:
-        return MaterialPageRoute(builder: (_) => AppFeedback());
       case aboutAppRoute:
         return MaterialPageRoute(builder: (_) => AboutApp());
       case downloadsRoute:

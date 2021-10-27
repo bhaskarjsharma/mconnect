@@ -385,6 +385,56 @@ class HospCrLtrHospitalMasterData{
         'hospitalAddress': hospitalAddress,
       };
 }
+class AppUpdateInfo{
+  final String version;
+  final String buildNumber;
+  final String fileName;
+  final String filePath;
+
+  AppUpdateInfo({required this.version,required this.buildNumber,required this.fileName,required this.filePath});
+
+  factory AppUpdateInfo.fromJson(Map<String, dynamic> json) {
+    return AppUpdateInfo(
+      version: json['version'],
+      buildNumber: json['buildNumber'],
+      fileName: json['fileName'],
+      filePath: json['filePath'],
+    );
+  }
+}
+class AppNotification{
+  final String notificationTitle;
+  final String notificationBody;
+  final String contentType;
+  final String contentID;
+
+  AppNotification({required this.notificationTitle,required this.notificationBody,
+    required this.contentType,required this.contentID});
+
+  factory AppNotification.fromJson(Map<String, dynamic> json) {
+    return AppNotification(
+      notificationTitle: json['notificationTitle'],
+      notificationBody: json['notificationBody'],
+      contentType: json['contentType'],
+      contentID: json['contentID'],
+    );
+  }
+  static Map<String, dynamic> toMap(AppNotification not) => {
+    'notificationTitle': not.notificationTitle,
+    'notificationBody': not.notificationBody,
+    'contentType': not.contentType,
+    'contentID': not.contentID,
+  };
+  static String encode(List<AppNotification> notifications) => json.encode(
+    notifications
+        .map<Map<String, dynamic>>((data) => AppNotification.toMap(data))
+        .toList(),
+  );
+  static List<AppNotification> decode(String notifications) =>
+      (json.decode(notifications) as List<dynamic>)
+          .map<AppNotification>((item) => AppNotification.fromJson(item))
+          .toList();
+}
 
 
 

@@ -12,6 +12,8 @@ import 'package:flutter_projects/services/Router.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 
+import 'models/models.dart';
+
 late var prefs;
 late var storage;
 String empno = '';
@@ -21,6 +23,7 @@ String discipline = '';
 String grade = '';
 String auth_token = '';
 late GlobalKey<NavigatorState> navigatorKey;
+bool notificationPresent = false;
 
 late FirebaseMessaging messaging;
 /// Create a [AndroidNotificationChannel] for heads up notifications
@@ -30,7 +33,44 @@ late FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
 
 /// Define a top-level named handler which background/terminated messages will
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  print('Handling a background message ${message.notification!.body}');
+  //print('Handling a background message ${message.notification!.body}');
+  prefs = await SharedPreferences.getInstance();
+  final String savedNotificationList = prefs.getString('savedNotification') ?? '';
+  if(savedNotificationList != ''){
+    final List<AppNotification> notList = AppNotification.decode(savedNotificationList);
+    if(notList.isNotEmpty){
+      AppNotification newNotification = new AppNotification(
+          notificationTitle: message.notification!.title!,
+          notificationBody: message.notification!.title!,
+          contentType: message.data['contentType'] ?? '',
+          contentID: message.data['contentID'] ?? '');
+      notList.add(newNotification);
+      final String encodedData = AppNotification.encode(notList);
+      prefs.setString('savedNotification', encodedData);
+    }
+    else{
+      List<AppNotification> notList = [];
+      AppNotification newNotification = new AppNotification(
+          notificationTitle: message.notification!.title!,
+          notificationBody: message.notification!.title!,
+          contentType: message.data['contentType'] ?? '',
+          contentID: message.data['contentID'] ?? '');
+      notList.add(newNotification);
+      final String encodedData = AppNotification.encode(notList);
+      prefs.setString('savedNotification', encodedData);
+    }
+  }
+  else{
+    List<AppNotification> notList = [];
+    AppNotification newNotification = new AppNotification(
+        notificationTitle: message.notification!.title!,
+        notificationBody: message.notification!.title!,
+        contentType: message.data['contentType'] ?? '',
+        contentID: message.data['contentID'] ?? '');
+    notList.add(newNotification);
+    final String encodedData = AppNotification.encode(notList);
+    prefs.setString('savedNotification', encodedData);
+  }
 }
 
 void main() async{
@@ -65,7 +105,7 @@ void main() async{
   await flutterLocalNotificationsPlugin
       .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
       ?.createNotificationChannel(channel);
-  final android = AndroidInitializationSettings('@mipmap/ic_launcher');
+  final android = AndroidInitializationSettings('images/notification_icon.png');
   final iOS = IOSInitializationSettings();
   final initSettings = InitializationSettings(android: android, iOS: iOS);
   flutterLocalNotificationsPlugin.initialize(initSettings, onSelectNotification: onSelectNotification);

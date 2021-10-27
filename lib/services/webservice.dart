@@ -104,9 +104,8 @@ class EndPointProvider{
       throw Exception('Failed to retrieve data.');
     }
   }
-  Future<APIResponseData> fetchLeaveQuota(String empno) async{
-    final response = await _client.post('https://connect.bcplindia.co.in/MobileAppAPI/GetLeaveQuota',
-        data: {'empno': empno});
+  Future<APIResponseData> fetchLeaveQuota() async{
+    final response = await _client.post('https://connect.bcplindia.co.in/MobileAppAPI/GetLeaveQuota');
 
     if (response.statusCode == 200) {
       return APIResponseData.fromJson(response.data);
@@ -135,9 +134,9 @@ class EndPointProvider{
       throw Exception('Failed to retrieve data.');
     }
   }
-  Future<APIResponseData> fetchShiftRosterData(String empno, String fromDate, String toDate) async{
+  Future<APIResponseData> fetchShiftRosterData(String fromDate, String toDate) async{
     final response = await _client.post('https://connect.bcplindia.co.in/MobileAppAPI/ShiftRosterData',
-        data: {'empno': empno, 'fromDate': fromDate, 'toDate': toDate});
+        data: {'fromDate': fromDate, 'toDate': toDate});
 
     if (response.statusCode == 200) {
       return APIResponseData.fromJson(response.data);
@@ -146,9 +145,9 @@ class EndPointProvider{
       throw Exception('Failed to retrieve data.');
     }
   }
-  Future<APIResponseData> fetchAttendanceData(String empno, String fromDate, String toDate) async{
+  Future<APIResponseData> fetchAttendanceData(String fromDate, String toDate) async{
     final response = await _client.post('https://connect.bcplindia.co.in/MobileAppAPI/BiometricPunchData',
-        data: {'empno': empno, 'fromDate': fromDate, 'toDate': toDate});
+        data: {'fromDate': fromDate, 'toDate': toDate});
 
     if (response.statusCode == 200) {
       return APIResponseData.fromJson(response.data);
@@ -157,9 +156,9 @@ class EndPointProvider{
       throw Exception('Failed to retrieve data.');
     }
   }
-  Future<APIResponseData> fetchPayrollData(String empno, String month, String year) async{
+  Future<APIResponseData> fetchPayrollData(String month, String year) async{
     final response = await _client.post('https://connect.bcplindia.co.in/MobileAppAPI/GetPayrollResult',
-        data: {'empno': empno, 'month': month, 'year': year});
+        data: {'month': month, 'year': year});
 
     if (response.statusCode == 200) {
       return APIResponseData.fromJson(response.data);
@@ -169,9 +168,9 @@ class EndPointProvider{
       throw Exception('Failed to retrieve data.');
     }
   }
-  Future<APIResponseData> fetchClaimsData(String empno, String claimType, String fromDate, String toDate) async{
+  Future<APIResponseData> fetchClaimsData(String claimType, String fromDate, String toDate) async{
     final response = await _client.post('https://connect.bcplindia.co.in/MobileAppAPI/GetClaimDetails',
-        data: {'empno': empno, 'claimType': claimType, 'fromDate': fromDate, 'toDate': toDate});
+        data: {'claimType': claimType, 'fromDate': fromDate, 'toDate': toDate});
 
     if (response.statusCode == 200) {
       return APIResponseData.fromJson(response.data);
@@ -181,9 +180,9 @@ class EndPointProvider{
       throw Exception('Failed to retrieve data.');
     }
   }
-  Future<APIResponseData> postAttendRegulRequest(String empno, String inTime, String outTime, String reason) async{
+  Future<APIResponseData> postAttendRegulRequest(String inTime, String outTime, String reason) async{
     final response = await _client.post('https://connect.bcplindia.co.in/MobileAppAPI/AttendanceRegularisationRequest',
-        data: {'empno': empno, 'inTime': inTime, 'outTime': outTime, 'reason': reason});
+        data: {'inTime': inTime, 'outTime': outTime, 'reason': reason});
 
     if (response.statusCode == 200) {
       return APIResponseData.fromJson(response.data);
@@ -228,7 +227,7 @@ class EndPointProvider{
       throw Exception('Failed to retrieve data.');
     }
   }
-  Future<APIResponseData> postHosCrLtrRequest(String empno, var formDataMap) async{
+  Future<APIResponseData> postHosCrLtrRequest(var formDataMap) async{
     FormData formData = FormData.fromMap(formDataMap);
     final response = await _client.post('https://connect.bcplindia.co.in/MobileAppAPI/HospCreditLetter',
         data: formData);
@@ -248,6 +247,30 @@ class EndPointProvider{
     } else {
       print("The error message is: ${response.data}");
       throw Exception('Failed to post data.');
+    }
+  }
+  Future<APIResponseData> postFeedback(String feedback, String platform, String appVersion, String buildNumber) async{
+    final response = await _client.post('https://connect.bcplindia.co.in/MobileAppAPI/Feedback',
+        data: {'feedback': feedback, 'platform': platform, 'appVersion': appVersion, 'buildNumber': buildNumber});
+
+    if (response.statusCode == 200) {
+      return APIResponseData.fromJson(response.data);
+
+    } else {
+      print("The error message is: ${response.data}");
+      throw Exception('Failed to retrieve data.');
+    }
+  }
+  Future<APIResponseData> checkUpdate(String currentAppVersion, String currentAppBuildNumber) async{
+    final response = await _client.post('https://connect.bcplindia.co.in/MobileAppAPI/checkAppUpdate',
+        data: {'currentAppVersion': currentAppVersion, 'currentAppBuildNumber': currentAppBuildNumber});
+
+    if (response.statusCode == 200) {
+      return APIResponseData.fromJson(response.data);
+
+    } else {
+      print("The error message is: ${response.data}");
+      throw Exception('Failed to retrieve data.');
     }
   }
 }

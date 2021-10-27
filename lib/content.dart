@@ -8,6 +8,7 @@ import 'package:flutter_html/flutter_html.dart';
 import 'package:flutter_projects/services/permissions.dart';
 import 'package:flutter_projects/services/webservice.dart';
 import 'package:path/path.dart' as path;
+import 'app_drawer.dart';
 import 'constants.dart';
 import 'fonts_icons/connect_app_icon_icons.dart';
 import 'home.dart';
@@ -677,32 +678,19 @@ class _NewsDisplayState extends State<NewsDisplay> {
   String _progress = "";
   late Future<APIResponseData> _apiResponseData;
   late NewsContentWithAttachment content;
+  late EndPointProvider _endpointProvider;
   int gridImageCount = 1;
 
   @override
   void initState() {
     DioClient _dio = new DioClient();
-    var _endpointProvider = new EndPointProvider(_dio.init());
-    final String contentId = ModalRoute.of(context)!.settings.arguments as String;
-
-    _apiResponseData = _endpointProvider.fetchSingleContent(contentId, "News");
-    _apiResponseData.then((result) {
-      if(result.isAuthenticated && result.status){
-        setState(() {
-          content = NewsContentWithAttachment.fromJson(jsonDecode(result.data ?? ''));
-        });
-      }
-    }).catchError( (error) {
-      Navigator.pop(context);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error in fetching data")),
-      );
-    });
+    _endpointProvider = new EndPointProvider(_dio.init());
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
+    final String contentId = ModalRoute.of(context)!.settings.arguments as String;
     return Scaffold(
       appBar: AppBar(
         leading: Container(
@@ -712,101 +700,92 @@ class _NewsDisplayState extends State<NewsDisplay> {
         title: Text('Connect - News & Events'),
       ),
       endDrawer: AppDrawer(),
-      body: CustomScrollView(
-        slivers: <Widget>[
-          SliverList(
-            delegate: SliverChildListDelegate(
-              [
-                Card(
-                  elevation: 10,
-                  child: Container(
-                    padding: EdgeInsets.all(10.0),
-                    decoration: BoxDecoration(
-                      color: Color.fromRGBO(254, 249, 248, 1),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-
-                    child: Column(
-                      children: [
-                        Text(content.contentTitle,
-                            textAlign: TextAlign.justify,
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 18,
-                            )),
-                        Container(
-                          padding: EdgeInsets.only(top: 10.0),
-                          child: Align(
-                            alignment: Alignment.centerLeft,
-                            child: Text('Date: ' + content.creationDate,
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 15,
-                                  color: Colors.blue,
-                                )),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                Card(
-                  elevation: 5,
-                  margin: EdgeInsets.only(top: 10, left: 5, right: 5),
-
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Color.fromRGBO(254, 253, 249, 1),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    //color: Colors.amber[500],
-                    child: Html(
-                      data: content.contentDescription, style: {"body": Style(
-                      fontSize: FontSize(18.0),
-                      fontWeight: FontWeight.w400,
-                      textAlign: TextAlign.justify,
-                    ),
-                    },
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          getImage(),
-        ],
-
-        // Container(
-        //   //color: Colors.amber[100],
-        //     child: ElevatedButton(
-        //       onPressed: (){
-        //         downloadFile(widget.contentId.toString());
-        //       },
-        //       child: const Text('Download'),
-        //     )
-        // ),
-        // Container(
-        //   //color: Colors.amber[100],
-        //   child: Center(
-        //     child:  Column(
-        //       mainAxisAlignment: MainAxisAlignment.center,
-        //       children: <Widget>[
-        //         Text(
-        //           'Download progress:',
-        //         ),
-        //         Text(
-        //           '$_progress',
-        //           style: TextStyle(color: Colors.red),
-        //         ),
-        //       ],
-        //     ),
-        //   ),
-        // ),
-
-      ),
+      body: getContentFromId(contentId),
     );
   }
+   getContentFromId(String contentID){
+    _apiResponseData = _endpointProvider.fetchSingleContent(contentID, "News");
+    _apiResponseData.then((result) {
+      if(result.isAuthenticated && result.status){
+        setState(() {
+          content = NewsContentWithAttachment.fromJson(jsonDecode(result.data ?? ''));
+        });
 
+        return CustomScrollView(
+          slivers: <Widget>[
+            SliverList(
+              delegate: SliverChildListDelegate(
+                [
+                  Card(
+                    elevation: 10,
+                    child: Container(
+                      padding: EdgeInsets.all(10.0),
+                      decoration: BoxDecoration(
+                        color: Color.fromRGBO(254, 249, 248, 1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+
+                      child: Column(
+                        children: [
+                          Text(content.contentTitle,
+                              textAlign: TextAlign.justify,
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18,
+                              )),
+                          Container(
+                            padding: EdgeInsets.only(top: 10.0),
+                            child: Align(
+                              alignment: Alignment.centerLeft,
+                              child: Text('Date: ' + content.creationDate,
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 15,
+                                    color: Colors.blue,
+                                  )),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  Card(
+                    elevation: 5,
+                    margin: EdgeInsets.only(top: 10, left: 5, right: 5),
+
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Color.fromRGBO(254, 253, 249, 1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      //color: Colors.amber[500],
+                      child: Html(
+                        data: content.contentDescription, style: {"body": Style(
+                        fontSize: FontSize(18.0),
+                        fontWeight: FontWeight.w400,
+                        textAlign: TextAlign.justify,
+                      ),
+                      },
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            getImage(),
+          ],
+        );
+      }
+      else{
+        return Text('');
+      }
+    }).catchError( (error) {
+      Navigator.pop(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error in fetching data")),
+      );
+    });
+  }
   Widget getImage(){
     return SliverGrid(
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2),
