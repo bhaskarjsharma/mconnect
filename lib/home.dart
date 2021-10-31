@@ -20,7 +20,7 @@ import 'main.dart';
 import 'models/models.dart';
 import 'package:path/path.dart' as path;
 import 'package:flutter_form_builder/flutter_form_builder.dart';
-
+import 'package:local_auth/local_auth.dart';
 
 class Home extends StatefulWidget {
   @override
@@ -28,6 +28,11 @@ class Home extends StatefulWidget {
 }
 
 class HomeState extends State<Home>  {
+  //Local biometric authentication
+
+  List<BiometricType>? _availableBiometrics;
+  bool _isAuthenticating = false;
+  bool _isAuthenticated = false;
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey();
   //late FirebaseMessaging messaging;
@@ -122,6 +127,15 @@ class HomeState extends State<Home>  {
     _endpointProvider = new EndPointProvider(_dio.init());
     initConnectivity();
     _connectivitySubscription = _connectivity.onConnectivityChanged.listen(_updateConnectionStatus);
+
+    if(localAuthEnabled){
+      _authenticateLocal();
+    }
+    else{
+      setState((){
+        _isAuthenticated = true;
+      });
+    }
 
     //Firebase configs starts
     registerNotification();
@@ -304,6 +318,57 @@ class HomeState extends State<Home>  {
     Navigator.pushNamed(context, notificationRoute);
   }
 
+  Future<void> _authenticateLocal() async {
+    bool authenticated = false;
+    try {
+      setState(() {
+        _isAuthenticating = true;
+      });
+      authenticated = await localAuth.authenticate(
+          localizedReason: 'Please complete the authentication to proceed',
+          useErrorDialogs: true,
+          stickyAuth: true);
+      setState(() {
+        _isAuthenticating = false;
+      });
+    } on PlatformException catch (e) {
+      setState(() {
+        _isAuthenticating = false;
+        _isAuthenticated = authenticated;
+      });
+    }
+    setState(() => _isAuthenticated = authenticated);
+  }
+
+  Future<void> _authenticateLocalWithBiometrics() async {
+    bool authenticated = false;
+    try {
+      setState(() {
+        _isAuthenticating = true;
+      });
+      authenticated = await localAuth.authenticate(
+          localizedReason:
+          'Please complete the biometric authentication to proceed',
+          useErrorDialogs: true,
+          stickyAuth: true,
+          biometricOnly: true
+      );
+      setState(() {
+        _isAuthenticating = false;
+      });
+    } on PlatformException catch (e) {
+      setState(() {
+        _isAuthenticating = false;
+      });
+    }
+    setState(() {
+      _isAuthenticated = authenticated;
+    });
+  }
+  void _cancelAuthentication() async {
+    await localAuth.stopAuthentication();
+    setState(() => _isAuthenticating = false);
+  }
   @override
   void dispose() {
     _connectivitySubscription.cancel();
@@ -337,7 +402,7 @@ class HomeState extends State<Home>  {
         ),
       ),
       endDrawer: AppDrawer(),
-      body: _connectionStatus == ConnectivityResult.none? noConnectivityError() : Container(
+      body: _isAuthenticated ? _connectionStatus == ConnectivityResult.none? noConnectivityError() : Container(
         padding:EdgeInsets.only(top: 10),
         //decoration: BoxDecoration(color:Colors.amberAccent),
         child: GridView.count(
@@ -360,9 +425,27 @@ class HomeState extends State<Home>  {
             makeDashboardItem("ITAC",const Icon(Icons.computer,size:30, color:Colors.blue),Colors.red,itacRoute),
             makeDashboardItem("ECOFF & Overtime",const Icon(Icons.payments,size:30, color:Colors.lime),Colors.red,ecofOTRoute),
             makeDashboardItem("Hosp. Credit Letter",const Icon(Icons.medical_services,size:30, color:Colors.red),Colors.red,hosCrLtrRoute),
+/*            ElevatedButton(
+              onPressed: () async {
+                final bool isLocalAuthEnabled = prefs.getBool('localBioAuth') ?? false;
+                if(isLocalAuthEnabled){
+                  bool isAuthenticated = await _authenticateLocal();
+                  if(isAuthenticated){
+                    Navigator.pushNamed(context, downloadsRoute);
+                  }
+                  else{
+                    Navigator.pushNamed(context, aboutAppRoute);
+                  }
+                }
+                else{
+                  Navigator.pushNamed(context, aboutAppRoute);
+                }
+              },
+              child: const Text('Check security'),
+            ),*/
           ],
         ),
-      ),
+      ): Text('Not Authorised'),
     );
   }
   Widget noConnectivityError(){

@@ -60,8 +60,8 @@ class NavigationRouter {
         final args = settings.arguments as NewsContentArguments;
         return MaterialPageRoute(builder: (BuildContext context) => NewsDetails(args.contentId,args.contentType,args.contentTitle,args.contentDescription,args.creationDate));
       case newsDisplayRoute:
-        final args = settings.arguments;
-        return MaterialPageRoute(builder: (BuildContext context) => NewsDisplay(),settings: RouteSettings(arguments: args,),);
+        final args = settings.arguments as NewsWithAttchArguments;
+        return MaterialPageRoute(builder: (BuildContext context) => NewsDisplay(args.contentId));
     // case payslipDataRoute:
       //   final args = settings.arguments as PayslipScreenArguments;
       //   return MaterialPageRoute(builder: (BuildContext context) => PayslipData(args.month,args.year));

@@ -671,11 +671,15 @@ class _NewsDetailsState extends State<NewsDetails> {
 }
 
 class NewsDisplay extends StatefulWidget {
+  final String contentID;
+  NewsDisplay(this.contentID);
+
   @override
   State<NewsDisplay> createState() => _NewsDisplayState();
 }
 class _NewsDisplayState extends State<NewsDisplay> {
   String _progress = "";
+  bool isLoading = true;
   late Future<APIResponseData> _apiResponseData;
   late NewsContentWithAttachment content;
   late EndPointProvider _endpointProvider;
@@ -685,12 +689,28 @@ class _NewsDisplayState extends State<NewsDisplay> {
   void initState() {
     DioClient _dio = new DioClient();
     _endpointProvider = new EndPointProvider(_dio.init());
+    _apiResponseData = _endpointProvider.fetchSingleContent(widget.contentID, "News");
+    _apiResponseData.then((result) {
+      if(result.isAuthenticated && result.status){
+        setState(() {
+          content = NewsContentWithAttachment.fromJson(jsonDecode(result.data ?? ''));
+          isLoading = false;
+        });
+      }
+    }).catchError( (error) {
+      setState(() {
+        isLoading = false;
+      });
+      Navigator.pop(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error in fetching data")),
+      );
+    });
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    final String contentId = ModalRoute.of(context)!.settings.arguments as String;
     return Scaffold(
       appBar: AppBar(
         leading: Container(
@@ -700,91 +720,75 @@ class _NewsDisplayState extends State<NewsDisplay> {
         title: Text('Connect - News & Events'),
       ),
       endDrawer: AppDrawer(),
-      body: getContentFromId(contentId),
+      body: isLoading? waiting(context) : getContentFromId(),
     );
   }
-   getContentFromId(String contentID){
-    _apiResponseData = _endpointProvider.fetchSingleContent(contentID, "News");
-    _apiResponseData.then((result) {
-      if(result.isAuthenticated && result.status){
-        setState(() {
-          content = NewsContentWithAttachment.fromJson(jsonDecode(result.data ?? ''));
-        });
 
-        return CustomScrollView(
-          slivers: <Widget>[
-            SliverList(
-              delegate: SliverChildListDelegate(
-                [
-                  Card(
-                    elevation: 10,
-                    child: Container(
-                      padding: EdgeInsets.all(10.0),
-                      decoration: BoxDecoration(
-                        color: Color.fromRGBO(254, 249, 248, 1),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
+   Widget getContentFromId(){
+     return CustomScrollView(
+       slivers: <Widget>[
+         SliverList(
+           delegate: SliverChildListDelegate(
+             [
+               Card(
+                 elevation: 10,
+                 child: Container(
+                   padding: EdgeInsets.all(10.0),
+                   decoration: BoxDecoration(
+                     color: Color.fromRGBO(254, 249, 248, 1),
+                     borderRadius: BorderRadius.circular(12),
+                   ),
 
-                      child: Column(
-                        children: [
-                          Text(content.contentTitle,
-                              textAlign: TextAlign.justify,
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 18,
-                              )),
-                          Container(
-                            padding: EdgeInsets.only(top: 10.0),
-                            child: Align(
-                              alignment: Alignment.centerLeft,
-                              child: Text('Date: ' + content.creationDate,
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 15,
-                                    color: Colors.blue,
-                                  )),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  Card(
-                    elevation: 5,
-                    margin: EdgeInsets.only(top: 10, left: 5, right: 5),
+                   child: Column(
+                     children: [
+                       Text(content.contentTitle,
+                           textAlign: TextAlign.justify,
+                           style: TextStyle(
+                             fontWeight: FontWeight.bold,
+                             fontSize: 18,
+                           )),
+                       Container(
+                         padding: EdgeInsets.only(top: 10.0),
+                         child: Align(
+                           alignment: Alignment.centerLeft,
+                           child: Text('Date: ' + content.creationDate,
+                               style: TextStyle(
+                                 fontWeight: FontWeight.bold,
+                                 fontSize: 15,
+                                 color: Colors.blue,
+                               )),
+                         ),
+                       ),
+                     ],
+                   ),
+                 ),
+               ),
+               Card(
+                 elevation: 5,
+                 margin: EdgeInsets.only(top: 10, left: 5, right: 5),
 
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Color.fromRGBO(254, 253, 249, 1),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      //color: Colors.amber[500],
-                      child: Html(
-                        data: content.contentDescription, style: {"body": Style(
-                        fontSize: FontSize(18.0),
-                        fontWeight: FontWeight.w400,
-                        textAlign: TextAlign.justify,
-                      ),
-                      },
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            getImage(),
-          ],
-        );
-      }
-      else{
-        return Text('');
-      }
-    }).catchError( (error) {
-      Navigator.pop(context);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error in fetching data")),
-      );
-    });
+                 child: Container(
+                   decoration: BoxDecoration(
+                     color: Color.fromRGBO(254, 253, 249, 1),
+                     borderRadius: BorderRadius.circular(12),
+                   ),
+                   //color: Colors.amber[500],
+                   child: Html(
+                     data: content.contentDescription, style: {"body": Style(
+                     fontSize: FontSize(18.0),
+                     fontWeight: FontWeight.w400,
+                     textAlign: TextAlign.justify,
+                   ),
+                   },
+                   ),
+                 ),
+               ),
+             ],
+           ),
+         ),
+         getImage(),
+       ],
+     );
   }
   Widget getImage(){
     return SliverGrid(
@@ -883,140 +887,6 @@ class _NewsDisplayState extends State<NewsDisplay> {
       ),
     );
   }
-/*  Widget getImage1() {
-    return SliverGrid(
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2),
-      delegate: SliverChildBuilderDelegate(
-            (BuildContext context, int index) {
-          return FutureBuilder(
-            future: _apiResponseData,
-            builder: (context, AsyncSnapshot<APIResponseData> snapshot) {
-              if (snapshot.connectionState == ConnectionState.done &&
-                  snapshot.hasData) {
-                WidgetsBinding.instance!.addPostFrameCallback((_) {
-                  final parsed = jsonDecode(snapshot.data!.data ?? '').cast<Map<String, dynamic>>();
-                  setState(() {
-                    _attachmentData =  parsed.map<NewsAttachment>((json) => NewsAttachment.fromJson(json)).toList();
-                    gridImageCount = _attachmentData.length;
-                  });
-*//*                  setState(() {
-                    gridImageCount = snapshot.data!.length;
-                  });*//*
-                });
-
-                if(_attachmentData.isNotEmpty){
-                  String attachmentUrl = "https://connect.bcplindia.co.in/MobileAppAPI/Download?id=" +
-                      _attachmentData![index].attachmentID.toString();
-                  String fileName = _attachmentData![index].attachmentFileName;
-
-                  if (_attachmentData![index].attachmentFileType.contains(
-                      "image/")) {
-                    return InkWell(
-                      onTap: () {
-                        showDialog(attachmentUrl);
-                      },
-                      child: CachedNetworkImage(
-                        imageUrl: attachmentUrl,
-                        placeholder: (context, url) =>
-                            SizedBox(width: 50,
-                                height: 50,
-                                child: CircularProgressIndicator()),
-                        errorWidget: (context, url, error) => Icon(Icons.error),
-                      ),
-                    );
-                  }
-                  else if (_attachmentData![index].attachmentFileType ==
-                      "application/pdf") {
-                    return InkWell(
-                      onTap: () {
-                        downloadFile(attachmentUrl, fileName);
-                      },
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(ConnectAppIcon.file_pdf, size: 40, color: Colors.red),
-                          Text('Download PDF',
-                              style: TextStyle(fontSize: 15, color: Colors.black),
-                              textAlign: TextAlign.center),
-                          Text('$_progress', style: TextStyle(
-                              color: Colors.red, fontSize: 15),),
-                        ],
-                      ),
-
-                    );
-                  }
-                  else if (_attachmentData![index].attachmentFileType ==
-                      "application/msword") {
-                    return InkWell(
-                      onTap: () {
-                        downloadFile(attachmentUrl, fileName);
-                      },
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(ConnectAppIcon.file_word, size: 40, color: Colors
-                              .blue),
-                          Text('Download PDF',
-                              style: TextStyle(fontSize: 15, color: Colors.black),
-                              textAlign: TextAlign.center),
-                          Text('$_progress', style: TextStyle(
-                              color: Colors.red, fontSize: 15),),
-                        ],
-                      ),
-                    );
-                  }
-                  else if (_attachmentData![index].attachmentFileType ==
-                      "application/vnd.ms-excel") {
-                    return InkWell(
-                      onTap: () {
-                        downloadFile(attachmentUrl, fileName);
-                      },
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(ConnectAppIcon.file_excel, size: 40,
-                              color: Colors.green),
-                          Text('Download PDF',
-                              style: TextStyle(fontSize: 15, color: Colors.black),
-                              textAlign: TextAlign.center),
-                          Text('$_progress',
-                            style: TextStyle(color: Colors.red, fontSize: 15),),
-                        ],
-                      ),
-                    );
-                  }
-                  else if (_attachmentData![index].attachmentFileType.contains(
-                      "video/")) {
-                    return Center(
-                      child: Text('Video'),
-                    );
-                  }
-                  else {
-                    return Center(
-                      child: Text('Invalid Type'),
-                    );
-                  }
-                }
-                else {
-                  return Center(
-                    child: Text('Please Wait...'),
-                  );
-                }
-
-              }
-              else {
-                return Center(
-                  child: Text('Please Wait...'),
-                );
-              }
-            },
-          );
-        },
-        childCount: gridImageCount,
-      ),
-    );
-  }*/
 
   showDialog(String url) {
     showGeneralDialog(

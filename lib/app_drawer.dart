@@ -14,6 +14,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'dart:io' as io;
 import 'account.dart';
 import 'constants.dart';
+import 'content.dart';
 import 'fonts_icons/connect_app_icon_icons.dart';
 import 'home.dart';
 import 'main.dart';
@@ -264,6 +265,88 @@ class AppDrawerState extends State<AppDrawer> {
             title: const Text('App Info & Updates'),
             onTap: () {
               Navigator.pushNamed(context, aboutAppRoute);
+            },
+          ),
+          ListTile(
+            leading: Icon(Icons.fingerprint,color: Colors.deepPurple, size:25),
+            title: const Text('Additional Authentication'),
+            onTap: () {
+              Navigator.pop(context);
+              showDialog(
+                context: context,
+                builder: (context){
+                  return StatefulBuilder(
+                    builder: (context, setState){
+                      return AlertDialog (
+                        insetPadding: EdgeInsets.all(0),
+                        content: Builder(
+                          builder: (context) {
+                            // Get available height and width of the build area of this widget. Make a choice depending on the size.
+                            var height = MediaQuery.of(context).size.height;
+                            var width = MediaQuery.of(context).size.width;
+
+                            return Container(
+                              height: height - (height/2),
+                              width: width - (width/4),
+                              child: Center(
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Text('Do you want to enable additional biometric/screen lock authentication',style: TextStyle(
+                                      fontWeight: FontWeight.w500,fontSize: 16,),),
+                                    IconButton(
+                                      icon: const Icon(Icons.thumb_up,size:30, color:Colors.green),
+                                      tooltip: 'Sure, enable more security',
+                                      onPressed: () async{
+//check if biometric auth is supported
+                                        bool isBiometricSupported = await localAuth.isDeviceSupported();
+                                        bool canCheckBiometrics = await localAuth.canCheckBiometrics;
+                                        if(isBiometricSupported && canCheckBiometrics){
+                                          prefs.setBool('localBioAuth', true);
+                                          setState((){
+                                            localAuthEnabled = true;
+                                          });
+                                          Navigator.pop(context);
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            SnackBar(content: Text('Additional authentication enabled')),
+                                          );
+                                        }
+                                        else{
+                                          Navigator.pop(context);
+                                          ScaffoldMessenger.of(context).showSnackBar(
+                                            SnackBar(content: Text('Sorry, additional authentication is not supported by your device')),
+                                          );
+                                        }
+                                      },
+                                    ),
+                                    Text('Sure, enable more security'),
+                                    IconButton(
+                                      icon: const Icon(Icons.thumb_down,size:30, color:Colors.red),
+                                      tooltip: 'Sure, enable more security',
+                                      onPressed: () {
+                                        prefs.setBool('localBioAuth', false);
+                                        setState((){
+                                          localAuthEnabled = false;
+                                        });
+                                        Navigator.pop(context);
+                                        ScaffoldMessenger.of(context).showSnackBar(
+                                          SnackBar(content: Text('Additional authentication disabled')),
+                                        );
+                                      },
+                                    ),
+                                    Text('No, i am good! Disable additional security'),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      );
+                    },
+                  );
+                },
+              );
             },
           ),
           ListTile(
@@ -573,7 +656,26 @@ class _DownloadDirectoryState extends State<DownloadDirectory>{
         title: Text('Connect'),
       ),
       endDrawer: AppDrawer(),
-      body: getDownloadedFiles(),
+      body: Column(
+        children: [
+          SizedBox(height:10),
+          Container(
+            padding: EdgeInsets.all(10),
+            child:Text('Tap to view. Swipe to delete',style: TextStyle(
+              fontWeight: FontWeight.w400,
+              fontSize: 15,
+            ),),
+            decoration: BoxDecoration(
+              color: Colors.black12,
+              borderRadius: BorderRadius.circular(20),
+            ),
+          ),
+
+          Expanded(
+            child:getDownloadedFiles(),
+          )
+        ],
+      ),
     );
   }
 
@@ -584,21 +686,31 @@ class _DownloadDirectoryState extends State<DownloadDirectory>{
         if (snapshot.hasData) {
           List<FileSystemEntity>? data = snapshot.data;
           if(data!.isNotEmpty){
-            return Container(
-              child: Column(
-                children: <Widget>[
-                  Expanded(
-                    child: ListView.builder(
-                      itemCount: data!.length,
-                      itemBuilder: (BuildContext context, int index) {
-                        return Card(
-                          child: createDownloadList(data,index),
-                        );
-                      },
-                    ),
-                  ),
-                ],
-              ),
+            return ListView.builder(
+              itemCount: data!.length,
+              itemBuilder: (BuildContext context, int index) {
+                final item = path.basenameWithoutExtension((data[index] as File).path);
+                return Dismissible(
+                  // Each Dismissible must contain a Key. Keys allow Flutter to
+                  // uniquely identify widgets.
+                    key: Key(item),
+                    // Provide a function that tells the app
+                    // what to do after an item has been swiped away.
+                    onDismissed: (direction) {
+                      // Remove the item from the data source.
+                      (data[index] as File).delete();
+                      setState(() {
+                        data.removeAt(index);
+                      });
+                      // Then show a snackbar.
+                      ScaffoldMessenger.of(context)
+                          .showSnackBar(SnackBar(content: Text('$item deleted')));
+                    },
+                    // Show a red background as the item is swiped away.
+                    background: Container(color: Colors.red),
+                    child: createDownloadList(data,index),
+                );
+              },
             );
           }
           else{
@@ -618,11 +730,30 @@ class _DownloadDirectoryState extends State<DownloadDirectory>{
     );
   }
 
-  Row createDownloadList(data,index){
+  Card createDownloadList(data,index){
     String extension = path.extension((data[index] as File).path);
     String fileName = path.basenameWithoutExtension((data[index] as File).path);
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    Icon fileIcon = Icon(ConnectAppIcon.file_pdf, size: 20, color: Colors.red);
+    if(extension == '.pdf')
+      fileIcon = Icon(ConnectAppIcon.file_pdf, size: 20, color: Colors.red);
+    if(extension == '.docx' || extension == '.doc')
+      fileIcon = Icon(ConnectAppIcon.file_word, size: 20, color: Colors.blue);
+    if(extension == '.xls' || extension == '.xlsx')
+      fileIcon = Icon(ConnectAppIcon.file_excel, size: 20, color: Colors.green);
+
+    return Card(
+      child: ListTile(
+        leading: fileIcon,
+        title: Text(fileName,
+          style: TextStyle(
+            fontWeight: FontWeight.w400,
+            fontSize: 15,
+          ),),
+        onTap: (){
+          OpenFile.open((data[index] as File).path);
+        },
+      ),
+/*      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         if(extension == '.pdf')
           Icon(ConnectAppIcon.file_pdf, size: 20, color: Colors.red),
@@ -640,7 +771,7 @@ class _DownloadDirectoryState extends State<DownloadDirectory>{
               fontSize: 15,
             ),),
         ),
-        InkWell(
+*//*        InkWell(
           onTap: (){
             (data[index] as File).delete();
             data.removeAt(index);
@@ -652,8 +783,8 @@ class _DownloadDirectoryState extends State<DownloadDirectory>{
             backgroundColor: Colors.black12,
             child: Icon(Icons.delete,size:20,color:Colors.black38),
           ),
-        ),
-      ],
+        ),*//*
+      ],*/
     );
   }
 
@@ -666,6 +797,10 @@ class NotificationView extends StatefulWidget {
 class _NotificationViewState extends State<NotificationView>{
   late String directory;
   List<AppNotification> notificationList = [];
+  late var _endpointProvider;
+  late Future<APIResponseData> _apiResponseData;
+  late List<Document> documentList;
+  late DioClient _dio;
 
   @override
   void initState(){
@@ -674,6 +809,8 @@ class _NotificationViewState extends State<NotificationView>{
     if(savedNotificationList != ''){
       notificationList = AppNotification.decode(savedNotificationList);
     }
+    _dio = new DioClient();
+    _endpointProvider = new EndPointProvider(_dio.init());
   }
 
   @override
@@ -687,46 +824,94 @@ class _NotificationViewState extends State<NotificationView>{
         title: Text('Connect'),
       ),
       endDrawer: AppDrawer(),
-      body: notificationList.isNotEmpty? ListView.builder(
-        itemCount: notificationList!.length,
-        itemBuilder: (BuildContext context, int index) {
-          final item = notificationList[index].notificationBody;
-          return Dismissible(
-            // Each Dismissible must contain a Key. Keys allow Flutter to
-            // uniquely identify widgets.
-            key: Key(item),
-            // Provide a function that tells the app
-            // what to do after an item has been swiped away.
-            onDismissed: (direction) {
-              // Remove the item from the data source.
-              setState(() {
-                notificationList.removeAt(index);
-              });
-              final String encodedData = AppNotification.encode(notificationList);
-              prefs.setString('savedNotification', encodedData);
+      body: notificationList.isNotEmpty? Column(
+        children: [
+          SizedBox(height:10),
+          Container(
+            padding: EdgeInsets.all(10),
+            child:Text('Tap to view. Swipe to delete',style: TextStyle(
+              fontWeight: FontWeight.w400,
+              fontSize: 15,
+            ),),
+            decoration: BoxDecoration(
+              color: Colors.black12,
+              borderRadius: BorderRadius.circular(20),
+            ),
+          ),
 
-              if(notificationList.isEmpty){
-                prefs.remove('savedNotification');
-              }
-              // Then show a snackbar.
-              ScaffoldMessenger.of(context)
-                  .showSnackBar(SnackBar(content: Text('$item dismissed')));
-            },
-            // Show a red background as the item is swiped away.
-            background: Container(color: Colors.red),
-            child: ListTile(
-              title: Text(notificationList[index].notificationTitle),
-              subtitle: Text(notificationList[index].notificationBody),
-              onTap: (){
-                if(notificationList[index].contentType == 'News'){
-                  if(notificationList[index].contentID != ''){
-                    Navigator.pushNamed(context, newsDisplayRoute, arguments: notificationList[index].contentID,);
-                  }
-                }
+          Expanded(
+            child:ListView.builder(
+              itemCount: notificationList!.length,
+              itemBuilder: (BuildContext context, int index) {
+                final item = notificationList[index].notificationBody;
+                return Dismissible(
+                  // Each Dismissible must contain a Key. Keys allow Flutter to
+                  // uniquely identify widgets.
+                  key: Key(item),
+                  // Provide a function that tells the app
+                  // what to do after an item has been swiped away.
+                  onDismissed: (direction) {
+                    // Remove the item from the data source.
+                    setState(() {
+                      notificationList.removeAt(index);
+                    });
+                    final String encodedData = AppNotification.encode(notificationList);
+                    prefs.setString('savedNotification', encodedData);
+
+                    if(notificationList.isEmpty){
+                      prefs.remove('savedNotification');
+                    }
+                    // Then show a snackbar.
+                    ScaffoldMessenger.of(context)
+                        .showSnackBar(SnackBar(content: Text('$item dismissed')));
+                  },
+                  // Show a red background as the item is swiped away.
+                  background: Container(color: Colors.red),
+                  child: ListTile(
+                    title: Text(notificationList[index].notificationTitle),
+                    subtitle: Text(notificationList[index].notificationBody),
+                    onTap: (){
+                      if(notificationList[index].contentType == 'News'){
+                        if(notificationList[index].contentID != ''){
+                          Navigator.pushNamed(context, newsDisplayRoute, arguments: NewsWithAttchArguments(
+                              notificationList[index].contentID),
+                          );
+                          //Navigator.pushNamed(context, newsDisplayRoute, arguments: notificationList[index].contentID,);
+                        }
+                      }
+                      else if(notificationList[index].contentType == 'Document'){
+                        if(notificationList[index].notificationTitle != ''){
+                          _apiResponseData = _endpointProvider.fetchDocuments(notificationList[index].notificationTitle,'');
+                          _apiResponseData.then((result) {
+                            if(result.isAuthenticated && result.status){
+                              final parsed = jsonDecode(result.data ?? '').cast<Map<String, dynamic>>();
+                              setState(() {
+                                documentList =  parsed.map<Document>((json) => Document.fromJson(json)).toList();
+                                Navigator.pop(context);
+                                Navigator.pushNamed(context, documentsRoute, arguments: documentList,);
+                              });
+                            }
+                            else{
+                              Navigator.pop(context);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text("Error in data fetching")),
+                              );
+                            }
+                          }).catchError( (error) {
+                            Navigator.pop(context);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text("Error in data fetching")),
+                            );
+                          });
+                        }
+                      }
+                    },
+                  ),
+                );
               },
             ),
-          );
-        },
+          )
+        ],
       ) : Container(
         height: MediaQuery.of(context).size.height / 1.3,
         child: Center(
@@ -747,4 +932,9 @@ class _NotificationViewState extends State<NotificationView>{
       ),
     );
   }
+}
+class NewsWithAttchArguments{
+  final String contentId;
+
+  NewsWithAttchArguments(this.contentId);
 }

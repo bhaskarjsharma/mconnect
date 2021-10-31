@@ -3,9 +3,11 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:local_auth/local_auth.dart';
 import 'package:open_file/open_file.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'account.dart';
+import 'app_drawer.dart';
 import 'constants.dart';
 import 'home.dart';
 import 'package:flutter_projects/services/Router.dart';
@@ -24,6 +26,8 @@ String grade = '';
 String auth_token = '';
 late GlobalKey<NavigatorState> navigatorKey;
 bool notificationPresent = false;
+bool localAuthEnabled = false;
+final LocalAuthentication localAuth = LocalAuthentication();
 
 late FirebaseMessaging messaging;
 /// Create a [AndroidNotificationChannel] for heads up notifications
@@ -105,7 +109,7 @@ void main() async{
   await flutterLocalNotificationsPlugin
       .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
       ?.createNotificationChannel(channel);
-  final android = AndroidInitializationSettings('images/notification_icon.png');
+  final android = AndroidInitializationSettings('@mipmap/ic_launcher');
   final iOS = IOSInitializationSettings();
   final initSettings = InitializationSettings(android: android, iOS: iOS);
   flutterLocalNotificationsPlugin.initialize(initSettings, onSelectNotification: onSelectNotification);
@@ -120,6 +124,7 @@ void main() async{
     discipline = await storage.read(key: 'disc');
     grade = await storage.read(key: 'grade');
     auth_token = await storage.read(key: 'auth_token');
+    localAuthEnabled = prefs.getBool('localBioAuth') ?? false;
 
     runApp(MaterialApp(
       title: "Home",
@@ -209,7 +214,10 @@ Future onSelectNotification(String? json) async {
   }
   else if(obj['contentType'] == 'News'){
     if (obj['contentID'] != '') {
-      navigatorKey.currentState!.pushNamed('/NewsDisplay', arguments: obj['contentID'] );
+      //navigatorKey.currentState!.pushNamed('/NewsDisplay', arguments: obj['contentID'] );
+      navigatorKey.currentState!.pushNamed('/NewsDisplay', arguments: NewsWithAttchArguments(
+          obj['contentID']),
+      );
     }
     else{
       navigatorKey.currentState!.pushNamed('/NotificationView');
