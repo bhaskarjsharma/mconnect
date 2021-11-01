@@ -31,12 +31,18 @@ class AppDrawerState extends State<AppDrawer> {
   late Future<APIResponseData> _apiResponseData;
   late DioClient _dio;
   late var _endpointProvider;
+  bool bioAuth = false;
 
   @override
   void initState(){
     super.initState();
     _dio = new DioClient();
     _endpointProvider = new EndPointProvider(_dio.init());
+    if(localAuthEnabled){
+      setState((){
+        bioAuth = localAuthEnabled;
+      });
+    }
   }
 
   @override
@@ -270,7 +276,44 @@ class AppDrawerState extends State<AppDrawer> {
           ListTile(
             leading: Icon(Icons.fingerprint,color: Colors.deepPurple, size:25),
             title: const Text('Additional Authentication'),
-            onTap: () {
+            trailing:
+            CupertinoSwitch(
+              value: bioAuth,
+              onChanged: (bool value) async{
+                setState(() { bioAuth = value; });
+                  if(bioAuth){
+                    bool isBiometricSupported = await localAuth.isDeviceSupported();
+                    bool canCheckBiometrics = await localAuth.canCheckBiometrics;
+                    if(isBiometricSupported && canCheckBiometrics){
+                      prefs.setBool('localBioAuth', true);
+                      setState((){
+                        localAuthEnabled = true;
+                      });
+                      Navigator.pop(context);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Additional authentication enabled')),
+                      );
+                    }
+                    else{
+                      Navigator.pop(context);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Sorry, additional authentication is not supported on your device')),
+                      );
+                    }
+                  }
+                  else{
+                    prefs.setBool('localBioAuth', false);
+                    setState((){
+                      localAuthEnabled = false;
+                    });
+                    Navigator.pop(context);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Additional authentication disabled')),
+                    );
+                  }
+                },
+            ),
+/*            onTap: () {
               Navigator.pop(context);
               showDialog(
                 context: context,
@@ -347,7 +390,7 @@ class AppDrawerState extends State<AppDrawer> {
                   );
                 },
               );
-            },
+            },*/
           ),
           ListTile(
             leading: Icon(Icons.power_settings_new,color: Colors.redAccent, size:25),

@@ -13,12 +13,21 @@ class Login extends StatefulWidget {
   State<Login> createState() => _LoginState();
 }
 
-class _LoginState extends State<Login> {
+class _LoginState extends State<Login> with TickerProviderStateMixin{
   bool _isLoading = false;
   var errorMsg;
   final unameController = TextEditingController();
   final pwdController = TextEditingController();
   bool apiCall = false;
+  late final AnimationController _controller = AnimationController(
+    duration: Duration(seconds: 3),
+    vsync: this,
+  )..forward();
+  late final Animation<double> _animation = CurvedAnimation(
+    parent: _controller,
+    curve: Curves.fastOutSlowIn,
+  );
+
 
   @override
   Widget build(BuildContext context) {
@@ -53,7 +62,10 @@ class _LoginState extends State<Login> {
             children: <Widget>[
               Container(
                 padding: EdgeInsets.all(10),
-                child:Image.asset('images/connect_logo.png',scale: 2),
+                child: ScaleTransition(
+                  scale: _animation,
+                  child: Image.asset('images/connect_logo.png',scale: 2),
+                ),
               ),
               Container(
                 padding: EdgeInsets.all(10),

@@ -3,6 +3,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:open_file/open_file.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -82,6 +83,9 @@ void main() async{
   WidgetsFlutterBinding.ensureInitialized();
   navigatorKey = new GlobalKey<NavigatorState>();
 
+  await Hive.initFlutter();
+  Hive.registerAdapter(EmployeeAdapter());
+
   //Firebase configs start
   await Firebase.initializeApp();
   messaging = FirebaseMessaging.instance;
@@ -125,6 +129,8 @@ void main() async{
     grade = await storage.read(key: 'grade');
     auth_token = await storage.read(key: 'auth_token');
     localAuthEnabled = prefs.getBool('localBioAuth') ?? false;
+
+
 
     runApp(MaterialApp(
       title: "Home",

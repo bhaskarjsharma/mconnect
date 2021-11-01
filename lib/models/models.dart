@@ -1,5 +1,8 @@
 
 import 'dart:convert';
+import 'package:hive/hive.dart';
+part 'models.g.dart';
+
 
 class APIResponseData{
   final bool isAuthenticated;
@@ -108,23 +111,43 @@ class NewsAttachment {
     );
   }
 }
-class Employee{
+
+
+@HiveType(typeId: 0)
+class Employee extends HiveObject {
+  @HiveField(0)
   final bool status;
+  @HiveField(1)
   final String? emp_no;
+  @HiveField(2)
   final String? emp_name;
+  @HiveField(3)
   final String? emp_desg;
+  @HiveField(4)
   final String? emp_grade;
+  @HiveField(5)
   final String? emp_dept;
+  @HiveField(6)
   final String? emp_discipline;
+  @HiveField(7)
   final String? emp_location;
+  @HiveField(8)
   final String? emp_unit;
+  @HiveField(9)
   final String? emp_email;
+  @HiveField(10)
   final String? emp_mobileNo;
+  @HiveField(11)
   final String? emp_intercom;
+  @HiveField(12)
   final String? emp_intercomResidence;
+  @HiveField(13)
   final String? emp_company;
+  @HiveField(14)
   final String? emp_DOB;
+  @HiveField(15)
   final String? emp_gender;
+  @HiveField(16)
   final String? emp_bloodgroup;
 
   Employee({required this.status,required this.emp_no, required this.emp_name, required this.emp_desg, required this.emp_grade,
