@@ -1,12 +1,14 @@
 import 'dart:convert';
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:flutter_projects/services/permissions.dart';
 import 'package:flutter_projects/services/webservice.dart';
+import 'package:hive/hive.dart';
 import 'package:path/path.dart' as path;
 import 'app_drawer.dart';
 import 'constants.dart';
@@ -29,6 +31,7 @@ class _NewsState extends State<News>{
   late Future<NewsContent> contentData;
   //late Future<List<NewsContent>> _contentData;
   late Future<APIResponseData> _apiResponseData;
+  late var _endpointProvider;
   List<NewsContent> _contentData = <NewsContent>[];
   bool _showBackToTopButton = false;
   late ScrollController _scrollController;
@@ -38,20 +41,40 @@ class _NewsState extends State<News>{
   void initState() {
     super.initState();
     DioClient _dio = new DioClient();
-    var _endpointProvider = new EndPointProvider(_dio.init());
-    _apiResponseData = _endpointProvider.fetchNews();
-
-    _apiResponseData.then((result) {
-      if(result.isAuthenticated && result.status){
-        final parsed = jsonDecode(result.data ?? '').cast<Map<String, dynamic>>();
-        setState(() {
-          _contentData =  parsed.map<NewsContent>((json) => NewsContent.fromJson(json)).toList();
-          isLoading = false;
+    _endpointProvider = new EndPointProvider(_dio.init());
+    final newsContentBox = Hive.box<NewsContent>('newsContent');
+    if(newsContentBox.values.isEmpty){
+      if(connectionStatus != ConnectivityResult.none){
+        _apiResponseData = _endpointProvider.fetchNews();
+        _apiResponseData.then((result) {
+          if(result.isAuthenticated && result.status){
+            final parsed = jsonDecode(result.data ?? '').cast<Map<String, dynamic>>();
+            setState(() {
+              _contentData =  parsed.map<NewsContent>((json) => NewsContent.fromJson(json)).toList();
+              isLoading = false;
+            });
+            newsContentBox.addAll(_contentData);
+          }
         });
       }
-    });
-    _scrollController = ScrollController()
-      ..addListener(() {
+      else{
+        setState(() {
+          isLoading = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("No internet connection. Please check your settings")),
+        );
+      }
+
+    }
+    else{
+      setState(() {
+        _contentData =  newsContentBox.values.toList();
+        isLoading = false;
+      });
+    }
+
+    _scrollController = ScrollController()..addListener(() {
         setState(() {
           if (_scrollController.offset >= 400) {
             _showBackToTopButton = true; // show the back-to-top button
@@ -76,28 +99,44 @@ class _NewsState extends State<News>{
           width: 40,
           child: Image.asset('images/bcpl_logo.png'),
         ),
-        title: Text('Connect - News & Events'),
+        title: Row(
+          children:[
+            Text('News & Events'),
+            Spacer(),
+            IconButton(
+              icon: Icon(Icons.sync),
+              onPressed: () {
+                if(connectionStatus != ConnectivityResult.none){
+                  setState(() {
+                    isLoading = true;
+                  });
+                  _apiResponseData = _endpointProvider.fetchNews();
+                  _apiResponseData.then((result) {
+                    if(result.isAuthenticated && result.status){
+                      final parsed = jsonDecode(result.data ?? '').cast<Map<String, dynamic>>();
+                      setState(() {
+                        _contentData =  parsed.map<NewsContent>((json) => NewsContent.fromJson(json)).toList();
+                        isLoading = false;
+                      });
+                      final newsContentBox = Hive.box<NewsContent>('newsContent');
+                      newsContentBox.clear();
+                      newsContentBox.addAll(_contentData);
+                    }
+                  });
+                }
+                else{
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text("No internet connection. Please check your settings")),
+                  );
+                }
+              },
+              color: Colors.white,
+            )
+          ],
+        ),
       ),
       endDrawer: AppDrawer(),
-      body: isLoading? Container(
-        height: MediaQuery.of(context).size.height / 1.3,
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              CircularProgressIndicator(),
-              Container(
-                padding: EdgeInsets.all(10),
-                child:Text('Getting your data. Please wait...',style: TextStyle(
-                  fontWeight: FontWeight.w500,fontSize: 18,),
-                ),
-              ),
-            ],
-          ),
-        ),
-
-      ) : ListView.builder(
+      body: isLoading? waiting(context) : ListView.builder(
           controller: _scrollController,
           itemCount: _contentData.length,
           itemBuilder: (context, index) {
@@ -229,20 +268,28 @@ class _NewsDetailsState extends State<NewsDetails> {
   void initState() {
     DioClient _dio = new DioClient();
     var _endpointProvider = new EndPointProvider(_dio.init());
-    _apiResponseData = _endpointProvider.fetchContentAttachments(widget.contentId, "News");
-    _apiResponseData.then((result) {
-      if(result.isAuthenticated && result.status){
-        final parsed = jsonDecode(result.data ?? '').cast<Map<String, dynamic>>();
-        setState(() {
-          _attachmentData =  parsed.map<NewsAttachment>((json) => NewsAttachment.fromJson(json)).toList();
-        });
-      }
-    }).catchError( (error) {
-      Navigator.pop(context);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error in fetching data")),
-      );
-    });
+    if(connectionStatus != ConnectivityResult.none){
+      _apiResponseData = _endpointProvider.fetchContentAttachments(widget.contentId, "News");
+      _apiResponseData.then((result) {
+        if(result.isAuthenticated && result.status){
+          final parsed = jsonDecode(result.data ?? '').cast<Map<String, dynamic>>();
+          setState(() {
+            _attachmentData =  parsed.map<NewsAttachment>((json) => NewsAttachment.fromJson(json)).toList();
+          });
+        }
+      }).catchError( (error) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Error in fetching data")),
+        );
+      });
+    }
+    else{
+      /*ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("No internet connection. Please check your settings")),
+      );*/
+    }
+
     super.initState();
   }
 
@@ -262,6 +309,7 @@ class _NewsDetailsState extends State<NewsDetails> {
           SliverList(
             delegate: SliverChildListDelegate(
               [
+                connectionStatus != ConnectivityResult.none ? SizedBox(height:0) : noConnectivityError(),
                 Card(
                   elevation: 10,
                   child: Container(
@@ -273,6 +321,7 @@ class _NewsDetailsState extends State<NewsDetails> {
 
                     child: Column(
                       children: [
+
                         Text(widget.contentTitle,
                             textAlign: TextAlign.justify,
                             style: TextStyle(

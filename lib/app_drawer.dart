@@ -4,6 +4,9 @@ import 'dart:io';
 import 'dart:math';
 import 'package:dio/dio.dart';
 import 'package:flutter_projects/services/permissions.dart';
+import 'package:hive/hive.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:lottie/lottie.dart';
 import 'package:open_file/open_file.dart';
 import 'package:path/path.dart' as path;
 import 'package:cached_network_image/cached_network_image.dart';
@@ -132,7 +135,7 @@ class AppDrawerState extends State<AppDrawer> {
                             var width = MediaQuery.of(context).size.width;
 
                             return Container(
-                              height: height - (height/2.3),
+                              height: height - (height/2.5),
                               width: width - (width/4),
                               child: isLoading ? waiting(context) : Form(
                                 key: _feedbackFormKey,
@@ -142,12 +145,17 @@ class AppDrawerState extends State<AppDrawer> {
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     crossAxisAlignment: CrossAxisAlignment.center,
                                     children: <Widget>[
+                                      Center(
+                                        child:Lottie.asset('animations/ani_feedback.json',
+                                          width: 150,
+                                          height: 150,),
+                                      ),
                                       Container(
-                                        padding: EdgeInsets.all(10),
+                                        padding: EdgeInsets.all(0),
                                         child: Center(child: Text('Please provide your feedback',
                                             style: TextStyle(
                                               fontWeight: FontWeight.w800,
-                                              fontSize: 20,
+                                              fontSize: 16,
                                               color: Colors.blue[500],
                                             ))) ,
                                       ),
@@ -155,7 +163,7 @@ class AppDrawerState extends State<AppDrawer> {
                                         padding: EdgeInsets.all(10),
                                         child: TextFormField(
                                           controller: feedbackTextContrl,
-                                          maxLines: 8,
+                                          maxLines: 5,
                                           decoration: InputDecoration(
                                             border: OutlineInputBorder(),
                                             labelText: 'Feedback',
@@ -757,7 +765,25 @@ class _DownloadDirectoryState extends State<DownloadDirectory>{
             );
           }
           else{
-            return Center(child:Text('Downloads folder empty'),);
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Center(
+                    child: Lottie.asset('animations/ani_empty_box.json',
+                      width: 400,
+                      height: 400,),
+                  ),
+                  Container(
+                    padding: EdgeInsets.all(10),
+                    child:Text('Downloads floder empty',style: TextStyle(
+                      fontWeight: FontWeight.w500,fontSize: 16,),
+                    ),
+                  ),
+                ],
+              ),
+            );
           }
 
         } else if (snapshot.hasError) {
@@ -839,19 +865,30 @@ class NotificationView extends StatefulWidget {
 }
 class _NotificationViewState extends State<NotificationView>{
   late String directory;
-  List<AppNotification> notificationList = [];
+  //List<AppNotification> notificationList = [];
   late var _endpointProvider;
   late Future<APIResponseData> _apiResponseData;
   late List<Document> documentList;
   late DioClient _dio;
 
+  bool notificationAvailable = false;
+
   @override
   void initState(){
     super.initState();
-    final String savedNotificationList = prefs.getString('savedNotification') ?? '';
+    final appNotificationBox = Hive.box<AppNotification>('appNotifications');
+    if(appNotificationBox.values.isNotEmpty){
+      setState((){
+        notificationAvailable = true;
+      });
+    }
+/*    final appNotificationBox = Hive.box<AppNotification>('appNotifications');
+    notificationList = appNotificationBox.values.toList();*/
+
+/*    final String savedNotificationList = prefs.getString('savedNotification') ?? '';
     if(savedNotificationList != ''){
       notificationList = AppNotification.decode(savedNotificationList);
-    }
+    }*/
     _dio = new DioClient();
     _endpointProvider = new EndPointProvider(_dio.init());
   }
@@ -867,7 +904,7 @@ class _NotificationViewState extends State<NotificationView>{
         title: Text('Connect'),
       ),
       endDrawer: AppDrawer(),
-      body: notificationList.isNotEmpty? Column(
+      body: notificationAvailable ? Column(
         children: [
           SizedBox(height:10),
           Container(
@@ -881,9 +918,74 @@ class _NotificationViewState extends State<NotificationView>{
               borderRadius: BorderRadius.circular(20),
             ),
           ),
-
           Expanded(
-            child:ListView.builder(
+            child: ValueListenableBuilder(
+              valueListenable: Hive.box<AppNotification>('appNotifications').listenable(),
+              builder: (context, Box<AppNotification> items, widget) {
+                return ListView.builder(
+                  itemCount: items.length,
+                  itemBuilder: (BuildContext context, int index) {
+                    final item = items.getAt(index)!.notificationTitle;
+                    return Dismissible(
+                      // Each Dismissible must contain a Key. Keys allow Flutter to
+                      // uniquely identify widgets.
+                      key: Key(item),
+                      onDismissed: (direction) {
+                        // Remove the item from the data source.
+                        items.deleteAt(index);
+                        // Then show a snackbar.
+                        ScaffoldMessenger.of(context)
+                            .showSnackBar(SnackBar(content: Text('$item dismissed')));
+                      },
+                      // Show a red background as the item is swiped away.
+                      background: Container(color: Colors.red),
+                      child: ListTile(
+                        title: Text(items.getAt(index)!.notificationTitle),
+                        subtitle: Text(items.getAt(index)!.notificationBody),
+                        onTap: (){
+                          if(items.getAt(index)!.contentType == 'News'){
+                            if(items.getAt(index)!.contentID != ''){
+                              Navigator.pushNamed(context, newsDisplayRoute, arguments: NewsWithAttchArguments(
+                                  items.getAt(index)!.contentID),
+                              );
+                              //Navigator.pushNamed(context, newsDisplayRoute, arguments: notificationList[index].contentID,);
+                            }
+                          }
+                          else if(items.getAt(index)!.contentType == 'Document'){
+                            if(items.getAt(index)!.notificationTitle != ''){
+                              _apiResponseData = _endpointProvider.fetchDocuments(items.getAt(index)!.notificationTitle,'');
+                              _apiResponseData.then((result) {
+                                if(result.isAuthenticated && result.status){
+                                  final parsed = jsonDecode(result.data ?? '').cast<Map<String, dynamic>>();
+                                  setState(() {
+                                    documentList =  parsed.map<Document>((json) => Document.fromJson(json)).toList();
+                                    Navigator.pop(context);
+                                    Navigator.pushNamed(context, documentsRoute, arguments: documentList,);
+                                  });
+                                }
+                                else{
+                                  Navigator.pop(context);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text("Error in data fetching")),
+                                  );
+                                }
+                              }).catchError( (error) {
+                                Navigator.pop(context);
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text("Error in data fetching")),
+                                );
+                              });
+                            }
+                          }
+                        },
+                      ),
+                    );
+                  },
+                );
+              },
+            ),
+
+/*            child:ListView.builder(
               itemCount: notificationList!.length,
               itemBuilder: (BuildContext context, int index) {
                 final item = notificationList[index].notificationBody;
@@ -898,6 +1000,9 @@ class _NotificationViewState extends State<NotificationView>{
                     setState(() {
                       notificationList.removeAt(index);
                     });
+                    final appNotificationBox = Hive.box<AppNotification>('appNotifications');
+                    appNotificationBox.deleteAt(index);
+
                     final String encodedData = AppNotification.encode(notificationList);
                     prefs.setString('savedNotification', encodedData);
 
@@ -952,7 +1057,7 @@ class _NotificationViewState extends State<NotificationView>{
                   ),
                 );
               },
-            ),
+            ),*/
           )
         ],
       ) : Container(

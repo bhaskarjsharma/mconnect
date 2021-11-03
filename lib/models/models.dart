@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:hive/hive.dart';
 part 'models.g.dart';
 
-
 class APIResponseData{
   final bool isAuthenticated;
   final bool status;
@@ -46,12 +45,17 @@ class EmployeeLoginData{
     );
   }
 }
-
-class NewsContent{
+@HiveType(typeId: 5)
+class NewsContent extends HiveObject {
+  @HiveField(0)
   final int contentId;
+  @HiveField(1)
   final String contentType;
+  @HiveField(2)
   final String contentTitle;
+  @HiveField(3)
   final String contentDescription;
+  @HiveField(4)
   final String creationDate;
   //final List<NewsAttachment> attachments;
 
@@ -69,7 +73,6 @@ class NewsContent{
     );
   }
 }
-
 class NewsContentWithAttachment{
   final int contentId;
   final String contentType;
@@ -92,7 +95,6 @@ class NewsContentWithAttachment{
     );
   }
 }
-
 class NewsAttachment {
   final int attachmentID ;
   final String attachmentFileName ;
@@ -111,8 +113,6 @@ class NewsAttachment {
     );
   }
 }
-
-
 @HiveType(typeId: 0)
 class Employee extends HiveObject {
   @HiveField(0)
@@ -178,12 +178,19 @@ class Employee extends HiveObject {
     );
   }
 }
-class LeaveQuota{
+@HiveType(typeId: 1)
+class LeaveQuota extends HiveObject{
+  @HiveField(0)
   final String Pernr;
+  @HiveField(1)
   final String QuotaCL;
+  @HiveField(2)
   final String QuotaEL;
+  @HiveField(3)
   final String QuotaHPL;
+  @HiveField(4)
   final String QuotaRH;
+  @HiveField(5)
   final String QuotaCOFF;
 
   LeaveQuota({required this.Pernr,required this.QuotaCL, required this.QuotaEL, required this.QuotaHPL,
@@ -200,14 +207,23 @@ class LeaveQuota{
     );
   }
 }
-class Document{
+@HiveType(typeId: 2)
+class Document extends HiveObject{
+  @HiveField(0)
   final String docId;
+  @HiveField(1)
   final String docType;
+  @HiveField(2)
   final String docFileName;
+  @HiveField(3)
   final String docDisplayName;
+  @HiveField(4)
   final String docPath;
+  @HiveField(5)
   final String docContentType;
+  @HiveField(6)
   final String docSize;
+  @HiveField(7)
   final String docDate;
 
   Document({required this.docId,required this.docType, required this.docFileName, required this.docDisplayName,
@@ -226,9 +242,13 @@ class Document{
     );
   }
 }
-class HolidayList{
+@HiveType(typeId: 3)
+class HolidayList extends HiveObject{
+  @HiveField(0)
   final String holidayDate;
+  @HiveField(1)
   final String holidayName;
+  @HiveField(2)
   final String holidayType;
 
   HolidayList({required this.holidayDate,required this.holidayName, required this.holidayType});
@@ -336,8 +356,11 @@ class ClaimData{
     );
   }
 }
-class ITACMasterData{
+@HiveType(typeId: 4)
+class ITACMasterData extends HiveObject{
+  @HiveField(0)
   final List<String> data1;
+  @HiveField(1)
   final List<String> data2;
 
   ITACMasterData({required this.data1, required this.data2});
@@ -349,8 +372,11 @@ class ITACMasterData{
     );
   }
 }
-class HospCrLtrMasterData{
+@HiveType(typeId: 6)
+class HospCrLtrMasterData extends HiveObject{
+  @HiveField(0)
   final List<HospCrLtrHospitalMasterData> hospitals;
+  @HiveField(1)
   final List<HospCrLtrEmpDepMasterData> patient;
 
   HospCrLtrMasterData({required this.hospitals, required this.patient});
@@ -425,10 +451,15 @@ class AppUpdateInfo{
     );
   }
 }
-class AppNotification{
+@HiveType(typeId: 7)
+class AppNotification extends HiveObject{
+  @HiveField(0)
   final String notificationTitle;
+  @HiveField(1)
   final String notificationBody;
+  @HiveField(2)
   final String contentType;
+  @HiveField(3)
   final String contentID;
 
   AppNotification({required this.notificationTitle,required this.notificationBody,

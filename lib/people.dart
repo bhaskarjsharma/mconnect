@@ -5,6 +5,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_projects/services/webservice.dart';
+import 'package:hive/hive.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:share_plus/share_plus.dart';
 import 'account.dart';
@@ -20,12 +21,19 @@ class People extends StatefulWidget{
   State<People> createState() => _PeopleState();
 }
 class _PeopleState extends State<People>{
+  bool isLoading = false;
   bool _showBackToTopButton = false;
   late ScrollController _scrollController;
+  late DioClient _dio;
+  late var _endpointProvider;
+  late Future<APIResponseData> _apiResponseData;
+  //late List<Employee> peopleData;
 
   @override
   void initState() {
     super.initState();
+    _dio = new DioClient();
+    _endpointProvider = new EndPointProvider(_dio.init());
     _scrollController = ScrollController()
       ..addListener(() {
         setState(() {
@@ -40,17 +48,63 @@ class _PeopleState extends State<People>{
 
   @override
   Widget build(BuildContext context) {
-    final List<Employee> _peopleData = ModalRoute.of(context)!.settings.arguments as List<Employee>;
+    List<Employee> _peopleData = ModalRoute.of(context)!.settings.arguments as List<Employee>;
     return Scaffold(
       appBar: AppBar(
         leading: Container(
           width: 40,
           child: Image.asset('images/bcpl_logo.png'),
         ),
-        title: Text('Connect - People'),
+        title: Row(
+          children:[
+            Text('Connect - People'),
+            Spacer(),
+            IconButton(
+              icon: Icon(Icons.sync),
+              onPressed: () {
+                setState(() {
+                  isLoading = true;
+                });
+                _apiResponseData = _endpointProvider.fetchEmployees('','','','');
+                _apiResponseData.then((result) async {
+                  if(result.isAuthenticated && result.status){
+                    final parsed = jsonDecode(result.data ?? '').cast<Map<String, dynamic>>();
+                    setState(() {
+                      _peopleData =  parsed.map<Employee>((json) => Employee.fromJson(json)).toList();
+                      isLoading = false;
+                    });
+                    var employeeBox = await Hive.openBox<Employee>('employeeList');
+                    employeeBox.clear();
+                    employeeBox.addAll(_peopleData);
+/*                    Navigator.pop(context);
+                    Navigator.pushNamed(context, peopleRoute, arguments: peopleData,);*/
+                  }
+                  else{
+                    setState(() {
+                      isLoading = false;
+                    });
+                    Navigator.pop(context);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text("Error in data fetching")),
+                    );
+                  }
+                }).catchError( (error) {
+                  setState(() {
+                    isLoading = false;
+                  });
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text("Error in data fetching")),
+                  );
+                });
+              },
+              color: Colors.white,
+            )
+          ],
+        ),
       ),
       endDrawer: AppDrawer(),
-      body: ListView.builder(
+      body: isLoading ? refresh(context) : ListView.builder(
           itemCount: _peopleData.length,
           itemBuilder: (context, index) {
             return Card(

@@ -7,6 +7,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_projects/services/permissions.dart';
 import 'package:flutter_projects/services/webservice.dart';
+import 'package:hive/hive.dart';
 import 'app_drawer.dart';
 import 'main.dart';
 import 'models/models.dart';
@@ -22,16 +23,23 @@ class Documents extends StatefulWidget {
   State<Documents> createState() => _DocumentsState();
 }
 class _DocumentsState extends State<Documents>{
-
+  bool isLoading = false;
   bool _showBackToTopButton = false;
   late ScrollController _scrollController;
   String savePath = '';
   double _progress = 0.0;
   bool isDownloading = false;
   String _downloadPerc = '' ;
+  late DioClient _dio;
+  late var _endpointProvider;
+  late Future<APIResponseData> _apiResponseData;
+  late List<Document> documentList;
+
   @override
   void initState() {
     super.initState();
+    _dio = new DioClient();
+    _endpointProvider = new EndPointProvider(_dio.init());
     _scrollController = ScrollController()
       ..addListener(() {
         setState(() {
@@ -46,17 +54,61 @@ class _DocumentsState extends State<Documents>{
 
   @override
   Widget build(BuildContext context) {
-    final List<Document> _documents = ModalRoute.of(context)!.settings.arguments as List<Document>;
+    List<Document> _documents = ModalRoute.of(context)!.settings.arguments as List<Document>;
     return Scaffold(
       appBar: AppBar(
         leading: Container(
           width: 40,
           child: Image.asset('images/bcpl_logo.png'),
         ),
-        title: Text('Connect - Documents'),
+        title: Row(
+          children:[
+            Text('Connect - Documents'),
+            Spacer(),
+            IconButton(
+              icon: Icon(Icons.sync),
+              onPressed: () {
+                setState(() {
+                  isLoading = true;
+                });
+                _apiResponseData = _endpointProvider.fetchDocuments('','');
+                _apiResponseData.then((result) async {
+                  if(result.isAuthenticated && result.status){
+                    final parsed = jsonDecode(result.data ?? '').cast<Map<String, dynamic>>();
+                    setState(() {
+                      _documents =  parsed.map<Document>((json) => Document.fromJson(json)).toList();
+                      isLoading = false;
+                    });
+                    var documentsBox = await Hive.openBox<Document>('documentList');
+                    documentsBox.clear();
+                    documentsBox.addAll(_documents);
+                  }
+                  else{
+                    setState(() {
+                      isLoading = false;
+                    });
+                    Navigator.pop(context);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text("Error in data fetching")),
+                    );
+                  }
+                }).catchError( (error) {
+                  setState(() {
+                    isLoading = false;
+                  });
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text("Error in data fetching")),
+                  );
+                });
+              },
+              color: Colors.white,
+            )
+          ],
+        ),
       ),
       endDrawer: AppDrawer(),
-      body: Column(
+      body: isLoading ? refresh(context) : Column(
         children:[
           Container(
             child: isDownloading? Column(
