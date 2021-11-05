@@ -114,6 +114,9 @@ flutter:
     - animations/ani_unlock.json
     - animations/ani_empty_box.json
     - animations/ani_no_internet.json
+    - animations/ani_robot.json
+    - animations/ani_download.json
+    - animations/ani_empty.json
   #   - images/a_dot_ham.jpeg
 
 

@@ -5,6 +5,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_html/flutter_html.dart';
 import 'package:flutter_projects/services/permissions.dart';
 import 'package:flutter_projects/services/webservice.dart';
@@ -74,6 +75,14 @@ class _NewsState extends State<News>{
       });
     }
 
+    startColor = stringToColor(prefs.getString('startColor') ?? '');
+    endColor = stringToColor(prefs.getString('endColor') ?? '');
+    textColor = stringToColor(prefs.getString('textColor') ?? '');
+    appBarBackgroundColor = stringToColor(prefs.getString('appBarBackgroundColor') ?? '');
+    appBarTextColor = stringToColor(prefs.getString('appBarTextColor') ?? '');
+    //appBarElevation = prefs.getString('appBarElevation') as double ?? 0;
+    statusBarBrightness = stringToBrightness(prefs.getString('statusBarBrightness') ?? '');
+
     _scrollController = ScrollController()..addListener(() {
         setState(() {
           if (_scrollController.offset >= 400) {
@@ -93,15 +102,40 @@ class _NewsState extends State<News>{
 
   @override
   Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+          gradient: LinearGradient(
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+              //colors: [Color.fromRGBO(255, 239, 186, 1), Color.fromRGBO(255, 255, 255, 1)]
+              colors: [startColor, endColor]
+          )
+      ),
+      child: getScaffold(),
+    );
+  }
+  Scaffold getScaffold(){
     return Scaffold(
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
+        iconTheme: IconThemeData(
+            color: appBarTextColor
+        ),
+        systemOverlayStyle: SystemUiOverlayStyle(
+          statusBarColor: appBarBackgroundColor,
+          statusBarIconBrightness: statusBarBrightness,),
+        backgroundColor: appBarBackgroundColor,
+        bottomOpacity: 0.0,
+        elevation: appBarElevation,
         leading: Container(
           width: 40,
           child: Image.asset('images/bcpl_logo.png'),
         ),
         title: Row(
           children:[
-            Text('News & Events'),
+            Text('News & Events',style: TextStyle(
+              color:appBarTextColor,
+            ),),
             Spacer(),
             IconButton(
               icon: Icon(Icons.sync),
@@ -130,20 +164,28 @@ class _NewsState extends State<News>{
                   );
                 }
               },
-              color: Colors.white,
+              color: appBarTextColor,
             )
           ],
         ),
       ),
       endDrawer: AppDrawer(),
-      body: isLoading? waiting(context) : ListView.builder(
-          controller: _scrollController,
-          itemCount: _contentData.length,
-          itemBuilder: (context, index) {
-            return Card(
-                child: createListTileNews(_contentData,index, Icons.article)
-            );
-          }
+      body: isLoading? waiting(context) :
+      Column(
+        children: [
+          connectionStatus != ConnectivityResult.none ? SizedBox(height:0) : noConnectivityError(),
+          Expanded(
+            child: ListView.builder(
+                controller: _scrollController,
+                itemCount: _contentData.length,
+                itemBuilder: (context, index) {
+                  return Card(
+                      child: createListTileNews(_contentData,index, Icons.article)
+                  );
+                }
+            ),
+          ),
+        ],
       ),
       floatingActionButton: _showBackToTopButton == false
           ? null
@@ -153,7 +195,6 @@ class _NewsState extends State<News>{
       ),
     );
   }
-
 
   // FutureBuilder getNews(){
   //   return FutureBuilder<List<NewsContent>>(
@@ -289,118 +330,156 @@ class _NewsDetailsState extends State<NewsDetails> {
         SnackBar(content: Text("No internet connection. Please check your settings")),
       );*/
     }
+    startColor = stringToColor(prefs.getString('startColor') ?? '');
+    endColor = stringToColor(prefs.getString('endColor') ?? '');
+    textColor = stringToColor(prefs.getString('textColor') ?? '');
+    appBarBackgroundColor = stringToColor(prefs.getString('appBarBackgroundColor') ?? '');
+    appBarTextColor = stringToColor(prefs.getString('appBarTextColor') ?? '');
+    //appBarElevation = prefs.getString('appBarElevation') as double ?? 0;
+    statusBarBrightness = stringToBrightness(prefs.getString('statusBarBrightness') ?? '');
 
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+          gradient: LinearGradient(
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+              //colors: [Color.fromRGBO(255, 239, 186, 1), Color.fromRGBO(255, 255, 255, 1)]
+              colors: [startColor, endColor]
+          )
+      ),
+      child: getScaffold(),
+    );
+  }
+  Scaffold getScaffold(){
     return Scaffold(
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
+        iconTheme: IconThemeData(
+            color: appBarTextColor
+        ),
+        systemOverlayStyle: SystemUiOverlayStyle(
+          statusBarColor: appBarBackgroundColor,
+          statusBarIconBrightness: statusBarBrightness,),
+        backgroundColor: appBarBackgroundColor,
+        bottomOpacity: 0.0,
+        elevation: appBarElevation,
         leading: Container(
           width: 40,
           child: Image.asset('images/bcpl_logo.png'),
         ),
-        title: Text('Connect - News & Events'),
+        title: Text('Connect - News & Events',style: TextStyle(
+          color:appBarTextColor,
+        ),),
       ),
       endDrawer: AppDrawer(),
-      body: CustomScrollView(
-        slivers: <Widget>[
-          SliverList(
-            delegate: SliverChildListDelegate(
-              [
-                connectionStatus != ConnectivityResult.none ? SizedBox(height:0) : noConnectivityError(),
-                Card(
-                  elevation: 10,
-                  child: Container(
-                    padding: EdgeInsets.all(10.0),
-                    decoration: BoxDecoration(
-                      color: Color.fromRGBO(254, 249, 248, 1),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
+      body: Column(
+        children: [
+          connectionStatus != ConnectivityResult.none ? SizedBox(height:0) : noConnectivityError(),
+          Expanded(
+            child: CustomScrollView(
+              slivers: <Widget>[
+                SliverList(
+                  delegate: SliverChildListDelegate(
+                    [
 
-                    child: Column(
-                      children: [
+                      Card(
+                        elevation: 10,
+                        child: Container(
+                          padding: EdgeInsets.all(10.0),
+                          decoration: BoxDecoration(
+                            color: Color.fromRGBO(254, 249, 248, 1),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
 
-                        Text(widget.contentTitle,
-                            textAlign: TextAlign.justify,
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 18,
-                            )),
-                        Container(
-                          padding: EdgeInsets.only(top: 10.0),
-                          child: Align(
-                            alignment: Alignment.centerLeft,
-                            child: Text('Date: ' + widget.creationDate,
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 15,
-                                  color: Colors.blue,
-                                )),
+                          child: Column(
+                            children: [
+
+                              Text(widget.contentTitle,
+                                  textAlign: TextAlign.justify,
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 18,
+                                  )),
+                              Container(
+                                padding: EdgeInsets.only(top: 10.0),
+                                child: Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: Text('Date: ' + widget.creationDate,
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 15,
+                                        color: Colors.blue,
+                                      )),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                      ],
-                    ),
-                  ),
-                ),
-                Card(
-                  elevation: 5,
-                  margin: EdgeInsets.only(top: 10, left: 5, right: 5),
+                      ),
+                      Card(
+                        elevation: 5,
+                        margin: EdgeInsets.only(top: 10, left: 5, right: 5),
 
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Color.fromRGBO(254, 253, 249, 1),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    //color: Colors.amber[500],
-                    child: Html(
-                      data: widget.contentDescription, style: {"body": Style(
-                      fontSize: FontSize(18.0),
-                      fontWeight: FontWeight.w400,
-                      textAlign: TextAlign.justify,
-                    ),
-                    },
-                    ),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: Color.fromRGBO(254, 253, 249, 1),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          //color: Colors.amber[500],
+                          child: Html(
+                            data: widget.contentDescription, style: {"body": Style(
+                            fontSize: FontSize(18.0),
+                            fontWeight: FontWeight.w400,
+                            textAlign: TextAlign.justify,
+                          ),
+                          },
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
+                getImage(),
               ],
+
+              // Container(
+              //   //color: Colors.amber[100],
+              //     child: ElevatedButton(
+              //       onPressed: (){
+              //         downloadFile(widget.contentId.toString());
+              //       },
+              //       child: const Text('Download'),
+              //     )
+              // ),
+              // Container(
+              //   //color: Colors.amber[100],
+              //   child: Center(
+              //     child:  Column(
+              //       mainAxisAlignment: MainAxisAlignment.center,
+              //       children: <Widget>[
+              //         Text(
+              //           'Download progress:',
+              //         ),
+              //         Text(
+              //           '$_progress',
+              //           style: TextStyle(color: Colors.red),
+              //         ),
+              //       ],
+              //     ),
+              //   ),
+              // ),
+
             ),
           ),
-          getImage(),
         ],
-
-        // Container(
-        //   //color: Colors.amber[100],
-        //     child: ElevatedButton(
-        //       onPressed: (){
-        //         downloadFile(widget.contentId.toString());
-        //       },
-        //       child: const Text('Download'),
-        //     )
-        // ),
-        // Container(
-        //   //color: Colors.amber[100],
-        //   child: Center(
-        //     child:  Column(
-        //       mainAxisAlignment: MainAxisAlignment.center,
-        //       children: <Widget>[
-        //         Text(
-        //           'Download progress:',
-        //         ),
-        //         Text(
-        //           '$_progress',
-        //           style: TextStyle(color: Colors.red),
-        //         ),
-        //       ],
-        //     ),
-        //   ),
-        // ),
-
       ),
     );
   }
-
   Widget getImage(){
     return SliverGrid(
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2),
@@ -738,23 +817,34 @@ class _NewsDisplayState extends State<NewsDisplay> {
   void initState() {
     DioClient _dio = new DioClient();
     _endpointProvider = new EndPointProvider(_dio.init());
-    _apiResponseData = _endpointProvider.fetchSingleContent(widget.contentID, "News");
-    _apiResponseData.then((result) {
-      if(result.isAuthenticated && result.status){
+    if(connectionStatus != ConnectivityResult.none){
+      _apiResponseData = _endpointProvider.fetchSingleContent(widget.contentID, "News");
+      _apiResponseData.then((result) {
+        if(result.isAuthenticated && result.status){
+          setState(() {
+            content = NewsContentWithAttachment.fromJson(jsonDecode(result.data ?? ''));
+            isLoading = false;
+          });
+        }
+      }).catchError( (error) {
         setState(() {
-          content = NewsContentWithAttachment.fromJson(jsonDecode(result.data ?? ''));
           isLoading = false;
         });
-      }
-    }).catchError( (error) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Error in fetching data")),
+        );
+      });
+    }
+    else{
       setState(() {
         isLoading = false;
       });
       Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Error in fetching data")),
+        SnackBar(content: Text("No internet connection. Error in fetching data")),
       );
-    });
+    }
     super.initState();
   }
 

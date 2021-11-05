@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:math';
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_projects/services/webservice.dart';
@@ -62,24 +63,34 @@ class _PeopleState extends State<People>{
             IconButton(
               icon: Icon(Icons.sync),
               onPressed: () {
-                setState(() {
-                  isLoading = true;
-                });
-                _apiResponseData = _endpointProvider.fetchEmployees('','','','');
-                _apiResponseData.then((result) async {
-                  if(result.isAuthenticated && result.status){
-                    final parsed = jsonDecode(result.data ?? '').cast<Map<String, dynamic>>();
-                    setState(() {
-                      _peopleData =  parsed.map<Employee>((json) => Employee.fromJson(json)).toList();
-                      isLoading = false;
-                    });
-                    var employeeBox = await Hive.openBox<Employee>('employeeList');
-                    employeeBox.clear();
-                    employeeBox.addAll(_peopleData);
+                if(connectionStatus != ConnectivityResult.none){
+                  setState(() {
+                    isLoading = true;
+                  });
+                  _apiResponseData = _endpointProvider.fetchEmployees('','','','');
+                  _apiResponseData.then((result) async {
+                    if(result.isAuthenticated && result.status){
+                      final parsed = jsonDecode(result.data ?? '').cast<Map<String, dynamic>>();
+                      setState(() {
+                        _peopleData =  parsed.map<Employee>((json) => Employee.fromJson(json)).toList();
+                        isLoading = false;
+                      });
+                      var employeeBox = await Hive.openBox<Employee>('employeeList');
+                      employeeBox.clear();
+                      employeeBox.addAll(_peopleData);
 /*                    Navigator.pop(context);
                     Navigator.pushNamed(context, peopleRoute, arguments: peopleData,);*/
-                  }
-                  else{
+                    }
+                    else{
+                      setState(() {
+                        isLoading = false;
+                      });
+                      Navigator.pop(context);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text("Error in data fetching")),
+                      );
+                    }
+                  }).catchError( (error) {
                     setState(() {
                       isLoading = false;
                     });
@@ -87,16 +98,13 @@ class _PeopleState extends State<People>{
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(content: Text("Error in data fetching")),
                     );
-                  }
-                }).catchError( (error) {
-                  setState(() {
-                    isLoading = false;
                   });
-                  Navigator.pop(context);
+                }
+                else{
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text("Error in data fetching")),
+                    SnackBar(content: Text("No internet connection. Please check your settings")),
                   );
-                });
+                }
               },
               color: Colors.white,
             )
@@ -104,14 +112,23 @@ class _PeopleState extends State<People>{
         ),
       ),
       endDrawer: AppDrawer(),
-      body: isLoading ? refresh(context) : ListView.builder(
-          itemCount: _peopleData.length,
-          itemBuilder: (context, index) {
-            return Card(
-                child: createListTilePeople(_peopleData,index)
-            );
-          }
+      body: isLoading ? refresh(context) :
+      Column(
+        children: [
+          connectionStatus != ConnectivityResult.none ? SizedBox(height:0) : noConnectivityError(),
+          Expanded(
+            child: ListView.builder(
+                itemCount: _peopleData.length,
+                itemBuilder: (context, index) {
+                  return Card(
+                      child: createListTilePeople(_peopleData,index)
+                  );
+                }
+            ),
+          ),
+        ],
       ),
+
       floatingActionButton: _showBackToTopButton == false
           ? null
           : FloatingActionButton(
@@ -201,7 +218,6 @@ class PeopleDetails extends StatefulWidget {
   final String empIntercom;
   final String empIntercomResidence;
 
-
   PeopleDetails(this.empNo,this.empName, this.empUnit,this.empDisc, this.empBldGrp,
       this.empDesg, this.empEmail,this.empMobile, this.empIntercom,this.empIntercomResidence);
 
@@ -221,16 +237,23 @@ class _PeopleDetailsState extends State<PeopleDetails>{
         title: Text('Connect - People'),
       ),
       endDrawer: AppDrawer(),
-      body: ListView(
-        //padding: EdgeInsets.all(10.0),
+      body: Column(
         children: [
-          imageSection(),
-          //divider(),
-          nameSection(),
-          buttonSection(),
-          descSection("Unit",widget.empUnit,Icons.business),
-          descSection("Email",widget.empEmail.toLowerCase(),Icons.email),
-          doubleDisp("Intercom (O)","Intercom (R)",widget.empIntercom,widget.empIntercomResidence,ConnectAppIcon.phone),
+          connectionStatus != ConnectivityResult.none ? SizedBox(height:0) : noConnectivityError(),
+          Expanded(
+            child: ListView(
+              //padding: EdgeInsets.all(10.0),
+              children: [
+                imageSection(),
+                //divider(),
+                nameSection(),
+                buttonSection(),
+                descSection("Unit",widget.empUnit,Icons.business),
+                descSection("Email",widget.empEmail.toLowerCase(),Icons.email),
+                doubleDisp("Intercom (O)","Intercom (R)",widget.empIntercom,widget.empIntercomResidence,ConnectAppIcon.phone),
+              ],
+            ),
+          ),
         ],
       ),
     );

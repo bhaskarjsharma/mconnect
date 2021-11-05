@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_projects/services/permissions.dart';
@@ -68,22 +69,32 @@ class _DocumentsState extends State<Documents>{
             IconButton(
               icon: Icon(Icons.sync),
               onPressed: () {
-                setState(() {
-                  isLoading = true;
-                });
-                _apiResponseData = _endpointProvider.fetchDocuments('','');
-                _apiResponseData.then((result) async {
-                  if(result.isAuthenticated && result.status){
-                    final parsed = jsonDecode(result.data ?? '').cast<Map<String, dynamic>>();
-                    setState(() {
-                      _documents =  parsed.map<Document>((json) => Document.fromJson(json)).toList();
-                      isLoading = false;
-                    });
-                    var documentsBox = await Hive.openBox<Document>('documentList');
-                    documentsBox.clear();
-                    documentsBox.addAll(_documents);
-                  }
-                  else{
+                if(connectionStatus != ConnectivityResult.none){
+                  setState(() {
+                    isLoading = true;
+                  });
+                  _apiResponseData = _endpointProvider.fetchDocuments('','');
+                  _apiResponseData.then((result) async {
+                    if(result.isAuthenticated && result.status){
+                      final parsed = jsonDecode(result.data ?? '').cast<Map<String, dynamic>>();
+                      setState(() {
+                        _documents =  parsed.map<Document>((json) => Document.fromJson(json)).toList();
+                        isLoading = false;
+                      });
+                      var documentsBox = await Hive.openBox<Document>('documentList');
+                      documentsBox.clear();
+                      documentsBox.addAll(_documents);
+                    }
+                    else{
+                      setState(() {
+                        isLoading = false;
+                      });
+                      Navigator.pop(context);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text("Error in data fetching")),
+                      );
+                    }
+                  }).catchError( (error) {
                     setState(() {
                       isLoading = false;
                     });
@@ -91,16 +102,13 @@ class _DocumentsState extends State<Documents>{
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(content: Text("Error in data fetching")),
                     );
-                  }
-                }).catchError( (error) {
-                  setState(() {
-                    isLoading = false;
                   });
-                  Navigator.pop(context);
+                }
+                else{
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text("Error in data fetching")),
+                    SnackBar(content: Text("No internet connection. Please check your settings")),
                   );
-                });
+                }
               },
               color: Colors.white,
             )
@@ -113,6 +121,7 @@ class _DocumentsState extends State<Documents>{
           Container(
             child: isDownloading? Column(
               children :[
+                connectionStatus != ConnectivityResult.none ? SizedBox(height:0) : noConnectivityError(),
                 LinearProgressIndicator(
                   value: _progress,
                   backgroundColor: Colors.yellow,
@@ -145,13 +154,20 @@ class _DocumentsState extends State<Documents>{
   ListTile createListTileDocument(data,index) {
     return ListTile(
         onTap: () {
-          setState((){
-            isDownloading = true;
-            _progress = 0.0;
-          });
-          String attachmentUrl = "https://connect.bcplindia.co.in/MobileAppAPI/DownloadHRDocument?id="+data[index].docId;
-          String fileName = data[index].docFileName;
-          downloadFile(attachmentUrl,fileName, index);
+          if(connectionStatus != ConnectivityResult.none){
+            setState((){
+              isDownloading = true;
+              _progress = 0.0;
+            });
+            String attachmentUrl = "https://connect.bcplindia.co.in/MobileAppAPI/DownloadHRDocument?id="+data[index].docId;
+            String fileName = data[index].docFileName;
+            downloadFile(attachmentUrl,fileName, index);
+          }
+          else{
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text("No internet connection. Please check your settings")),
+            );
+          }
         },
         title: Text(data[index].docDisplayName,
             style: TextStyle(

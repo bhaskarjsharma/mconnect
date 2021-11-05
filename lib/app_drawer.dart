@@ -2,6 +2,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_projects/services/permissions.dart';
 import 'package:hive/hive.dart';
@@ -120,164 +121,174 @@ class AppDrawerState extends State<AppDrawer> {
             leading: Icon(Icons.feedback,color: Colors.orange, size:25),
             title: const Text('Feedback'),
             onTap: () {
-              Navigator.pop(context);
-              showDialog(
-                context: context,
-                builder: (context){
-                  return StatefulBuilder(
-                    builder: (context, setState){
-                      return AlertDialog (
-                        insetPadding: EdgeInsets.all(0),
-                        content: Builder(
-                          builder: (context) {
-                            // Get available height and width of the build area of this widget. Make a choice depending on the size.
-                            var height = MediaQuery.of(context).size.height;
-                            var width = MediaQuery.of(context).size.width;
+              if(connectionStatus != ConnectivityResult.none){
+                Navigator.pop(context);
+                showDialog(
+                  context: context,
+                  builder: (context){
+                    return StatefulBuilder(
+                      builder: (context, setState){
+                        return AlertDialog (
+                          insetPadding: EdgeInsets.all(0),
+                          content: Builder(
+                            builder: (context) {
+                              // Get available height and width of the build area of this widget. Make a choice depending on the size.
+                              var height = MediaQuery.of(context).size.height;
+                              var width = MediaQuery.of(context).size.width;
 
-                            return Container(
-                              height: height - (height/2.5),
-                              width: width - (width/4),
-                              child: isLoading ? waiting(context) : Form(
-                                key: _feedbackFormKey,
-                                child: Container(
-                                  margin: EdgeInsets.symmetric(vertical: 20),
-                                  child:Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    crossAxisAlignment: CrossAxisAlignment.center,
-                                    children: <Widget>[
-                                      Center(
-                                        child:Lottie.asset('animations/ani_feedback.json',
-                                          width: 150,
-                                          height: 150,),
-                                      ),
-                                      Container(
-                                        padding: EdgeInsets.all(0),
-                                        child: Center(child: Text('Please provide your feedback',
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.w800,
-                                              fontSize: 16,
-                                              color: Colors.blue[500],
-                                            ))) ,
-                                      ),
-                                      Container(
-                                        padding: EdgeInsets.all(10),
-                                        child: TextFormField(
-                                          controller: feedbackTextContrl,
-                                          maxLines: 5,
-                                          decoration: InputDecoration(
-                                            border: OutlineInputBorder(),
-                                            labelText: 'Feedback',
-                                          ),
-                                          // The validator receives the text that the user has entered.
-                                          validator: (value) {
-                                            if (value == null || value.isEmpty) {
-                                              return 'Please enter your feedback';
-                                            }
-                                            return null;
-                                          },
+                              return Container(
+                                height: height - (height/2.5),
+                                width: width - (width/4),
+                                child: isLoading ? waiting(context) : Form(
+                                  key: _feedbackFormKey,
+                                  child: Container(
+                                    margin: EdgeInsets.symmetric(vertical: 20),
+                                    child:Column(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      crossAxisAlignment: CrossAxisAlignment.center,
+                                      children: <Widget>[
+                                        Center(
+                                          child:Lottie.asset('animations/ani_feedback.json',
+                                            width: 150,
+                                            height: 150,),
                                         ),
-                                      ),
-                                      Container(
-                                        padding: const EdgeInsets.all(10.0),
-                                        child: Row(
-                                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                          children: [
-                                            ElevatedButton(
-                                              onPressed: () {
-                                                // Validate returns true if the form is valid, or false otherwise.
-                                                if (_feedbackFormKey.currentState!.validate()) {
+                                        Container(
+                                          padding: EdgeInsets.all(0),
+                                          child: Center(child: Text('Please provide your feedback',
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.w800,
+                                                fontSize: 16,
+                                                color: Colors.blue[500],
+                                              ))) ,
+                                        ),
+                                        Container(
+                                          padding: EdgeInsets.all(10),
+                                          child: TextFormField(
+                                            controller: feedbackTextContrl,
+                                            maxLines: 5,
+                                            decoration: InputDecoration(
+                                              border: OutlineInputBorder(),
+                                              labelText: 'Feedback',
+                                            ),
+                                            // The validator receives the text that the user has entered.
+                                            validator: (value) {
+                                              if (value == null || value.isEmpty) {
+                                                return 'Please enter your feedback';
+                                              }
+                                              return null;
+                                            },
+                                          ),
+                                        ),
+                                        Container(
+                                          padding: const EdgeInsets.all(10.0),
+                                          child: Row(
+                                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                            children: [
+                                              ElevatedButton(
+                                                onPressed: () {
+                                                  // Validate returns true if the form is valid, or false otherwise.
+                                                  if (_feedbackFormKey.currentState!.validate()) {
 
-                                                  setState(() {
-                                                    isLoading = true;
-                                                  });
-
-                                                  String platform = '';
-                                                  String appVersion = '';
-                                                  String buildNumber = '';
-
-                                                  if(Platform.isAndroid){
-                                                    platform = 'Android';
-                                                  }
-                                                  else if(Platform.isIOS){
-                                                    platform = 'IOS';
-                                                  }
-                                                  PackageInfo.fromPlatform().then((PackageInfo packageInfo) {
                                                     setState(() {
-                                                      appVersion = packageInfo.version;
-                                                      buildNumber = packageInfo.buildNumber;
+                                                      isLoading = true;
                                                     });
-                                                  });
 
-                                                  _apiResponseData = _endpointProvider.postFeedback(feedbackTextContrl.text,platform,appVersion,buildNumber);
-                                                  _apiResponseData.then((result) {
-                                                    if(result.isAuthenticated && result.status){
+                                                    String platform = '';
+                                                    String appVersion = '';
+                                                    String buildNumber = '';
+
+                                                    if(Platform.isAndroid){
+                                                      platform = 'Android';
+                                                    }
+                                                    else if(Platform.isIOS){
+                                                      platform = 'IOS';
+                                                    }
+                                                    PackageInfo.fromPlatform().then((PackageInfo packageInfo) {
                                                       setState(() {
-                                                        isLoading = false;
-                                                        feedbackTextContrl.text = '';
+                                                        appVersion = packageInfo.version;
+                                                        buildNumber = packageInfo.buildNumber;
+                                                      });
+                                                    });
+
+                                                    _apiResponseData = _endpointProvider.postFeedback(feedbackTextContrl.text,platform,appVersion,buildNumber);
+                                                    _apiResponseData.then((result) {
+                                                      if(result.isAuthenticated && result.status){
+                                                        setState(() {
+                                                          isLoading = false;
+                                                          feedbackTextContrl.text = '';
+                                                          Navigator.pop(context);
+                                                          ScaffoldMessenger.of(context).showSnackBar(
+                                                            SnackBar(content: Text("Feedback submitted")),
+                                                          );
+                                                        });
+                                                      }
+                                                      else{
+                                                        setState(() {
+                                                          isLoading = false;
+                                                          feedbackTextContrl.text = '';
+                                                        });
                                                         Navigator.pop(context);
                                                         ScaffoldMessenger.of(context).showSnackBar(
-                                                          SnackBar(content: Text("Feedback submitted")),
+                                                          SnackBar(content: Text("Error in feedback submission")),
                                                         );
-                                                      });
-                                                    }
-                                                    else{
+                                                      }
+                                                    }).catchError( (error) {
                                                       setState(() {
-                                                        isLoading = false;
                                                         feedbackTextContrl.text = '';
+                                                        isLoading = false;
                                                       });
                                                       Navigator.pop(context);
                                                       ScaffoldMessenger.of(context).showSnackBar(
                                                         SnackBar(content: Text("Error in feedback submission")),
                                                       );
-                                                    }
-                                                  }).catchError( (error) {
-                                                    setState(() {
-                                                      feedbackTextContrl.text = '';
-                                                      isLoading = false;
                                                     });
-                                                    Navigator.pop(context);
-                                                    ScaffoldMessenger.of(context).showSnackBar(
-                                                      SnackBar(content: Text("Error in feedback submission")),
-                                                    );
-                                                  });
-                                                }
-                                              },
-                                              child: const Text('Submit'),
-                                            ),
-                                            ElevatedButton(
-                                              onPressed: () {
-                                                setState(() {
-                                                  feedbackTextContrl.text = '';
-                                                  isLoading = false;
-                                                });
-                                                Navigator.pop(context);
-                                              },
-                                              child: const Text('Cancel'),
-                                              style: ButtonStyle(
-                                                backgroundColor: MaterialStateProperty.all(Colors.red),
+                                                  }
+                                                },
+                                                child: const Text('Submit'),
                                               ),
-                                            )
-                                          ],
+                                              ElevatedButton(
+                                                onPressed: () {
+                                                  setState(() {
+                                                    feedbackTextContrl.text = '';
+                                                    isLoading = false;
+                                                  });
+                                                  Navigator.pop(context);
+                                                },
+                                                child: const Text('Cancel'),
+                                                style: ButtonStyle(
+                                                  backgroundColor: MaterialStateProperty.all(Colors.red),
+                                                ),
+                                              )
+                                            ],
+                                          ),
                                         ),
-                                        ),
-                                    ],
+                                      ],
+                                    ),
                                   ),
                                 ),
-                              ),
-                            );
-                          },
-                        ),
-                      );
-                    },
-                  );
-                },
-              );
+                              );
+                            },
+                          ),
+                        );
+                      },
+                    );
+                  },
+                );
+              }
+              else{
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text("No internet connection. Please check your settings")),
+                );
+              }
+
             },
           ),
           ListTile(
             leading: Icon(Icons.info,color: Colors.black45, size:25),
             title: const Text('App Info & Updates'),
             onTap: () {
+              Navigator.pop(context);
               Navigator.pushNamed(context, aboutAppRoute);
             },
           ),
@@ -401,6 +412,113 @@ class AppDrawerState extends State<AppDrawer> {
             },*/
           ),
           ListTile(
+            leading: Icon(Icons.feedback,color: Colors.orange, size:25),
+            title: const Text('App Theme'),
+            onTap: () {
+              showDialog(
+                context: context,
+                builder: (context){
+                  return StatefulBuilder(
+                    builder: (context, setState){
+                      return AlertDialog (
+                        insetPadding: EdgeInsets.all(0),
+                        content: Builder(
+                          builder: (context) {
+                            // Get available height and width of the build area of this widget. Make a choice depending on the size.
+                            var height = MediaQuery.of(context).size.height;
+                            var width = MediaQuery.of(context).size.width;
+
+                            return Container(
+                              height: height - (height/2.5),
+                              width: width - (width/4),
+                              child: isLoading ? waiting(context) : Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                children: [
+                                  GestureDetector(
+                                    child: Text('default'),
+                                    onTap: (){
+                                      setState((){
+                                        app_theme = 'default';
+                                        startColor = Colors.white;
+                                        endColor = Colors.white;
+                                        textColor = Colors.black;
+                                        appBarBackgroundColor = Colors.blue;
+                                        appBarTextColor = Colors.white;
+                                        appBarElevation = 5;
+                                        statusBarBrightness = Brightness.light;
+                                      });
+                                      prefs.setString('app_theme', 'default');
+                                      prefs.setString('startColor', '#FFFFFF');
+                                      prefs.setString('endColor', '#FFFFFF');
+                                      prefs.setString('textColor', '#121212');
+                                      prefs.setString('appBarBackgroundColor', '#459AEF');
+                                      prefs.setString('appBarTextColor', '#FFFFFF');
+                                      prefs.setString('appBarElevation', '5');
+                                      prefs.setString('statusBarBrightness', 'Brightness.light');
+                                      Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (BuildContext context) => Home()), (Route<dynamic> route) => false);
+                                    },
+                                  ),
+                                  GestureDetector(
+                                    child: Text('digital_water'),
+                                    onTap: (){
+                                      setState((){
+                                        app_theme = 'digital_water';
+                                        startColor = Color.fromRGBO(172, 182, 229, 1);
+                                        endColor = Color.fromRGBO(116, 235, 213, 1);
+                                        textColor = Colors.black;
+                                        appBarBackgroundColor = Colors.transparent;
+                                        appBarTextColor = Colors.white;
+                                        appBarElevation = 0;
+                                        statusBarBrightness = Brightness.light;
+                                      });
+                                      prefs.setString('app_theme', 'digital_water');
+                                      prefs.setString('startColor', '#ACBDE5');
+                                      prefs.setString('endColor', '#74EBD5');
+                                      prefs.setString('textColor', '#121212');
+                                      prefs.setString('appBarBackgroundColor', 'Colors.transparent');
+                                      prefs.setString('appBarTextColor', '#FFFFFF');
+                                      prefs.setString('appBarElevation', '0');
+                                      prefs.setString('statusBarBrightness', 'Brightness.light');
+                                      Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (BuildContext context) => Home()), (Route<dynamic> route) => false);
+                                    },
+                                  ),
+                                  GestureDetector(
+                                    child: Text('margo'),
+                                    onTap: (){
+                                      setState((){
+                                        app_theme = 'margo';
+                                        startColor = Color.fromRGBO(255, 239, 186, 1);
+                                        endColor = Color.fromRGBO(255, 255, 255, 1);
+                                        textColor = Colors.black;
+                                        appBarBackgroundColor = Colors.transparent;
+                                        appBarTextColor = Colors.black;
+                                        appBarElevation = 0;
+                                        statusBarBrightness = Brightness.dark;
+                                      });
+                                      prefs.setString('app_theme', 'margo');
+                                      prefs.setString('startColor', '#FFEFBA');
+                                      prefs.setString('endColor', '#FFFFFF');
+                                      prefs.setString('textColor', '#121212');
+                                      prefs.setString('appBarBackgroundColor', 'Colors.transparent');
+                                      prefs.setString('appBarTextColor', '#121212');
+                                      prefs.setString('appBarElevation', '0');
+                                      prefs.setString('statusBarBrightness', 'Brightness.dark');
+                                      Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (BuildContext context) => Home()), (Route<dynamic> route) => false);
+                                    },
+                                  )
+                                ],
+                              ),
+                            );
+                          },
+                        ),
+                      );
+                    },
+                  );
+                },
+              );
+            },
+          ),
+          ListTile(
             leading: Icon(Icons.power_settings_new,color: Colors.redAccent, size:25),
             title: const Text('Logout'),
             onTap: () {
@@ -471,8 +589,12 @@ class _AboutAppState extends State<AboutApp>{
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Image.asset('images/bcpl_logo.png'),
-            SizedBox(height: 10),
+            Center(
+              child: Lottie.asset('animations/ani_robot.json',
+                width: 200,
+                height: 157,),
+            ),
+            SizedBox(height: 5),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               //crossAxisAlignment: CrossAxisAlignment.center,
@@ -487,7 +609,7 @@ class _AboutAppState extends State<AboutApp>{
                 ),
               ],
             ),
-            SizedBox(height: 10),
+            //SizedBox(height: 10),
            /* Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               //crossAxisAlignment: CrossAxisAlignment.center,
@@ -503,7 +625,7 @@ class _AboutAppState extends State<AboutApp>{
 
               ],
             ),*/
-            SizedBox(height: 10),
+            SizedBox(height: 5),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               //crossAxisAlignment: CrossAxisAlignment.center,
@@ -519,7 +641,7 @@ class _AboutAppState extends State<AboutApp>{
 
               ],
             ),
-            SizedBox(height: 10),
+            SizedBox(height: 5),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               //crossAxisAlignment: CrossAxisAlignment.center,
@@ -534,7 +656,7 @@ class _AboutAppState extends State<AboutApp>{
                 ),
               ],
             ),
-            SizedBox(height: 10),
+            SizedBox(height: 5),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               //crossAxisAlignment: CrossAxisAlignment.center,
@@ -549,123 +671,196 @@ class _AboutAppState extends State<AboutApp>{
                 ),
               ],
             ),
-            SizedBox(height: 20),
+            SizedBox(height: 5),
             ElevatedButton(
               onPressed: (){
-                setState(() {
-                  isLoading = true;
-                });
-
-                String appVersion = '';
-                String buildNumber = '';
-
-                PackageInfo.fromPlatform().then((PackageInfo packageInfo) {
+                if(connectionStatus != ConnectivityResult.none){
                   setState(() {
-                    appVersion = packageInfo.version;
-                    buildNumber = packageInfo.buildNumber;
+                    isLoading = true;
                   });
-                });
-
-                _apiResponseData = _endpointProvider.checkUpdate(appVersion,buildNumber);
-                _apiResponseData.then((result) {
-                  if(result.isAuthenticated && result.status){
+                  String appVersion = '';
+                  String buildNumber = '';
+                  PackageInfo.fromPlatform().then((PackageInfo packageInfo) {
                     setState(() {
-                      isLoading = false;
-                      updateAvailable = true;
-                      _appUpdateInfo = AppUpdateInfo.fromJson(jsonDecode(result.data ?? ''));
-                      updateStatus = 'Updates available. Version: ${_appUpdateInfo.version} Build Number: ${_appUpdateInfo.buildNumber}';
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text('App updates available')),
-                      );
+                      appVersion = packageInfo.version;
+                      buildNumber = packageInfo.buildNumber;
                     });
-                  }
-                  else{
+                  });
+                  _apiResponseData = _endpointProvider.checkUpdate(appVersion,buildNumber);
+                  _apiResponseData.then((result) {
+                    if(result.isAuthenticated && result.status){
+                      setState(() {
+                        isLoading = false;
+                        updateAvailable = true;
+                        _appUpdateInfo = AppUpdateInfo.fromJson(jsonDecode(result.data ?? ''));
+                        updateStatus = 'Updates available. Version: ${_appUpdateInfo.version} Build Number: ${_appUpdateInfo.buildNumber}';
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text('App updates available')),
+                        );
+                      });
+                    }
+                    else{
+                      setState(() {
+                        isLoading = false;
+                        updateAvailable = false;
+                        updateStatus = result.data!;
+                      });
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text(updateStatus)),
+                      );
+                    }
+                  }).catchError( (error) {
                     setState(() {
                       isLoading = false;
                       updateAvailable = false;
-                      updateStatus = result.data!;
                     });
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(updateStatus)),
+                      SnackBar(content: Text("Error in checking updates")),
                     );
-                  }
-                }).catchError( (error) {
-                  setState(() {
-                    isLoading = false;
-                    updateAvailable = false;
                   });
+                }
+                else{
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text("Error in checking updates")),
+                    SnackBar(content: Text("No internet connection. Please check your settings")),
                   );
-                });
+                }
               },
               child: const Text('Check for updates'),
             ),
-            SizedBox(height: 10),
+            SizedBox(height: 5),
             isLoading ? Row(
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 CircularProgressIndicator(),
                 Container(
-                  padding: EdgeInsets.all(10),
+                  padding: EdgeInsets.all(5),
                   child:Text('Checking for updates. Please wait...',style: TextStyle(
                     fontWeight: FontWeight.w500,fontSize: 16,),
                   ),
                 ),
               ],
             ) : Text(updateStatus),
-            SizedBox(height: 10),
-            updateAvailable ? ElevatedButton(
+            //SizedBox(height: 10),
+            updateAvailable ? GestureDetector(
+              child: Center(
+                child: Lottie.asset('animations/ani_download.json',
+                  width: 120,
+                  height: 120,),
+              ),
+              onTap: () async{
+                if(connectionStatus != ConnectivityResult.none){
+                  Map<String, dynamic> result = {
+                    'isSuccess': false,
+                    'contentType': false,
+                    'filePath': null,
+                    'error': null,
+                  };
+                  String saveDirPath = await getDownloadDirectory();
+                  String finalSavePath = path.join(saveDirPath, _appUpdateInfo.fileName);
+                  String appDownloadUrl = "https://connect.bcplindia.co.in/MobileAppAPI/DownloadAppUpdate";
+                  final isPermissionStatusGranted = await requestStoragePermissions();
+                  if (isPermissionStatusGranted) {
+                    try {
+                      final Dio _dio = Dio();
+                      var response = await _dio.download(appDownloadUrl,
+                          finalSavePath, onReceiveProgress: (int received, int total) {
+                            if (total != -1) {
+                              double val = (received / total * 100) as double;
+                              num mod = pow(10.0, 1);
+                              setState(() {
+                                _downloadPerc = 'Downloading: ' + val.toStringAsFixed(2) + ' %';
+                                //_progress = val / 100;
+                              });
+                            }
+                          });
+                      result['isSuccess'] = response.statusCode == 200;
+                      result['contentType'] = 'FileDownload';
+                      result['filePath'] = finalSavePath;
+                    } catch (ex) {
+                      result['error'] = ex.toString();
+                      setState((){
+                        isLoading = false;
+                        //_progress = 0.0;
+                        _downloadPerc = '';
+                      });
+                    }
+                    finally {
+                      setState((){
+                        isLoading = false;
+                        //_progress = 0.0;
+                        _downloadPerc = '';
+                      });
+                      await showNotification(result);
+                    }
+                  }
+                }
+                else{
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text("No internet connection. Please check your settings")),
+                  );
+                }
+              },
+            ): SizedBox(height: 0),
+            Text(_downloadPerc),
+
+/*            ElevatedButton(
               onPressed: () async{
-                Map<String, dynamic> result = {
-                  'isSuccess': false,
-                  'contentType': false,
-                  'filePath': null,
-                  'error': null,
-                };
-                String saveDirPath = await getDownloadDirectory();
-                String finalSavePath = path.join(saveDirPath, _appUpdateInfo.fileName);
-                String appDownloadUrl = "https://connect.bcplindia.co.in/MobileAppAPI/DownloadAppUpdate";
-                final isPermissionStatusGranted = await requestStoragePermissions();
-                if (isPermissionStatusGranted) {
-                  try {
-                    final Dio _dio = Dio();
-                    var response = await _dio.download(appDownloadUrl,
-                        finalSavePath, onReceiveProgress: (int received, int total) {
-                          if (total != -1) {
-                            double val = (received / total * 100) as double;
-                            num mod = pow(10.0, 1);
-                            setState(() {
-                              _downloadPerc = 'Downloading: ' + val.toStringAsFixed(2) + ' %';
-                              //_progress = val / 100;
-                            });
-                          }
-                        });
-                    result['isSuccess'] = response.statusCode == 200;
-                    result['contentType'] = 'FileDownload';
-                    result['filePath'] = finalSavePath;
-                  } catch (ex) {
-                    result['error'] = ex.toString();
-                    setState((){
-                      isLoading = false;
-                      //_progress = 0.0;
-                      _downloadPerc = '';
-                    });
+                if(connectionStatus != ConnectivityResult.none){
+                  Map<String, dynamic> result = {
+                    'isSuccess': false,
+                    'contentType': false,
+                    'filePath': null,
+                    'error': null,
+                  };
+                  String saveDirPath = await getDownloadDirectory();
+                  String finalSavePath = path.join(saveDirPath, _appUpdateInfo.fileName);
+                  String appDownloadUrl = "https://connect.bcplindia.co.in/MobileAppAPI/DownloadAppUpdate";
+                  final isPermissionStatusGranted = await requestStoragePermissions();
+                  if (isPermissionStatusGranted) {
+                    try {
+                      final Dio _dio = Dio();
+                      var response = await _dio.download(appDownloadUrl,
+                          finalSavePath, onReceiveProgress: (int received, int total) {
+                            if (total != -1) {
+                              double val = (received / total * 100) as double;
+                              num mod = pow(10.0, 1);
+                              setState(() {
+                                _downloadPerc = 'Downloading: ' + val.toStringAsFixed(2) + ' %';
+                                //_progress = val / 100;
+                              });
+                            }
+                          });
+                      result['isSuccess'] = response.statusCode == 200;
+                      result['contentType'] = 'FileDownload';
+                      result['filePath'] = finalSavePath;
+                    } catch (ex) {
+                      result['error'] = ex.toString();
+                      setState((){
+                        isLoading = false;
+                        //_progress = 0.0;
+                        _downloadPerc = '';
+                      });
+                    }
+                    finally {
+                      setState((){
+                        isLoading = false;
+                        //_progress = 0.0;
+                        _downloadPerc = '';
+                      });
+                      await showNotification(result);
+                    }
                   }
-                  finally {
-                    setState((){
-                      isLoading = false;
-                      //_progress = 0.0;
-                      _downloadPerc = '';
-                    });
-                    await showNotification(result);
-                  }
+                }
+                else{
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text("No internet connection. Please check your settings")),
+                  );
                 }
               },
               child: const Text('Download update'),
-            ) : SizedBox(height: 0),
-            Text(_downloadPerc),
+            ) */
+
           ],
         ),
       ),
@@ -704,7 +899,7 @@ class _DownloadDirectoryState extends State<DownloadDirectory>{
           width: 40,
           child: Image.asset('images/bcpl_logo.png'),
         ),
-        title: Text('Connect'),
+        title: Text('Downloads'),
       ),
       endDrawer: AppDrawer(),
       body: Column(
@@ -771,14 +966,14 @@ class _DownloadDirectoryState extends State<DownloadDirectory>{
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Center(
-                    child: Lottie.asset('animations/ani_empty_box.json',
-                      width: 400,
-                      height: 400,),
+                    child: Lottie.asset('animations/ani_empty.json',
+                      width: 231,
+                      height: 95,),
                   ),
                   Container(
                     padding: EdgeInsets.all(10),
-                    child:Text('Downloads floder empty',style: TextStyle(
-                      fontWeight: FontWeight.w500,fontSize: 16,),
+                    child:Text('Download space empty',style: TextStyle(
+                      fontWeight: FontWeight.w400,fontSize: 16,),
                     ),
                   ),
                 ],
@@ -945,36 +1140,60 @@ class _NotificationViewState extends State<NotificationView>{
                         onTap: (){
                           if(items.getAt(index)!.contentType == 'News'){
                             if(items.getAt(index)!.contentID != ''){
-                              Navigator.pushNamed(context, newsDisplayRoute, arguments: NewsWithAttchArguments(
-                                  items.getAt(index)!.contentID),
-                              );
+                              if(connectionStatus != ConnectivityResult.none){
+                                Navigator.pushNamed(context, newsDisplayRoute, arguments: NewsWithAttchArguments(
+                                    items.getAt(index)!.contentID),
+                                );
+                              }
+                              else{
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text("No internet connection. Please check your settings")),
+                                );
+                              }
                               //Navigator.pushNamed(context, newsDisplayRoute, arguments: notificationList[index].contentID,);
+                            }
+                            else{
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text("Error in fetching data")),
+                              );
                             }
                           }
                           else if(items.getAt(index)!.contentType == 'Document'){
                             if(items.getAt(index)!.notificationTitle != ''){
-                              _apiResponseData = _endpointProvider.fetchDocuments(items.getAt(index)!.notificationTitle,'');
-                              _apiResponseData.then((result) {
-                                if(result.isAuthenticated && result.status){
-                                  final parsed = jsonDecode(result.data ?? '').cast<Map<String, dynamic>>();
-                                  setState(() {
-                                    documentList =  parsed.map<Document>((json) => Document.fromJson(json)).toList();
+                              if(connectionStatus != ConnectivityResult.none){
+                                _apiResponseData = _endpointProvider.fetchDocuments(items.getAt(index)!.notificationTitle,'');
+                                _apiResponseData.then((result) {
+                                  if(result.isAuthenticated && result.status){
+                                    final parsed = jsonDecode(result.data ?? '').cast<Map<String, dynamic>>();
+                                    setState(() {
+                                      documentList =  parsed.map<Document>((json) => Document.fromJson(json)).toList();
+                                      Navigator.pop(context);
+                                      Navigator.pushNamed(context, documentsRoute, arguments: documentList,);
+                                    });
+                                  }
+                                  else{
                                     Navigator.pop(context);
-                                    Navigator.pushNamed(context, documentsRoute, arguments: documentList,);
-                                  });
-                                }
-                                else{
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(content: Text("Error in data fetching")),
+                                    );
+                                  }
+                                }).catchError( (error) {
                                   Navigator.pop(context);
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     SnackBar(content: Text("Error in data fetching")),
                                   );
-                                }
-                              }).catchError( (error) {
-                                Navigator.pop(context);
+                                });
+                              }
+                              else{
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text("Error in data fetching")),
+                                  SnackBar(content: Text("No internet connection. Please check your settings")),
                                 );
-                              });
+                              }
+                            }
+                            else{
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text("Error in fetching data")),
+                              );
                             }
                           }
                         },
@@ -1067,13 +1286,24 @@ class _NotificationViewState extends State<NotificationView>{
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Icon(Icons.notifications_none),
+              Center(
+                child: Lottie.asset('animations/ani_empty.json',
+                  width: 231,
+                  height: 95,),
+              ),
+              Container(
+                padding: EdgeInsets.all(10),
+                child:Text('Notification space empty',style: TextStyle(
+                  fontWeight: FontWeight.w400,fontSize: 16,),
+                ),
+              ),
+              /*Icon(Icons.notifications_none),
               Container(
                 padding: EdgeInsets.all(10),
                 child:Text('No pending notifications',style: TextStyle(
                   fontWeight: FontWeight.w500,fontSize: 16,),
                 ),
-              ),
+              ),*/
             ],
           ),
         ),

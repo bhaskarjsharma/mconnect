@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:local_auth/local_auth.dart';
@@ -17,6 +18,15 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 
 import 'models/models.dart';
+
+String app_theme = 'default';
+Color startColor = Colors.white;
+Color endColor = Colors.white;
+Color textColor = Colors.black;
+Color appBarBackgroundColor = Colors.white;
+Color appBarTextColor = Colors.black;
+double appBarElevation = 0;
+var statusBarBrightness = Brightness.light;
 
 ConnectivityResult connectionStatus = ConnectivityResult.mobile;
 bool isLoggedIn = false;
@@ -157,7 +167,11 @@ void main() async{
       title: "Home",
       theme: ThemeData(
           appBarTheme: AppBarTheme(
-            backgroundColor: Color.fromRGBO(165, 231, 206, 1.0),
+            systemOverlayStyle: SystemUiOverlayStyle(statusBarColor: Colors.transparent),
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            //backgroundColor: Color.fromRGBO(165, 231, 206, 1.0),
+              //backgroundColor: Color.fromRGBO(255, 239, 186, 1.0),
           ),
       ),
       home: Home(),
