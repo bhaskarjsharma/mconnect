@@ -25,3 +25,4 @@ const String ecofOTRoute = '/ECOFF_OT';
 const String hosCrLtrRoute = '/HospitalCreditLetter';
 const String notificationRoute = '/NotificationView';
 const String newsDisplayRoute = '/NewsDisplay';
+const String appThemeRoute = '/AppTheme';

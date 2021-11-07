@@ -40,6 +40,7 @@ class _NewsState extends State<News>{
 
   @override
   void initState() {
+    //OpenHiveBox();
     super.initState();
     DioClient _dio = new DioClient();
     _endpointProvider = new EndPointProvider(_dio.init());
@@ -75,13 +76,12 @@ class _NewsState extends State<News>{
       });
     }
 
-    startColor = stringToColor(prefs.getString('startColor') ?? '');
-    endColor = stringToColor(prefs.getString('endColor') ?? '');
-    textColor = stringToColor(prefs.getString('textColor') ?? '');
-    appBarBackgroundColor = stringToColor(prefs.getString('appBarBackgroundColor') ?? '');
-    appBarTextColor = stringToColor(prefs.getString('appBarTextColor') ?? '');
-    //appBarElevation = prefs.getString('appBarElevation') as double ?? 0;
-    statusBarBrightness = stringToBrightness(prefs.getString('statusBarBrightness') ?? '');
+    startColor = stringToColor(prefs.getString('startColor') ?? 'white');
+    endColor = stringToColor(prefs.getString('endColor') ?? 'white');
+    textColor = stringToColor(prefs.getString('textColor') ?? 'black');
+    appBarBackgroundColor = stringToColor(prefs.getString('appBarBackgroundColor') ?? 'blue');
+    appBarTextColor = stringToColor(prefs.getString('appBarTextColor') ?? 'white');
+    statusBarBrightness = stringToBrightness(prefs.getString('statusBarBrightness') ?? 'light');
 
     _scrollController = ScrollController()..addListener(() {
         setState(() {
@@ -330,13 +330,12 @@ class _NewsDetailsState extends State<NewsDetails> {
         SnackBar(content: Text("No internet connection. Please check your settings")),
       );*/
     }
-    startColor = stringToColor(prefs.getString('startColor') ?? '');
-    endColor = stringToColor(prefs.getString('endColor') ?? '');
-    textColor = stringToColor(prefs.getString('textColor') ?? '');
-    appBarBackgroundColor = stringToColor(prefs.getString('appBarBackgroundColor') ?? '');
-    appBarTextColor = stringToColor(prefs.getString('appBarTextColor') ?? '');
-    //appBarElevation = prefs.getString('appBarElevation') as double ?? 0;
-    statusBarBrightness = stringToBrightness(prefs.getString('statusBarBrightness') ?? '');
+    startColor = stringToColor(prefs.getString('startColor') ?? 'white');
+    endColor = stringToColor(prefs.getString('endColor') ?? 'white');
+    textColor = stringToColor(prefs.getString('textColor') ?? 'black');
+    appBarBackgroundColor = stringToColor(prefs.getString('appBarBackgroundColor') ?? 'blue');
+    appBarTextColor = stringToColor(prefs.getString('appBarTextColor') ?? 'white');
+    statusBarBrightness = stringToBrightness(prefs.getString('statusBarBrightness') ?? 'light');
 
     super.initState();
   }
@@ -846,20 +845,46 @@ class _NewsDisplayState extends State<NewsDisplay> {
       );
     }
     super.initState();
+    startColor = stringToColor(prefs.getString('startColor') ?? 'white');
+    endColor = stringToColor(prefs.getString('endColor') ?? 'white');
+    textColor = stringToColor(prefs.getString('textColor') ?? 'black');
+    appBarBackgroundColor = stringToColor(prefs.getString('appBarBackgroundColor') ?? 'blue');
+    appBarTextColor = stringToColor(prefs.getString('appBarTextColor') ?? 'white');
+    statusBarBrightness = stringToBrightness(prefs.getString('statusBarBrightness') ?? 'light');
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        leading: Container(
-          width: 40,
-          child: Image.asset('images/bcpl_logo.png'),
-        ),
-        title: Text('Connect - News & Events'),
+    return Container(
+      decoration: BoxDecoration(
+          gradient: LinearGradient(
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+              //colors: [Color.fromRGBO(255, 239, 186, 1), Color.fromRGBO(255, 255, 255, 1)]
+              colors: [startColor, endColor]
+          )
       ),
-      endDrawer: AppDrawer(),
-      body: isLoading? waiting(context) : getContentFromId(),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          iconTheme: IconThemeData(
+              color: appBarTextColor
+          ),
+          systemOverlayStyle: SystemUiOverlayStyle(
+            statusBarColor: appBarBackgroundColor,
+            statusBarIconBrightness: statusBarBrightness,),
+          backgroundColor: appBarBackgroundColor,
+          bottomOpacity: 0.0,
+          elevation: appBarElevation,
+          leading: Container(
+            width: 40,
+            child: Image.asset('images/bcpl_logo.png'),
+          ),
+          title: Text('Connect - News & Events'),
+        ),
+        endDrawer: AppDrawer(),
+        body: isLoading? waiting(context) : getContentFromId(),
+      ),
     );
   }
 

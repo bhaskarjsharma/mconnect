@@ -4,6 +4,7 @@ import 'dart:io';
 import 'dart:math';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_projects/services/permissions.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -23,6 +24,7 @@ import 'fonts_icons/connect_app_icon_icons.dart';
 import 'home.dart';
 import 'main.dart';
 import 'models/models.dart';
+import 'package:flutter/material.dart';
 
 class AppDrawer extends StatefulWidget {
   @override
@@ -47,6 +49,12 @@ class AppDrawerState extends State<AppDrawer> {
         bioAuth = localAuthEnabled;
       });
     }
+    startColor = stringToColor(prefs.getString('startColor') ?? 'white');
+    endColor = stringToColor(prefs.getString('endColor') ?? 'white');
+    textColor = stringToColor(prefs.getString('textColor') ?? 'black');
+    appBarBackgroundColor = stringToColor(prefs.getString('appBarBackgroundColor') ?? 'blue');
+    appBarTextColor = stringToColor(prefs.getString('appBarTextColor') ?? 'white');
+    statusBarBrightness = stringToBrightness(prefs.getString('statusBarBrightness') ?? 'light');
   }
 
   @override
@@ -63,7 +71,12 @@ class AppDrawerState extends State<AppDrawer> {
             height: 270,
             child: DrawerHeader(
                 decoration: BoxDecoration(
-                  color: Color.fromRGBO(165, 231, 206, 1.0),
+                    gradient: LinearGradient(
+                        begin: Alignment.centerLeft,
+                        end: Alignment.centerRight,
+                        //colors: [Color.fromRGBO(255, 239, 186, 1), Color.fromRGBO(255, 255, 255, 1)]
+                        colors: [startColor, endColor]
+                    )
                 ),
                 child: Column(
                   children: [
@@ -85,6 +98,7 @@ class AppDrawerState extends State<AppDrawer> {
                         style: TextStyle(
                           fontWeight: FontWeight.w500,
                           fontSize: 20,
+                          color:textColor,
                         ),
                       ),
                     ),
@@ -95,6 +109,7 @@ class AppDrawerState extends State<AppDrawer> {
                         style: TextStyle(
                           fontWeight: FontWeight.w400,
                           fontSize: 18,
+                          color:textColor,
                         ),
                       ),
                     ),
@@ -106,7 +121,9 @@ class AppDrawerState extends State<AppDrawer> {
             leading: Icon(Icons.home,color: Colors.blueAccent, size:25),
             title: const Text('Home'),
             onTap: () {
+
               //Navigator.pushNamed(context, homeRoute);
+              //to prevent multiple back press, close all views and go to home
               Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (BuildContext context) => Home()), (Route<dynamic> route) => false);
             },
           ),
@@ -412,10 +429,12 @@ class AppDrawerState extends State<AppDrawer> {
             },*/
           ),
           ListTile(
-            leading: Icon(Icons.feedback,color: Colors.orange, size:25),
+            leading: Icon(Icons.palette,color: Colors.purple, size:25),
             title: const Text('App Theme'),
             onTap: () {
-              showDialog(
+              Navigator.pop(context);
+              Navigator.pushNamed(context, appThemeRoute);
+              /*showDialog(
                 context: context,
                 builder: (context){
                   return StatefulBuilder(
@@ -431,83 +450,45 @@ class AppDrawerState extends State<AppDrawer> {
                             return Container(
                               height: height - (height/2.5),
                               width: width - (width/4),
-                              child: isLoading ? waiting(context) : Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                children: [
-                                  GestureDetector(
-                                    child: Text('default'),
-                                    onTap: (){
-                                      setState((){
-                                        app_theme = 'default';
-                                        startColor = Colors.white;
-                                        endColor = Colors.white;
-                                        textColor = Colors.black;
-                                        appBarBackgroundColor = Colors.blue;
-                                        appBarTextColor = Colors.white;
-                                        appBarElevation = 5;
-                                        statusBarBrightness = Brightness.light;
-                                      });
-                                      prefs.setString('app_theme', 'default');
-                                      prefs.setString('startColor', '#FFFFFF');
-                                      prefs.setString('endColor', '#FFFFFF');
-                                      prefs.setString('textColor', '#121212');
-                                      prefs.setString('appBarBackgroundColor', '#459AEF');
-                                      prefs.setString('appBarTextColor', '#FFFFFF');
-                                      prefs.setString('appBarElevation', '5');
-                                      prefs.setString('statusBarBrightness', 'Brightness.light');
-                                      Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (BuildContext context) => Home()), (Route<dynamic> route) => false);
-                                    },
+                              child: isLoading ? waiting(context) :
+                                  Column(
+                                    children: [
+                                      Center(
+                                        child: Text('Choose App Theme')
+                                      ),
+                                      Expanded(
+                                          child: GridView.count(
+                                            primary: false,
+                                            padding: const EdgeInsets.all(10),
+                                            crossAxisSpacing: 10,
+                                            mainAxisSpacing: 10,
+                                            crossAxisCount: 3,
+                                            children: [
+                                              createColorCell('ffffff','ffffff','000000','459AEF','000000','dark','Light'),
+                                              createColorCell('5A5959','5A5959','ffffff','5A5959','ffffff','light','Dark'),
+                                              createColorCell('74ebd5','acb6e5','000000','transparent','ffffff','light','Digital Water'),
+                                              createColorCell('ffefba','ffffff','000000','transparent','000000','dark','Margo'),
+                                              createColorCell('d9a7c7','fffcdc','000000','transparent','000000','dark','Cherry Blossom'),
+                                              createColorCell('4ac29a','bdfff3','000000','transparent','000000','dark','Cinnamint'),
+                                              createColorCell('fbc2eb','a6c1ee','000000','transparent','000000','dark','Ashville'),
+                                              createColorCell('84fab0','8fd3f4','000000','transparent','000000','dark','Azure'),
+                                              createColorCell('a8edea','fed6e3','000000','transparent','000000','dark','Wind'),
+                                              //createColorCell('d299c2','fef9d7','000000','transparent','000000','dark','Wild Apple'),
+                                              createColorCell('fdfcfb','e2d1c3','000000','transparent','000000','dark','Evarlasting Sky'),
+                                              createColorCell('fddb92','d1fdff','000000','transparent','000000','dark','Blessing'),
+                                              createColorCell('ebbba7','cfc7f8','000000','transparent','000000','dark','Pine'),
+                                              createColorCell('e6e9f0','eef1f5','000000','transparent','000000','dark','Snow'),
+                                              createColorCell('accbee','e7f0fd','000000','transparent','000000','dark','Ink'),
+                                              createColorCell('e9defa','fbfcdb','000000','transparent','000000','dark','Kindness'),
+                                              createColorCell('d3cce3','e9e4f0','000000','transparent','000000','dark','Delicate'),
+                                              createColorCell('43c6ac','f8ffae','000000','transparent','000000','dark','Honey Dew'),
+                                              createColorCell('ffafbd','ffc3a0','ffffff','transparent','ffffff','light','Roseanna'),
+                                            ],
+                                          ),
+                                      ),
+                                    ],
                                   ),
-                                  GestureDetector(
-                                    child: Text('digital_water'),
-                                    onTap: (){
-                                      setState((){
-                                        app_theme = 'digital_water';
-                                        startColor = Color.fromRGBO(172, 182, 229, 1);
-                                        endColor = Color.fromRGBO(116, 235, 213, 1);
-                                        textColor = Colors.black;
-                                        appBarBackgroundColor = Colors.transparent;
-                                        appBarTextColor = Colors.white;
-                                        appBarElevation = 0;
-                                        statusBarBrightness = Brightness.light;
-                                      });
-                                      prefs.setString('app_theme', 'digital_water');
-                                      prefs.setString('startColor', '#ACBDE5');
-                                      prefs.setString('endColor', '#74EBD5');
-                                      prefs.setString('textColor', '#121212');
-                                      prefs.setString('appBarBackgroundColor', 'Colors.transparent');
-                                      prefs.setString('appBarTextColor', '#FFFFFF');
-                                      prefs.setString('appBarElevation', '0');
-                                      prefs.setString('statusBarBrightness', 'Brightness.light');
-                                      Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (BuildContext context) => Home()), (Route<dynamic> route) => false);
-                                    },
-                                  ),
-                                  GestureDetector(
-                                    child: Text('margo'),
-                                    onTap: (){
-                                      setState((){
-                                        app_theme = 'margo';
-                                        startColor = Color.fromRGBO(255, 239, 186, 1);
-                                        endColor = Color.fromRGBO(255, 255, 255, 1);
-                                        textColor = Colors.black;
-                                        appBarBackgroundColor = Colors.transparent;
-                                        appBarTextColor = Colors.black;
-                                        appBarElevation = 0;
-                                        statusBarBrightness = Brightness.dark;
-                                      });
-                                      prefs.setString('app_theme', 'margo');
-                                      prefs.setString('startColor', '#FFEFBA');
-                                      prefs.setString('endColor', '#FFFFFF');
-                                      prefs.setString('textColor', '#121212');
-                                      prefs.setString('appBarBackgroundColor', 'Colors.transparent');
-                                      prefs.setString('appBarTextColor', '#121212');
-                                      prefs.setString('appBarElevation', '0');
-                                      prefs.setString('statusBarBrightness', 'Brightness.dark');
-                                      Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (BuildContext context) => Home()), (Route<dynamic> route) => false);
-                                    },
-                                  )
-                                ],
-                              ),
+
                             );
                           },
                         ),
@@ -515,7 +496,7 @@ class AppDrawerState extends State<AppDrawer> {
                     },
                   );
                 },
-              );
+              );*/
             },
           ),
           ListTile(
@@ -561,6 +542,12 @@ class _AboutAppState extends State<AboutApp>{
     super.initState();
     _dio = new DioClient();
     _endpointProvider = new EndPointProvider(_dio.init());
+    startColor = stringToColor(prefs.getString('startColor') ?? 'white');
+    endColor = stringToColor(prefs.getString('endColor') ?? 'white');
+    textColor = stringToColor(prefs.getString('textColor') ?? 'black');
+    appBarBackgroundColor = stringToColor(prefs.getString('appBarBackgroundColor') ?? 'blue');
+    appBarTextColor = stringToColor(prefs.getString('appBarTextColor') ?? 'white');
+    statusBarBrightness = stringToBrightness(prefs.getString('statusBarBrightness') ?? 'light');
   }
   getPackageInfo(){
     PackageInfo.fromPlatform().then((PackageInfo packageInfo) {
@@ -575,42 +562,63 @@ class _AboutAppState extends State<AboutApp>{
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        leading: Container(
-          width: 40,
-          child: Image.asset('images/bcpl_logo.png'),
-        ),
-        title: Text('Connect'),
+    return Container(
+      decoration: BoxDecoration(
+          gradient: LinearGradient(
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+              //colors: [Color.fromRGBO(255, 239, 186, 1), Color.fromRGBO(255, 255, 255, 1)]
+              colors: [startColor, endColor]
+          )
       ),
-      endDrawer: AppDrawer(),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Center(
-              child: Lottie.asset('animations/ani_robot.json',
-                width: 200,
-                height: 157,),
-            ),
-            SizedBox(height: 5),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              //crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Container(
-                  width: 100,
-                  child: Text('App Name'),
-                ),
-                Container(
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          iconTheme: IconThemeData(
+              color: appBarTextColor
+          ),
+          systemOverlayStyle: SystemUiOverlayStyle(
+            statusBarColor: appBarBackgroundColor,
+            statusBarIconBrightness: statusBarBrightness,),
+          backgroundColor: appBarBackgroundColor,
+          bottomOpacity: 0.0,
+          elevation: appBarElevation,
+          leading: Container(
+            width: 40,
+            child: Image.asset('images/bcpl_logo.png'),
+          ),
+          title: Text('About',style: TextStyle(
+            color:appBarTextColor,
+          ),),
+        ),
+        endDrawer: AppDrawer(),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Center(
+                child: Lottie.asset('animations/ani_robot.json',
                   width: 200,
-                  child: Text(appName),
-                ),
-              ],
-            ),
-            //SizedBox(height: 10),
-           /* Row(
+                  height: 157,),
+              ),
+              SizedBox(height: 5),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                //crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Container(
+                    width: 100,
+                    child: Text('App Name'),
+                  ),
+                  Container(
+                    width: 200,
+                    child: Text(appName),
+                  ),
+                ],
+              ),
+              //SizedBox(height: 10),
+              /* Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               //crossAxisAlignment: CrossAxisAlignment.center,
               children: [
@@ -625,184 +633,184 @@ class _AboutAppState extends State<AboutApp>{
 
               ],
             ),*/
-            SizedBox(height: 5),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              //crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Container(
-                  width: 100,
-                  child: Text('Version'),
-                ),
-                Container(
-                  width: 200,
-                  child: Text(version),
-                ),
+              SizedBox(height: 5),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                //crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Container(
+                    width: 100,
+                    child: Text('Version'),
+                  ),
+                  Container(
+                    width: 200,
+                    child: Text(version),
+                  ),
 
-              ],
-            ),
-            SizedBox(height: 5),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              //crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Container(
-                  width: 100,
-                  child: Text('Build Number'),
-                ),
-                Container(
-                  width: 200,
-                  child: Text(buildNumber),
-                ),
-              ],
-            ),
-            SizedBox(height: 5),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              //crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Container(
-                  width: 100,
-                  child: Text('Developed By'),
-                ),
-                Container(
-                  width: 200,
-                  child: Text('Bhaskar Jyoti Sharma, Manager (IT)'),
-                ),
-              ],
-            ),
-            SizedBox(height: 5),
-            ElevatedButton(
-              onPressed: (){
-                if(connectionStatus != ConnectivityResult.none){
-                  setState(() {
-                    isLoading = true;
-                  });
-                  String appVersion = '';
-                  String buildNumber = '';
-                  PackageInfo.fromPlatform().then((PackageInfo packageInfo) {
+                ],
+              ),
+              SizedBox(height: 5),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                //crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Container(
+                    width: 100,
+                    child: Text('Build Number'),
+                  ),
+                  Container(
+                    width: 200,
+                    child: Text(buildNumber),
+                  ),
+                ],
+              ),
+              SizedBox(height: 5),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                //crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Container(
+                    width: 100,
+                    child: Text('Developed By'),
+                  ),
+                  Container(
+                    width: 200,
+                    child: Text('Bhaskar Jyoti Sharma, Manager (IT)'),
+                  ),
+                ],
+              ),
+              SizedBox(height: 5),
+              ElevatedButton(
+                onPressed: (){
+                  if(connectionStatus != ConnectivityResult.none){
                     setState(() {
-                      appVersion = packageInfo.version;
-                      buildNumber = packageInfo.buildNumber;
+                      isLoading = true;
                     });
-                  });
-                  _apiResponseData = _endpointProvider.checkUpdate(appVersion,buildNumber);
-                  _apiResponseData.then((result) {
-                    if(result.isAuthenticated && result.status){
+                    String appVersion = '';
+                    String buildNumber = '';
+                    PackageInfo.fromPlatform().then((PackageInfo packageInfo) {
                       setState(() {
-                        isLoading = false;
-                        updateAvailable = true;
-                        _appUpdateInfo = AppUpdateInfo.fromJson(jsonDecode(result.data ?? ''));
-                        updateStatus = 'Updates available. Version: ${_appUpdateInfo.version} Build Number: ${_appUpdateInfo.buildNumber}';
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text('App updates available')),
-                        );
+                        appVersion = packageInfo.version;
+                        buildNumber = packageInfo.buildNumber;
                       });
-                    }
-                    else{
+                    });
+                    _apiResponseData = _endpointProvider.checkUpdate(appVersion,buildNumber);
+                    _apiResponseData.then((result) {
+                      if(result.isAuthenticated && result.status){
+                        setState(() {
+                          isLoading = false;
+                          updateAvailable = true;
+                          _appUpdateInfo = AppUpdateInfo.fromJson(jsonDecode(result.data ?? ''));
+                          updateStatus = 'Updates available. Version: ${_appUpdateInfo.version} Build Number: ${_appUpdateInfo.buildNumber}';
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('App updates available')),
+                          );
+                        });
+                      }
+                      else{
+                        setState(() {
+                          isLoading = false;
+                          updateAvailable = false;
+                          updateStatus = result.data!;
+                        });
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text(updateStatus)),
+                        );
+                      }
+                    }).catchError( (error) {
                       setState(() {
                         isLoading = false;
                         updateAvailable = false;
-                        updateStatus = result.data!;
                       });
                       ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text(updateStatus)),
+                        SnackBar(content: Text("Error in checking updates")),
                       );
-                    }
-                  }).catchError( (error) {
-                    setState(() {
-                      isLoading = false;
-                      updateAvailable = false;
                     });
+                  }
+                  else{
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text("Error in checking updates")),
+                      SnackBar(content: Text("No internet connection. Please check your settings")),
                     );
-                  });
-                }
-                else{
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text("No internet connection. Please check your settings")),
-                  );
-                }
-              },
-              child: const Text('Check for updates'),
-            ),
-            SizedBox(height: 5),
-            isLoading ? Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                CircularProgressIndicator(),
-                Container(
-                  padding: EdgeInsets.all(5),
-                  child:Text('Checking for updates. Please wait...',style: TextStyle(
-                    fontWeight: FontWeight.w500,fontSize: 16,),
-                  ),
-                ),
-              ],
-            ) : Text(updateStatus),
-            //SizedBox(height: 10),
-            updateAvailable ? GestureDetector(
-              child: Center(
-                child: Lottie.asset('animations/ani_download.json',
-                  width: 120,
-                  height: 120,),
+                  }
+                },
+                child: const Text('Check for updates'),
               ),
-              onTap: () async{
-                if(connectionStatus != ConnectivityResult.none){
-                  Map<String, dynamic> result = {
-                    'isSuccess': false,
-                    'contentType': false,
-                    'filePath': null,
-                    'error': null,
-                  };
-                  String saveDirPath = await getDownloadDirectory();
-                  String finalSavePath = path.join(saveDirPath, _appUpdateInfo.fileName);
-                  String appDownloadUrl = "https://connect.bcplindia.co.in/MobileAppAPI/DownloadAppUpdate";
-                  final isPermissionStatusGranted = await requestStoragePermissions();
-                  if (isPermissionStatusGranted) {
-                    try {
-                      final Dio _dio = Dio();
-                      var response = await _dio.download(appDownloadUrl,
-                          finalSavePath, onReceiveProgress: (int received, int total) {
-                            if (total != -1) {
-                              double val = (received / total * 100) as double;
-                              num mod = pow(10.0, 1);
-                              setState(() {
-                                _downloadPerc = 'Downloading: ' + val.toStringAsFixed(2) + ' %';
-                                //_progress = val / 100;
-                              });
-                            }
-                          });
-                      result['isSuccess'] = response.statusCode == 200;
-                      result['contentType'] = 'FileDownload';
-                      result['filePath'] = finalSavePath;
-                    } catch (ex) {
-                      result['error'] = ex.toString();
-                      setState((){
-                        isLoading = false;
-                        //_progress = 0.0;
-                        _downloadPerc = '';
-                      });
-                    }
-                    finally {
-                      setState((){
-                        isLoading = false;
-                        //_progress = 0.0;
-                        _downloadPerc = '';
-                      });
-                      await showNotification(result);
+              SizedBox(height: 5),
+              isLoading ? Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  CircularProgressIndicator(),
+                  Container(
+                    padding: EdgeInsets.all(5),
+                    child:Text('Checking for updates. Please wait...',style: TextStyle(
+                      fontWeight: FontWeight.w500,fontSize: 16,),
+                    ),
+                  ),
+                ],
+              ) : Text(updateStatus),
+              //SizedBox(height: 10),
+              updateAvailable ? GestureDetector(
+                child: Center(
+                  child: Lottie.asset('animations/ani_download.json',
+                    width: 120,
+                    height: 120,),
+                ),
+                onTap: () async{
+                  if(connectionStatus != ConnectivityResult.none){
+                    Map<String, dynamic> result = {
+                      'isSuccess': false,
+                      'contentType': false,
+                      'filePath': null,
+                      'error': null,
+                    };
+                    String saveDirPath = await getDownloadDirectory();
+                    String finalSavePath = path.join(saveDirPath, _appUpdateInfo.fileName);
+                    String appDownloadUrl = "https://connect.bcplindia.co.in/MobileAppAPI/DownloadAppUpdate";
+                    final isPermissionStatusGranted = await requestStoragePermissions();
+                    if (isPermissionStatusGranted) {
+                      try {
+                        final Dio _dio = Dio();
+                        var response = await _dio.download(appDownloadUrl,
+                            finalSavePath, onReceiveProgress: (int received, int total) {
+                              if (total != -1) {
+                                double val = (received / total * 100) as double;
+                                num mod = pow(10.0, 1);
+                                setState(() {
+                                  _downloadPerc = 'Downloading: ' + val.toStringAsFixed(2) + ' %';
+                                  //_progress = val / 100;
+                                });
+                              }
+                            });
+                        result['isSuccess'] = response.statusCode == 200;
+                        result['contentType'] = 'FileDownload';
+                        result['filePath'] = finalSavePath;
+                      } catch (ex) {
+                        result['error'] = ex.toString();
+                        setState((){
+                          isLoading = false;
+                          //_progress = 0.0;
+                          _downloadPerc = '';
+                        });
+                      }
+                      finally {
+                        setState((){
+                          isLoading = false;
+                          //_progress = 0.0;
+                          _downloadPerc = '';
+                        });
+                        await showNotification(result);
+                      }
                     }
                   }
-                }
-                else{
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text("No internet connection. Please check your settings")),
-                  );
-                }
-              },
-            ): SizedBox(height: 0),
-            Text(_downloadPerc),
+                  else{
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text("No internet connection. Please check your settings")),
+                    );
+                  }
+                },
+              ): SizedBox(height: 0),
+              Text(_downloadPerc),
 
 /*            ElevatedButton(
               onPressed: () async{
@@ -861,7 +869,8 @@ class _AboutAppState extends State<AboutApp>{
               child: const Text('Download update'),
             ) */
 
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -880,6 +889,13 @@ class _DownloadDirectoryState extends State<DownloadDirectory>{
   void initState(){
     super.initState();
     file = getDownloads();
+    startColor = stringToColor(prefs.getString('startColor') ?? 'white');
+    endColor = stringToColor(prefs.getString('endColor') ?? 'white');
+    textColor = stringToColor(prefs.getString('textColor') ?? 'black');
+    appBarBackgroundColor = stringToColor(prefs.getString('appBarBackgroundColor') ?? 'blue');
+    appBarTextColor = stringToColor(prefs.getString('appBarTextColor') ?? 'white');
+    statusBarBrightness = stringToBrightness(prefs.getString('statusBarBrightness') ?? 'light');
+
   }
 
   Future<List<FileSystemEntity>> getDownloads() async {
@@ -893,34 +909,56 @@ class _DownloadDirectoryState extends State<DownloadDirectory>{
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        leading: Container(
-          width: 40,
-          child: Image.asset('images/bcpl_logo.png'),
-        ),
-        title: Text('Downloads'),
-      ),
-      endDrawer: AppDrawer(),
-      body: Column(
-        children: [
-          SizedBox(height:10),
-          Container(
-            padding: EdgeInsets.all(10),
-            child:Text('Tap to view. Swipe to delete',style: TextStyle(
-              fontWeight: FontWeight.w400,
-              fontSize: 15,
-            ),),
-            decoration: BoxDecoration(
-              color: Colors.black12,
-              borderRadius: BorderRadius.circular(20),
-            ),
-          ),
-
-          Expanded(
-            child:getDownloadedFiles(),
+    return Container(
+      decoration: BoxDecoration(
+          gradient: LinearGradient(
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+              //colors: [Color.fromRGBO(255, 239, 186, 1), Color.fromRGBO(255, 255, 255, 1)]
+              colors: [startColor, endColor]
           )
-        ],
+      ),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          iconTheme: IconThemeData(
+              color: appBarTextColor
+          ),
+          systemOverlayStyle: SystemUiOverlayStyle(
+            statusBarColor: appBarBackgroundColor,
+            statusBarIconBrightness: statusBarBrightness,),
+          backgroundColor: appBarBackgroundColor,
+          bottomOpacity: 0.0,
+          elevation: appBarElevation,
+          leading: Container(
+            width: 40,
+            child: Image.asset('images/bcpl_logo.png'),
+          ),
+          title: Text('Downloads',style: TextStyle(
+            color:appBarTextColor,
+          ),),
+        ),
+        endDrawer: AppDrawer(),
+        body: Column(
+          children: [
+            SizedBox(height:10),
+            Container(
+              padding: EdgeInsets.all(10),
+              child:Text('Tap to view. Swipe to delete',style: TextStyle(
+                fontWeight: FontWeight.w400,
+                fontSize: 15,
+              ),),
+              decoration: BoxDecoration(
+                color: Colors.black12,
+                borderRadius: BorderRadius.circular(20),
+              ),
+            ),
+
+            Expanded(
+              child:getDownloadedFiles(),
+            )
+          ],
+        ),
       ),
     );
   }
@@ -1086,123 +1124,151 @@ class _NotificationViewState extends State<NotificationView>{
     }*/
     _dio = new DioClient();
     _endpointProvider = new EndPointProvider(_dio.init());
+    startColor = stringToColor(prefs.getString('startColor') ?? 'white');
+    endColor = stringToColor(prefs.getString('endColor') ?? 'white');
+    textColor = stringToColor(prefs.getString('textColor') ?? 'black');
+    appBarBackgroundColor = stringToColor(prefs.getString('appBarBackgroundColor') ?? 'blue');
+    appBarTextColor = stringToColor(prefs.getString('appBarTextColor') ?? 'white');
+    statusBarBrightness = stringToBrightness(prefs.getString('statusBarBrightness') ?? 'light');
+
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        leading: Container(
-          width: 40,
-          child: Image.asset('images/bcpl_logo.png'),
-        ),
-        title: Text('Connect'),
+    return Container(
+      decoration: BoxDecoration(
+          gradient: LinearGradient(
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+              //colors: [Color.fromRGBO(255, 239, 186, 1), Color.fromRGBO(255, 255, 255, 1)]
+              colors: [startColor, endColor]
+          )
       ),
-      endDrawer: AppDrawer(),
-      body: notificationAvailable ? Column(
-        children: [
-          SizedBox(height:10),
-          Container(
-            padding: EdgeInsets.all(10),
-            child:Text('Tap to view. Swipe to delete',style: TextStyle(
-              fontWeight: FontWeight.w400,
-              fontSize: 15,
-            ),),
-            decoration: BoxDecoration(
-              color: Colors.black12,
-              borderRadius: BorderRadius.circular(20),
-            ),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          iconTheme: IconThemeData(
+              color: appBarTextColor
           ),
-          Expanded(
-            child: ValueListenableBuilder(
-              valueListenable: Hive.box<AppNotification>('appNotifications').listenable(),
-              builder: (context, Box<AppNotification> items, widget) {
-                return ListView.builder(
-                  itemCount: items.length,
-                  itemBuilder: (BuildContext context, int index) {
-                    final item = items.getAt(index)!.notificationTitle;
-                    return Dismissible(
-                      // Each Dismissible must contain a Key. Keys allow Flutter to
-                      // uniquely identify widgets.
-                      key: Key(item),
-                      onDismissed: (direction) {
-                        // Remove the item from the data source.
-                        items.deleteAt(index);
-                        // Then show a snackbar.
-                        ScaffoldMessenger.of(context)
-                            .showSnackBar(SnackBar(content: Text('$item dismissed')));
-                      },
-                      // Show a red background as the item is swiped away.
-                      background: Container(color: Colors.red),
-                      child: ListTile(
-                        title: Text(items.getAt(index)!.notificationTitle),
-                        subtitle: Text(items.getAt(index)!.notificationBody),
-                        onTap: (){
-                          if(items.getAt(index)!.contentType == 'News'){
-                            if(items.getAt(index)!.contentID != ''){
-                              if(connectionStatus != ConnectivityResult.none){
-                                Navigator.pushNamed(context, newsDisplayRoute, arguments: NewsWithAttchArguments(
-                                    items.getAt(index)!.contentID),
-                                );
+          systemOverlayStyle: SystemUiOverlayStyle(
+            statusBarColor: appBarBackgroundColor,
+            statusBarIconBrightness: statusBarBrightness,),
+          backgroundColor: appBarBackgroundColor,
+          bottomOpacity: 0.0,
+          elevation: appBarElevation,
+          leading: Container(
+            width: 40,
+            child: Image.asset('images/bcpl_logo.png'),
+          ),
+          title: Text('Notifications',style: TextStyle(
+            color:appBarTextColor,
+          ),),
+        ),
+        endDrawer: AppDrawer(),
+        body: notificationAvailable ? Column(
+          children: [
+            SizedBox(height:10),
+            Container(
+              padding: EdgeInsets.all(10),
+              child:Text('Tap to view. Swipe to delete',style: TextStyle(
+                fontWeight: FontWeight.w400,
+                fontSize: 15,
+              ),),
+              decoration: BoxDecoration(
+                color: Colors.black12,
+                borderRadius: BorderRadius.circular(20),
+              ),
+            ),
+            Expanded(
+              child: ValueListenableBuilder(
+                valueListenable: Hive.box<AppNotification>('appNotifications').listenable(),
+                builder: (context, Box<AppNotification> items, widget) {
+                  return ListView.builder(
+                    itemCount: items.length,
+                    itemBuilder: (BuildContext context, int index) {
+                      final item = items.getAt(index)!.notificationTitle;
+                      return Dismissible(
+                        // Each Dismissible must contain a Key. Keys allow Flutter to
+                        // uniquely identify widgets.
+                        key: Key(item),
+                        onDismissed: (direction) {
+                          // Remove the item from the data source.
+                          items.deleteAt(index);
+                          // Then show a snackbar.
+                          ScaffoldMessenger.of(context)
+                              .showSnackBar(SnackBar(content: Text('$item dismissed')));
+                        },
+                        // Show a red background as the item is swiped away.
+                        background: Container(color: Colors.red),
+                        child: ListTile(
+                          title: Text(items.getAt(index)!.notificationTitle),
+                          subtitle: Text(items.getAt(index)!.notificationBody),
+                          onTap: (){
+                            if(items.getAt(index)!.contentType == 'News'){
+                              if(items.getAt(index)!.contentID != ''){
+                                if(connectionStatus != ConnectivityResult.none){
+                                  Navigator.pushNamed(context, newsDisplayRoute, arguments: NewsWithAttchArguments(
+                                      items.getAt(index)!.contentID),
+                                  );
+                                }
+                                else{
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text("No internet connection. Please check your settings")),
+                                  );
+                                }
+                                //Navigator.pushNamed(context, newsDisplayRoute, arguments: notificationList[index].contentID,);
                               }
                               else{
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text("No internet connection. Please check your settings")),
+                                  SnackBar(content: Text("Error in fetching data")),
                                 );
                               }
-                              //Navigator.pushNamed(context, newsDisplayRoute, arguments: notificationList[index].contentID,);
                             }
-                            else{
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text("Error in fetching data")),
-                              );
-                            }
-                          }
-                          else if(items.getAt(index)!.contentType == 'Document'){
-                            if(items.getAt(index)!.notificationTitle != ''){
-                              if(connectionStatus != ConnectivityResult.none){
-                                _apiResponseData = _endpointProvider.fetchDocuments(items.getAt(index)!.notificationTitle,'');
-                                _apiResponseData.then((result) {
-                                  if(result.isAuthenticated && result.status){
-                                    final parsed = jsonDecode(result.data ?? '').cast<Map<String, dynamic>>();
-                                    setState(() {
-                                      documentList =  parsed.map<Document>((json) => Document.fromJson(json)).toList();
+                            else if(items.getAt(index)!.contentType == 'Document'){
+                              if(items.getAt(index)!.notificationTitle != ''){
+                                if(connectionStatus != ConnectivityResult.none){
+                                  _apiResponseData = _endpointProvider.fetchDocuments(items.getAt(index)!.notificationTitle,'');
+                                  _apiResponseData.then((result) {
+                                    if(result.isAuthenticated && result.status){
+                                      final parsed = jsonDecode(result.data ?? '').cast<Map<String, dynamic>>();
+                                      setState(() {
+                                        documentList =  parsed.map<Document>((json) => Document.fromJson(json)).toList();
+                                        Navigator.pop(context);
+                                        Navigator.pushNamed(context, documentsRoute, arguments: documentList,);
+                                      });
+                                    }
+                                    else{
                                       Navigator.pop(context);
-                                      Navigator.pushNamed(context, documentsRoute, arguments: documentList,);
-                                    });
-                                  }
-                                  else{
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(content: Text("Error in data fetching")),
+                                      );
+                                    }
+                                  }).catchError( (error) {
                                     Navigator.pop(context);
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(content: Text("Error in data fetching")),
                                     );
-                                  }
-                                }).catchError( (error) {
-                                  Navigator.pop(context);
+                                  });
+                                }
+                                else{
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(content: Text("Error in data fetching")),
+                                    SnackBar(content: Text("No internet connection. Please check your settings")),
                                   );
-                                });
+                                }
                               }
                               else{
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text("No internet connection. Please check your settings")),
+                                  SnackBar(content: Text("Error in fetching data")),
                                 );
                               }
                             }
-                            else{
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text("Error in fetching data")),
-                              );
-                            }
-                          }
-                        },
-                      ),
-                    );
-                  },
-                );
-              },
-            ),
+                          },
+                        ),
+                      );
+                    },
+                  );
+                },
+              ),
 
 /*            child:ListView.builder(
               itemCount: notificationList!.length,
@@ -1277,40 +1343,226 @@ class _NotificationViewState extends State<NotificationView>{
                 );
               },
             ),*/
-          )
-        ],
-      ) : Container(
-        height: MediaQuery.of(context).size.height / 1.3,
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Center(
-                child: Lottie.asset('animations/ani_empty.json',
-                  width: 231,
-                  height: 95,),
-              ),
-              Container(
-                padding: EdgeInsets.all(10),
-                child:Text('Notification space empty',style: TextStyle(
-                  fontWeight: FontWeight.w400,fontSize: 16,),
+            )
+          ],
+        ) : Container(
+          height: MediaQuery.of(context).size.height / 1.3,
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Center(
+                  child: Lottie.asset('animations/ani_empty.json',
+                    width: 231,
+                    height: 95,),
                 ),
-              ),
-              /*Icon(Icons.notifications_none),
+                Container(
+                  padding: EdgeInsets.all(10),
+                  child:Text('Notification space empty',style: TextStyle(
+                    fontWeight: FontWeight.w400,fontSize: 16,),
+                  ),
+                ),
+                /*Icon(Icons.notifications_none),
               Container(
                 padding: EdgeInsets.all(10),
                 child:Text('No pending notifications',style: TextStyle(
                   fontWeight: FontWeight.w500,fontSize: 16,),
                 ),
               ),*/
-            ],
+              ],
+            ),
           ),
         ),
       ),
     );
+
   }
 }
+
+class AppTheme extends StatefulWidget {
+  @override
+  State<AppTheme> createState() => _AppThemeState();
+}
+class _AppThemeState extends State<AppTheme>{
+  late Color localStartColor;
+  late Color localendColor;
+  late Color localtextColor;
+  late Color localappBarBackgroundColor;
+  late Color localappBarTextColor;
+  late Brightness localstatusBarBrightness;
+
+  String localThemeName = '';
+  String startColorTxt = '';
+  String endColorTxt = '';
+  String textColorTxt = '';
+  String appBarBackgroundColorTxt = '';
+  String appBarTextColorTxt = '';
+  String statusBarBrightnessTxt = '';
+
+  @override
+  initState() {
+    super.initState();
+    localThemeName = prefs.getString('appTheme') ?? 'Light';
+    localStartColor = stringToColor(prefs.getString('startColor') ?? 'white');
+    localendColor = stringToColor(prefs.getString('endColor') ?? 'white');
+    localtextColor = stringToColor(prefs.getString('textColor') ?? 'black');
+    localappBarBackgroundColor = stringToColor(prefs.getString('appBarBackgroundColor') ?? 'blue');
+    localappBarTextColor = stringToColor(prefs.getString('appBarTextColor') ?? 'white');
+    localstatusBarBrightness = stringToBrightness(prefs.getString('statusBarBrightness') ?? 'light');
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+          gradient: LinearGradient(
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+              //colors: [Color.fromRGBO(255, 239, 186, 1), Color.fromRGBO(255, 255, 255, 1)]
+              colors: [localStartColor, localendColor]
+          )
+      ),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          iconTheme: IconThemeData(
+              color: localappBarTextColor
+          ),
+          systemOverlayStyle: SystemUiOverlayStyle(
+            statusBarColor: localappBarBackgroundColor,
+            statusBarIconBrightness: localstatusBarBrightness,),
+          backgroundColor: localappBarBackgroundColor,
+          bottomOpacity: 0.0,
+          elevation: 0,
+          leading: Container(
+            width: 40,
+            child: Image.asset('images/bcpl_logo.png'),
+          ),
+          title: Text('App Theme',style: TextStyle(
+            color:localappBarTextColor,
+          ),),
+        ),
+        endDrawer: AppDrawer(),
+        body: Column(
+          children: [
+            Center(
+                child: Text(localThemeName,style: TextStyle(fontSize: 18, color: localtextColor ),
+                    textAlign: TextAlign.center)
+            ),
+            Expanded(
+              child: GridView.count(
+                primary: false,
+                padding: const EdgeInsets.all(10),
+                crossAxisSpacing: 0,
+                mainAxisSpacing: 0,
+                crossAxisCount: 4,
+                children: [
+                  createColorCell('ffffff','ffffff','000000','459AEF','ffffff','Light','Light'),
+                  createColorCell('121212','121212','ffffff','121212','ffffff','light','Dark'),
+                  createColorCell('74ebd5','acb6e5','000000','transparent','ffffff','light','Digital Water'),
+                  createColorCell('ffefba','ffffff','000000','transparent','000000','dark','Margo'),
+                  createColorCell('d9a7c7','fffcdc','000000','transparent','000000','dark','Cherry Blossom'),
+                  createColorCell('4ac29a','bdfff3','000000','transparent','000000','dark','Cinnamint'),
+                  createColorCell('fbc2eb','a6c1ee','000000','transparent','000000','dark','Ashville'),
+                  createColorCell('84fab0','8fd3f4','000000','transparent','000000','dark','Azure'),
+                  createColorCell('a8edea','fed6e3','000000','transparent','000000','dark','Wind'),
+                  //createColorCell('d299c2','fef9d7','000000','transparent','000000','dark','Wild Apple'),
+                  createColorCell('fdfcfb','e2d1c3','000000','transparent','000000','dark','Evarlasting Sky'),
+                  createColorCell('fddb92','d1fdff','000000','transparent','000000','dark','Blessing'),
+                  createColorCell('ebbba7','cfc7f8','000000','transparent','000000','dark','Pine'),
+                  createColorCell('e6e9f0','eef1f5','000000','transparent','000000','dark','Snow'),
+                  createColorCell('accbee','e7f0fd','000000','transparent','000000','dark','Ink'),
+                  createColorCell('e9defa','fbfcdb','000000','transparent','000000','dark','Kindness'),
+                  createColorCell('d3cce3','e9e4f0','000000','transparent','000000','dark','Delicate'),
+                  createColorCell('43c6ac','f8ffae','000000','transparent','000000','dark','Honey Dew'),
+                  createColorCell('ffafbd','ffc3a0','000000','transparent','000000','light','Roseanna'),
+                  createColorCell('c79081','dfa579','000000','transparent','000000','light','Desert'),
+                  createColorCell('8baaaa','ae8b9c','ffffff','transparent','ffffff','light','Jungle Day'),
+                  createColorCell('abecd6','fbed96','000000','transparent','000000','dark','Over Sun'),
+                  createColorCell('e6b980','eacda3','000000','transparent','000000','dark','Caramel'),
+                  createColorCell('d7d2cc','304352','ffffff','transparent','ffffff','dark','Metal'),
+                  createColorCell('616161','9bc5c3','ffffff','transparent','ffffff','dark','Mole Hall'),
+                  createColorCell('dfe9f3','ffffff','000000','transparent','000000','dark','Glass'),
+                  createColorCell('243949','517fa4','ffffff','transparent','ffffff','light','Stone'),
+                ],
+              ),
+            ),
+          ],
+        ),
+        floatingActionButton: FloatingActionButton.extended(
+          onPressed: () {
+            prefs.setString('appTheme', localThemeName);
+            prefs.setString('startColor', startColorTxt);
+            prefs.setString('endColor', endColorTxt);
+            prefs.setString('textColor', textColorTxt);
+            prefs.setString('appBarBackgroundColor', appBarBackgroundColorTxt);
+            prefs.setString('appBarTextColor', appBarTextColorTxt);
+            prefs.setInt('appBarElevation', 0);
+            prefs.setString('statusBarBrightness', statusBarBrightnessTxt);
+            Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (BuildContext context) => Home()), (Route<dynamic> route) => false);
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text("Theme Set")),
+            );
+          },
+          label: const Text('Set Theme'),
+          icon: const Icon(Icons.thumb_up),
+          backgroundColor: Colors.lightBlue,
+        ),
+      ),
+    );
+
+  }
+  GestureDetector createColorCell(String start,String end,String bodyTextColor,String appBarBackColor,
+      String appBarTextColour,String statusBarBright,String colorName){
+    return GestureDetector(
+      child: Column(
+        children: [
+          Container(
+            height:30,
+            width:30,
+            decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(100),
+                border: Border.all(color: Colors.black12),
+                gradient: LinearGradient(
+                    begin: Alignment.centerLeft,
+                    end: Alignment.centerRight,
+                    colors: [stringToColor(start), stringToColor(end)]
+                )
+            ),
+          ),
+          Text(colorName,
+              style: TextStyle(fontSize: 14, color: localtextColor ),
+              textAlign: TextAlign.center),
+        ],
+      ),
+      onTap: (){
+        setState((){
+          localThemeName = colorName;
+          localStartColor = stringToColor(start);
+          localendColor = stringToColor(end);
+          localtextColor = stringToColor(bodyTextColor);
+          localappBarBackgroundColor = stringToColor(appBarBackColor);
+          localappBarTextColor = stringToColor(appBarTextColour);
+          //appBarElevation = 0;
+          localstatusBarBrightness = stringToBrightness(statusBarBright);
+
+          startColorTxt = start;
+          endColorTxt = end;
+          textColorTxt = bodyTextColor;
+          appBarBackgroundColorTxt = appBarBackColor;
+          appBarTextColorTxt = appBarTextColour;
+          statusBarBrightnessTxt = statusBarBright;
+        });
+
+        //Navigator.pop(context);
+        //Navigator.pushNamed(context, homeRoute);
+        //Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (BuildContext context) => Home()), (Route<dynamic> route) => false);
+      },
+    );
+  }
+}
+
 class NewsWithAttchArguments{
   final String contentId;
 

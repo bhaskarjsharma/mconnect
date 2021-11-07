@@ -23,8 +23,8 @@ String app_theme = 'default';
 Color startColor = Colors.white;
 Color endColor = Colors.white;
 Color textColor = Colors.black;
-Color appBarBackgroundColor = Colors.white;
-Color appBarTextColor = Colors.black;
+Color appBarBackgroundColor = Colors.blue;
+Color appBarTextColor = Colors.white;
 double appBarElevation = 0;
 var statusBarBrightness = Brightness.light;
 
@@ -114,6 +114,7 @@ void main() async{
   Hive.registerAdapter(AppNotificationAdapter());
 
   await Hive.openBox<NewsContent>('newsContent');
+  await Hive.openBox<Employee>('employeeList');
   await Hive.openBox('leaveQuota');
   await Hive.openBox<HolidayList>('holidayList');
   await Hive.openBox<ITACMasterData>('itacMaster');

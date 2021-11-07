@@ -101,6 +101,10 @@ class HomeState extends State<Home>  {
   late List<AttendanceData> attendanceData;
   late List<ShiftRoster> shiftRosterData;
 
+  late List<String> empUnitList;
+  late List<String> empDiscList;
+  late List<String> empBldGrpList;
+
   String _claimsType = '';
   ClaimType? _claimsTypeObj;
   static String claimTypeData = '''
@@ -124,19 +128,29 @@ class HomeState extends State<Home>  {
 
   @override
   void initState(){
+    //OpenHiveBox();
     super.initState();
     _dio = new DioClient();
     _endpointProvider = new EndPointProvider(_dio.init());
     initConnectivity();
     _connectivitySubscription = _connectivity.onConnectivityChanged.listen(_updateConnectionStatus);
 
-    startColor = stringToColor(prefs.getString('startColor') ?? '');
-    endColor = stringToColor(prefs.getString('endColor') ?? '');
-    textColor = stringToColor(prefs.getString('textColor') ?? '');
-    appBarBackgroundColor = stringToColor(prefs.getString('appBarBackgroundColor') ?? '');
-    appBarTextColor = stringToColor(prefs.getString('appBarTextColor') ?? '');
-    //appBarElevation = prefs.getString('appBarElevation') as double ?? 0;
-    statusBarBrightness = stringToBrightness(prefs.getString('statusBarBrightness') ?? '');
+    startColor = stringToColor(prefs.getString('startColor') ?? 'white');
+    endColor = stringToColor(prefs.getString('endColor') ?? 'white');
+    textColor = stringToColor(prefs.getString('textColor') ?? 'black');
+    appBarBackgroundColor = stringToColor(prefs.getString('appBarBackgroundColor') ?? 'blue');
+    appBarTextColor = stringToColor(prefs.getString('appBarTextColor') ?? 'white');
+    statusBarBrightness = stringToBrightness(prefs.getString('statusBarBrightness') ?? 'light');
+
+    empUnitList = ['','BUSINESS DEVELOPMENT','Business Information System','C&P','Civil','Company Secretary','COO Office',
+      'CPP','DF Cell','Duliajan','ECU','Electrical','Environment','Finance & Accounts','Fire & Safety','GM Office','GSU',
+      'Human Resource','Instrumentation','Internal Audit','IOP','IT','Laboratory','Lakwa','Law','LLDPE/HDPE','Marketing',
+      'MD Office','Mechanical Maint.','Noida Office','Offsite','Operation & Maintenance','Pipeline','PPU','PRCC','Product Transfer & Dispatch',
+      'Project','Security','Sourcing & Logistics','Technical Services','Telecom','Vigilance'];
+    empDiscList = ['','BIS','C&P','Chemical','Civil','Corporate','CS','Electrical','Environment','Finance','Finance&Account',
+      'Fire & Safety','Hindi','Human Resource','Instrumentation','IT','Laboratory','Law','Marketing','Mechanical','O&M',
+      'PE','PRCC','S&P','Security','Steno','Telecom'];
+    empBldGrpList = ['','A-','A+','AB-','AB+','B-','B+','O-','O+'];
 
     if(localAuthEnabled){
       _authenticateLocal();
@@ -159,37 +173,17 @@ class HomeState extends State<Home>  {
     FirebaseMessaging.onMessageOpenedApp.listen((message) {
       _handleMessage(message);
     });
-
-/*    FirebaseMessaging.onMessage.listen((RemoteMessage message) {   //moved to registerNotification
-      setState((){
-        notTitle = message.notification!.title!;
-        notBody = message.notification!.body!;
-        notificationPresent = true;
-      });
-
-      RemoteNotification? remoteNotification = message.notification;
-      AndroidNotification? android = message.notification!.android;
-      // If `onMessage` is triggered with a notification, construct our own
-      // local notification to show to users using the created channel.
-      if (remoteNotification != null && android != null) {
-        flutterLocalNotificationsPlugin.show(
-            remoteNotification.hashCode,
-            remoteNotification.title,
-            remoteNotification.body,
-            NotificationDetails(
-              android: AndroidNotificationDetails(
-                channel.id,
-                channel.name,
-                channel.description,
-                icon: android?.smallIcon,
-                // other properties...
-              ),
-            ));
-      }
-    });*/
-
     //Firebase configs ends
   }
+
+/*  void OpenHiveBox() async{
+    await Hive.openBox<NewsContent>('newsContent');
+    await Hive.openBox('leaveQuota');
+    await Hive.openBox<HolidayList>('holidayList');
+    await Hive.openBox<ITACMasterData>('itacMaster');
+    await Hive.openBox<HospCrLtrMasterData>('hospCrLtrMaster');
+    await Hive.openBox<AppNotification>('appNotifications');
+  }*/
 
   void registerNotification() async {
 
@@ -217,42 +211,6 @@ class HomeState extends State<Home>  {
             contentID: message.data['contentID'] ?? '');
         appNotificationBox.add(newNotification);
 
-/*        final String savedNotificationList = prefs.getString('savedNotification') ?? '';
-        if(savedNotificationList != ''){
-          final List<AppNotification> notList = AppNotification.decode(savedNotificationList);
-          if(notList.isNotEmpty){
-            AppNotification newNotification = new AppNotification(
-                notificationTitle: message.notification!.title!,
-                notificationBody: message.notification!.title!,
-                contentType: message.data['contentType'] ?? '',
-                contentID: message.data['contentID'] ?? '');
-            notList.add(newNotification);
-            final String encodedData = AppNotification.encode(notList);
-            prefs.setString('savedNotification', encodedData);
-          }
-          else{
-            List<AppNotification> notList = [];
-            AppNotification newNotification = new AppNotification(
-                notificationTitle: message.notification!.title!,
-                notificationBody: message.notification!.title!,
-                contentType: message.data['contentType'] ?? '',
-                contentID: message.data['contentID'] ?? '');
-            notList.add(newNotification);
-            final String encodedData = AppNotification.encode(notList);
-            prefs.setString('savedNotification', encodedData);
-          }
-        }
-        else{
-          List<AppNotification> notList = [];
-          AppNotification newNotification = new AppNotification(
-              notificationTitle: message.notification!.title!,
-              notificationBody: message.notification!.title!,
-              contentType: message.data['contentType'] ?? '',
-              contentID: message.data['contentID'] ?? '');
-          notList.add(newNotification);
-          final String encodedData = AppNotification.encode(notList);
-          prefs.setString('savedNotification', encodedData);
-        }*/
         // call local notification to display notification
         Map<String, dynamic> result = {
           'contentType': 'PushNotification',
@@ -269,14 +227,6 @@ class HomeState extends State<Home>  {
         }
         showNotification(result);
 
-        //_handleMessage(message);
-        // Parse the message received
-/*        PushNotification notification = PushNotification(
-          title: message.notification?.title,
-          body: message.notification?.body,
-          dataTitle: message.data['title'],
-          dataBody: message.data['body'],
-        );*/
       });
     } else {
       print('User declined or has not accepted permission');
@@ -298,44 +248,6 @@ class HomeState extends State<Home>  {
           contentType: initialMessage.data['contentType'] ?? '',
           contentID: initialMessage.data['contentID'] ?? '');
       appNotificationBox.add(newNotification);
-
-/*      final String savedNotificationList = prefs.getString('savedNotification') ?? '';
-      if(savedNotificationList != ''){
-        final List<AppNotification> notList = AppNotification.decode(savedNotificationList);
-        if(notList.isNotEmpty){
-          AppNotification newNotification = new AppNotification(
-              notificationTitle: initialMessage.notification!.title!,
-              notificationBody: initialMessage.notification!.title!,
-              contentType: initialMessage.data['contentType'] ?? '',
-              contentID: initialMessage.data['contentID'] ?? '');
-          notList.add(newNotification);
-          final String encodedData = AppNotification.encode(notList);
-          prefs.setString('savedNotification', encodedData);
-        }
-        else{
-          List<AppNotification> notList = [];
-          AppNotification newNotification = new AppNotification(
-              notificationTitle: initialMessage.notification!.title!,
-              notificationBody: initialMessage.notification!.title!,
-              contentType: initialMessage.data['contentType'] ?? '',
-              contentID: initialMessage.data['contentID'] ?? '');
-          notList.add(newNotification);
-          final String encodedData = AppNotification.encode(notList);
-          prefs.setString('savedNotification', encodedData);
-        }
-      }
-      else{
-        List<AppNotification> notList = [];
-        AppNotification newNotification = new AppNotification(
-            notificationTitle: initialMessage.notification!.title!,
-            notificationBody: initialMessage.notification!.title!,
-            contentType: initialMessage.data['contentType'] ?? '',
-            contentID: initialMessage.data['contentID'] ?? '');
-        notList.add(newNotification);
-        final String encodedData = AppNotification.encode(notList);
-        prefs.setString('savedNotification', encodedData);
-      }*/
-      //_handleMessage(initialMessage);
     }
   }
 
@@ -400,7 +312,7 @@ class HomeState extends State<Home>  {
   void dispose() {
     _connectivitySubscription.cancel();
     super.dispose();
-    Hive.close();
+    //Hive.close();
   }
   @override
   Widget build(BuildContext context) {
@@ -487,16 +399,10 @@ class HomeState extends State<Home>  {
 
           ],
         ),
-      ): Text('Not Authorised'),
+      ): Center(child:Text('Authentication not complete'),),
     );
   }
-   // networkSnackBar(){
-   //  if(_connectionStatus == ConnectivityResult.none){
-   //    ScaffoldMessenger.of(context).showSnackBar( new SnackBar(content: Text('Error: No Internet Connection'),
-   //      backgroundColor: Colors.red,
-   //      duration: Duration(seconds: 3),),);
-   //  }
-   // }
+
   Widget makeDashboardItem(String title, Widget icon, MaterialColor colour, String routeName){
     return Container(
       decoration: BoxDecoration(
@@ -571,16 +477,7 @@ class HomeState extends State<Home>  {
                                           icon: Icon(Icons.keyboard_arrow_down),
                                           value: _empUnit,
                                           style: TextStyle(color: Colors.black),
-                                          items: <String>[
-                                            '',
-                                            'Civil',
-                                            'C&P',
-                                            'Company Secretary',
-                                            'IT',
-                                            'Law',
-                                            'Marketing',
-                                            'Security',
-                                          ].map<DropdownMenuItem<String>>((String value) {
+                                          items: empUnitList.map<DropdownMenuItem<String>>((String value) {
                                             return DropdownMenuItem<String>(
                                               value: value,
                                               child: Text(value),
@@ -608,16 +505,7 @@ class HomeState extends State<Home>  {
                                         child: DropdownButton<String>(
                                           value: _empDisc,
                                           style: TextStyle(color: Colors.black),
-                                          items: <String>[
-                                            '',
-                                            'Civil',
-                                            'C&P',
-                                            'Company Secretary',
-                                            'IT',
-                                            'Law',
-                                            'Marketing',
-                                            'Security',
-                                          ].map<DropdownMenuItem<String>>((String value) {
+                                          items: empDiscList.map<DropdownMenuItem<String>>((String value) {
                                             return DropdownMenuItem<String>(
                                               value: value,
                                               child: Text(value),
@@ -646,17 +534,7 @@ class HomeState extends State<Home>  {
                                         child: DropdownButton<String>(
                                           value: _empBldGrp,
                                           style: TextStyle(color: Colors.black),
-                                          items: <String>[
-                                            '',
-                                            'A-',
-                                            'A+',
-                                            'AB-',
-                                            'AB+',
-                                            'B-',
-                                            'B+',
-                                            'O-',
-                                            'O+',
-                                          ].map<DropdownMenuItem<String>>((String value) {
+                                          items: empBldGrpList.map<DropdownMenuItem<String>>((String value) {
                                             return DropdownMenuItem<String>(
                                               value: value,
                                               child: Text(value),
@@ -851,7 +729,7 @@ class HomeState extends State<Home>  {
                                         ),
                                       ),
                                     ),
-                                    Container(
+                                    /*Container(
                                       padding: EdgeInsets.only(top:10,bottom:10),
                                       child: InputDecorator(
                                         decoration: InputDecoration(
@@ -881,7 +759,7 @@ class HomeState extends State<Home>  {
                                         ),
                                       ),
 
-                                    ),
+                                    ),*/
                                     Container(
                                       padding: const EdgeInsets.all(10.0),
                                       child: Row(
@@ -896,7 +774,7 @@ class HomeState extends State<Home>  {
                                               var documentsBox = await Hive.openBox<Document>('documentList');
                                               if(documentsBox.values.isEmpty){
                                                 if(connectionStatus != ConnectivityResult.none){
-                                                  _apiResponseData = _endpointProvider.fetchDocuments(docNameContrl.text,_documentCategory);
+                                                  _apiResponseData = _endpointProvider.fetchDocuments(docNameContrl.text,'');
                                                   _apiResponseData.then((result) {
                                                     if(result.isAuthenticated && result.status){
                                                       final parsed = jsonDecode(result.data ?? '').cast<Map<String, dynamic>>();
@@ -949,6 +827,12 @@ class HomeState extends State<Home>  {
                                                   documentList = documentsBox.values.toList();
                                                   isLoading = false;
                                                 });
+                                                if(docNameContrl.text.isNotEmpty){
+                                                  setState((){
+                                                    documentList = documentList.where((element) => element.docDisplayName!.toUpperCase().contains(docNameContrl.text.toUpperCase())).toList();
+                                                    docNameContrl.text = '';
+                                                  });
+                                                }
                                                 Navigator.pop(context);
                                                 Navigator.pushNamed(context, documentsRoute, arguments: documentList,);
                                               }
@@ -2223,7 +2107,7 @@ class HomeState extends State<Home>  {
             SizedBox(height:20),
             icon,
             Text(title,
-                style: TextStyle(fontSize: 15, color: Colors.black),
+                style: TextStyle(fontSize: 15, color: textColor ),
                 textAlign: TextAlign.center)
           ],
         ),
@@ -2418,19 +2302,51 @@ class _LeaveQuotaState extends State<LeaveQuotas>{
         isLoading = false;
       });
     }
+    startColor = stringToColor(prefs.getString('startColor') ?? 'white');
+    endColor = stringToColor(prefs.getString('endColor') ?? 'white');
+    textColor = stringToColor(prefs.getString('textColor') ?? 'black');
+    appBarBackgroundColor = stringToColor(prefs.getString('appBarBackgroundColor') ?? 'blue');
+    appBarTextColor = stringToColor(prefs.getString('appBarTextColor') ?? 'white');
+    statusBarBrightness = stringToBrightness(prefs.getString('statusBarBrightness') ?? 'light');
   }
 
   @override
   Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+          gradient: LinearGradient(
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+              //colors: [Color.fromRGBO(255, 239, 186, 1), Color.fromRGBO(255, 255, 255, 1)]
+              colors: [startColor, endColor]
+          )
+      ),
+      child: getScaffold(),
+    );
+
+  }
+  Scaffold getScaffold(){
     return Scaffold(
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
+        iconTheme: IconThemeData(
+            color: appBarTextColor
+        ),
+        systemOverlayStyle: SystemUiOverlayStyle(
+          statusBarColor: appBarBackgroundColor,
+          statusBarIconBrightness: statusBarBrightness,),
+        backgroundColor: appBarBackgroundColor,
+        bottomOpacity: 0.0,
+        elevation: appBarElevation,
         leading: Container(
           width: 40,
           child: Image.asset('images/bcpl_logo.png'),
         ),
         title: Row(
           children:[
-            Text('Leave Quota'),
+            Text('Leave Quota',style: TextStyle(
+              color:appBarTextColor,
+            ),),
             Spacer(),
             IconButton(
               icon: Icon(Icons.sync),
@@ -2458,7 +2374,7 @@ class _LeaveQuotaState extends State<LeaveQuotas>{
                   );
                 }
               },
-              color: Colors.white,
+              color: appBarTextColor,
             )
           ],
         ),
@@ -2554,8 +2470,22 @@ class _HolidaysState extends State<Holidays> with SingleTickerProviderStateMixin
   bool isLoading = true;
   TabController? _tabController;
   final List<Tab> myTabs = <Tab>[
-    Tab(text: 'General Holiday'),
-    Tab(text: 'Restricted Holiday'),
+    Tab(
+      child: Container(
+        child: Align(
+          alignment: Alignment.center,
+          child: Text("General Holiday",style: TextStyle(fontSize: 14, color: appBarTextColor ),),
+        ),
+      ),
+    ),
+    Tab(
+      child: Container(
+        child: Align(
+          alignment: Alignment.center,
+          child: Text("Restricted Holiday",style: TextStyle(fontSize: 14, color: appBarTextColor ),),
+        ),
+      ),
+    ),
   ];
 
   @override
@@ -2599,6 +2529,12 @@ class _HolidaysState extends State<Holidays> with SingleTickerProviderStateMixin
         isLoading = false;
       });
     }
+    startColor = stringToColor(prefs.getString('startColor') ?? 'white');
+    endColor = stringToColor(prefs.getString('endColor') ?? 'white');
+    textColor = stringToColor(prefs.getString('textColor') ?? 'black');
+    appBarBackgroundColor = stringToColor(prefs.getString('appBarBackgroundColor') ?? 'blue');
+    appBarTextColor = stringToColor(prefs.getString('appBarTextColor') ?? 'white');
+    statusBarBrightness = stringToBrightness(prefs.getString('statusBarBrightness') ?? 'light');
   }
 
   @override
@@ -2609,61 +2545,83 @@ class _HolidaysState extends State<Holidays> with SingleTickerProviderStateMixin
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        leading: Container(
-          width: 40,
-          child: Image.asset('images/bcpl_logo.png'),
-        ),
-        title: Row(
-          children:[
-            Text('Holiday List'),
-            Spacer(),
-            IconButton(
-              icon: Icon(Icons.sync),
-              onPressed: () {
-                if(connectionStatus != ConnectivityResult.none){
-                  setState(() {
-                    isLoading = true;
-                  });
-                  _apiResponseData = _endpointProvider.fetchHolidayList();
-                  _apiResponseData.then((result) {
-                    if(result.isAuthenticated && result.status){
-                      final parsed = jsonDecode(result.data ?? '').cast<Map<String, dynamic>>();
-                      setState(() {
-                        _holidayListData =  parsed.map<HolidayList>((json) => HolidayList.fromJson(json)).toList();
-                        _ghList = _holidayListData.where((element) => element.holidayType == "GH").toList();
-                        _rhList = _holidayListData.where((element) => element.holidayType == "RH").toList();
-                        isLoading = false;
-                      });
-                      final holidayListBox = Hive.box<HolidayList>('holidayList');
-                      holidayListBox.clear();
-                      holidayListBox.addAll(_holidayListData);
-                    }
-                  });
-                }
-                else{
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text("No internet connection. Please check your settings")),
-                  );
-                }
-              },
-              color: Colors.white,
-            )
-          ],
-        ),
-        bottom:TabBar(
-          controller: _tabController,
-          tabs: myTabs,
-        ),
+    return Container(
+      decoration: BoxDecoration(
+          gradient: LinearGradient(
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+              //colors: [Color.fromRGBO(255, 239, 186, 1), Color.fromRGBO(255, 255, 255, 1)]
+              colors: [startColor, endColor]
+          )
       ),
-      endDrawer: AppDrawer(),
-      body: isLoading? waiting(context) : TabBarView(
-          controller: _tabController,
-          children: [
-            createHolidayList(_ghList),
-            createHolidayList(_rhList),
-          ]
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          iconTheme: IconThemeData(
+              color: appBarTextColor
+          ),
+          systemOverlayStyle: SystemUiOverlayStyle(
+            statusBarColor: appBarBackgroundColor,
+            statusBarIconBrightness: statusBarBrightness,),
+          backgroundColor: appBarBackgroundColor,
+          //bottomOpacity: 0.0,
+          elevation: appBarElevation,
+          leading: Container(
+            width: 40,
+            child: Image.asset('images/bcpl_logo.png'),
+          ),
+          title: Row(
+            children:[
+              Text('Holiday List',style: TextStyle(
+                color:appBarTextColor,
+              ),),
+              Spacer(),
+              IconButton(
+                icon: Icon(Icons.sync),
+                onPressed: () {
+                  if(connectionStatus != ConnectivityResult.none){
+                    setState(() {
+                      isLoading = true;
+                    });
+                    _apiResponseData = _endpointProvider.fetchHolidayList();
+                    _apiResponseData.then((result) {
+                      if(result.isAuthenticated && result.status){
+                        final parsed = jsonDecode(result.data ?? '').cast<Map<String, dynamic>>();
+                        setState(() {
+                          _holidayListData =  parsed.map<HolidayList>((json) => HolidayList.fromJson(json)).toList();
+                          _ghList = _holidayListData.where((element) => element.holidayType == "GH").toList();
+                          _rhList = _holidayListData.where((element) => element.holidayType == "RH").toList();
+                          isLoading = false;
+                        });
+                        final holidayListBox = Hive.box<HolidayList>('holidayList');
+                        holidayListBox.clear();
+                        holidayListBox.addAll(_holidayListData);
+                      }
+                    });
+                  }
+                  else{
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text("No internet connection. Please check your settings")),
+                    );
+                  }
+                },
+                color: appBarTextColor ,
+              )
+            ],
+          ),
+          bottom:TabBar(
+            controller: _tabController,
+            tabs: myTabs,
+          ),
+        ),
+        endDrawer: AppDrawer(),
+        body: isLoading? waiting(context) : TabBarView(
+            controller: _tabController,
+            children: [
+              createHolidayList(_ghList),
+              createHolidayList(_rhList),
+            ]
+        ),
       ),
     );
   }
@@ -2809,55 +2767,83 @@ class _ITACState extends State<ITAC>{
         ITACSRLocation = itacMasterData!.data2;
       });
     }
+    startColor = stringToColor(prefs.getString('startColor') ?? 'white');
+    endColor = stringToColor(prefs.getString('endColor') ?? 'white');
+    textColor = stringToColor(prefs.getString('textColor') ?? 'black');
+    appBarBackgroundColor = stringToColor(prefs.getString('appBarBackgroundColor') ?? 'blue');
+    appBarTextColor = stringToColor(prefs.getString('appBarTextColor') ?? 'white');
+    statusBarBrightness = stringToBrightness(prefs.getString('statusBarBrightness') ?? 'light');
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        leading: Container(
-          width: 40,
-          child: Image.asset('images/bcpl_logo.png'),
-        ),
-        title: Row(
-          children:[
-            Text('ITAC'),
-            Spacer(),
-            IconButton(
-              icon: Icon(Icons.sync),
-              onPressed: () {
-                if(connectionStatus != ConnectivityResult.none){
-                  setState(() {
-                    isLoading = true;
-                  });
-                  _apiResponseData = _endpointProvider.fetchITACMasterData();
-                  _apiResponseData.then((result) {
-                    if(result.isAuthenticated && result.status){
-                      setState(() {
-                        itacMasterData =  ITACMasterData.fromJson(jsonDecode(result.data ?? ''));
-                        ITACSRType = itacMasterData!.data1;
-                        ITACSRLocation = itacMasterData!.data2;
-                        isLoading = false;
-                      });
-                      final itacMasterBox = Hive.box<ITACMasterData>('itacMaster');
-                      itacMasterBox.clear();
-                      itacMasterBox.add(itacMasterData!);
-                    }
-                  });
-                }
-                else{
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text("No internet connection. Please check your settings")),
-                  );
-                }
-              },
-              color: Colors.white,
-            )
-          ],
-        ),
+    return Container(
+      decoration: BoxDecoration(
+          gradient: LinearGradient(
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+              //colors: [Color.fromRGBO(255, 239, 186, 1), Color.fromRGBO(255, 255, 255, 1)]
+              colors: [startColor, endColor]
+          )
       ),
-      endDrawer: AppDrawer(),
-      body: isLoading ? waiting(context) : itacForm(),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          iconTheme: IconThemeData(
+              color: appBarTextColor
+          ),
+          systemOverlayStyle: SystemUiOverlayStyle(
+            statusBarColor: appBarBackgroundColor,
+            statusBarIconBrightness: statusBarBrightness,),
+          backgroundColor: appBarBackgroundColor,
+          bottomOpacity: 0.0,
+          elevation: appBarElevation,
+          leading: Container(
+            width: 40,
+            child: Image.asset('images/bcpl_logo.png'),
+          ),
+          title: Row(
+            children:[
+              Text('ITAC',style: TextStyle(
+                color:appBarTextColor,
+              ),),
+              Spacer(),
+              IconButton(
+                icon: Icon(Icons.sync),
+                onPressed: () {
+                  if(connectionStatus != ConnectivityResult.none){
+                    setState(() {
+                      isLoading = true;
+                    });
+                    _apiResponseData = _endpointProvider.fetchITACMasterData();
+                    _apiResponseData.then((result) {
+                      if(result.isAuthenticated && result.status){
+                        setState(() {
+                          itacMasterData =  ITACMasterData.fromJson(jsonDecode(result.data ?? ''));
+                          ITACSRType = itacMasterData!.data1;
+                          ITACSRLocation = itacMasterData!.data2;
+                          isLoading = false;
+                        });
+                        final itacMasterBox = Hive.box<ITACMasterData>('itacMaster');
+                        itacMasterBox.clear();
+                        itacMasterBox.add(itacMasterData!);
+                      }
+                    });
+                  }
+                  else{
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text("No internet connection. Please check your settings")),
+                    );
+                  }
+                },
+                color: appBarTextColor ,
+              )
+            ],
+          ),
+        ),
+        endDrawer: AppDrawer(),
+        body: isLoading ? waiting(context) : itacForm(),
+      ),
     );
   }
 
@@ -3074,20 +3060,48 @@ class _ECOFF_OTState extends State<ECOFF_OT>{
     _dio = new DioClient();
     _endpointProvider = new EndPointProvider(_dio.init());
     lastDateforClaim = new DateTime(DateTime.now().year,DateTime.now().month - 1, 20);
+    startColor = stringToColor(prefs.getString('startColor') ?? 'white');
+    endColor = stringToColor(prefs.getString('endColor') ?? 'white');
+    textColor = stringToColor(prefs.getString('textColor') ?? 'black');
+    appBarBackgroundColor = stringToColor(prefs.getString('appBarBackgroundColor') ?? 'blue');
+    appBarTextColor = stringToColor(prefs.getString('appBarTextColor') ?? 'white');
+    statusBarBrightness = stringToBrightness(prefs.getString('statusBarBrightness') ?? 'light');
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        leading: Container(
-          width: 40,
-          child: Image.asset('images/bcpl_logo.png'),
-        ),
-        title: Text('Connect'),
+    return Container(
+      decoration: BoxDecoration(
+          gradient: LinearGradient(
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+              //colors: [Color.fromRGBO(255, 239, 186, 1), Color.fromRGBO(255, 255, 255, 1)]
+              colors: [startColor, endColor]
+          )
       ),
-      endDrawer: AppDrawer(),
-      body: isLoading ? waiting(context) : ecoffOTForm(),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          iconTheme: IconThemeData(
+              color: appBarTextColor
+          ),
+          systemOverlayStyle: SystemUiOverlayStyle(
+            statusBarColor: appBarBackgroundColor,
+            statusBarIconBrightness: statusBarBrightness,),
+          backgroundColor: appBarBackgroundColor,
+          bottomOpacity: 0.0,
+          elevation: appBarElevation,
+          leading: Container(
+            width: 40,
+            child: Image.asset('images/bcpl_logo.png'),
+          ),
+          title: Text('ECOFF & OT',style: TextStyle(
+            color:appBarTextColor,
+          ),),
+        ),
+        endDrawer: AppDrawer(),
+        body: isLoading ? waiting(context) : ecoffOTForm(),
+      ),
     );
   }
 
@@ -3526,6 +3540,12 @@ class _HospitalCreditLetterState extends State<HospitalCreditLetter>{
     _dio = new DioClient();
     _endpointProvider = new EndPointProvider(_dio.init());
     getHospCrLtrMasterData();
+    startColor = stringToColor(prefs.getString('startColor') ?? 'white');
+    endColor = stringToColor(prefs.getString('endColor') ?? 'white');
+    textColor = stringToColor(prefs.getString('textColor') ?? 'black');
+    appBarBackgroundColor = stringToColor(prefs.getString('appBarBackgroundColor') ?? 'blue');
+    appBarTextColor = stringToColor(prefs.getString('appBarTextColor') ?? 'white');
+    statusBarBrightness = stringToBrightness(prefs.getString('statusBarBrightness') ?? 'light');
   }
   @override
   void dispose() {
@@ -3533,51 +3553,73 @@ class _HospitalCreditLetterState extends State<HospitalCreditLetter>{
   }
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        leading: Container(
-          width: 40,
-          child: Image.asset('images/bcpl_logo.png'),
-        ),
-        title: Row(
-          children:[
-            Text('Connect'),
-            Spacer(),
-            IconButton(
-              icon: Icon(Icons.sync),
-              onPressed: () {
-                if(connectionStatus != ConnectivityResult.none){
-                  setState(() {
-                    isLoading = true;
-                  });
-                  _apiResponseData = _endpointProvider.fetchHosCrLtrMasterData();
-                  _apiResponseData.then((result) {
-                    if(result.isAuthenticated && result.status){
-                      setState(() {
-                        masterData =  HospCrLtrMasterData.fromJson(jsonDecode(result.data ?? ''));
-                        hospitals = masterData!.hospitals;
-                        patient = masterData!.patient;
-                        isLoading = false;
-                      });
-                      final hosCrLtrMasterBox = Hive.box<HospCrLtrMasterData>('hospCrLtrMaster');
-                      hosCrLtrMasterBox.clear();
-                      hosCrLtrMasterBox.add(masterData!);
-                    }
-                  });
-                }
-                else{
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text("No internet connection. Please check your settings")),
-                  );
-                }
-              },
-              color: Colors.white,
-            )
-          ],
-        ),
+    return Container(
+      decoration: BoxDecoration(
+          gradient: LinearGradient(
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+              //colors: [Color.fromRGBO(255, 239, 186, 1), Color.fromRGBO(255, 255, 255, 1)]
+              colors: [startColor, endColor]
+          )
       ),
-      endDrawer: AppDrawer(),
-      body: isLoading ? waiting(context) : hospCrLetterForm(),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          iconTheme: IconThemeData(
+              color: appBarTextColor
+          ),
+          systemOverlayStyle: SystemUiOverlayStyle(
+            statusBarColor: appBarBackgroundColor,
+            statusBarIconBrightness: statusBarBrightness,),
+          backgroundColor: appBarBackgroundColor,
+          bottomOpacity: 0.0,
+          elevation: appBarElevation,
+          leading: Container(
+            width: 40,
+            child: Image.asset('images/bcpl_logo.png'),
+          ),
+          title: Row(
+            children:[
+              Text('Connect',style: TextStyle(
+                color:appBarTextColor,
+              ),),
+              Spacer(),
+              IconButton(
+                icon: Icon(Icons.sync),
+                onPressed: () {
+                  if(connectionStatus != ConnectivityResult.none){
+                    setState(() {
+                      isLoading = true;
+                    });
+                    _apiResponseData = _endpointProvider.fetchHosCrLtrMasterData();
+                    _apiResponseData.then((result) {
+                      if(result.isAuthenticated && result.status){
+                        setState(() {
+                          masterData =  HospCrLtrMasterData.fromJson(jsonDecode(result.data ?? ''));
+                          hospitals = masterData!.hospitals;
+                          patient = masterData!.patient;
+                          isLoading = false;
+                        });
+                        final hosCrLtrMasterBox = Hive.box<HospCrLtrMasterData>('hospCrLtrMaster');
+                        hosCrLtrMasterBox.clear();
+                        hosCrLtrMasterBox.add(masterData!);
+                      }
+                    });
+                  }
+                  else{
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text("No internet connection. Please check your settings")),
+                    );
+                  }
+                },
+                color: appBarTextColor,
+              )
+            ],
+          ),
+        ),
+        endDrawer: AppDrawer(),
+        body: isLoading ? waiting(context) : hospCrLetterForm(),
+      ),
     );
   }
 
@@ -4105,11 +4147,23 @@ Widget noConnectivityError(){
   );
 }
 Color stringToColor(String color) {
-  if(color.isEmpty || color == '' || color == 'Colors.transparent'){
+  if(color == 'white'){
+    return Colors.white;
+  }
+  else if(color == 'black'){
+    return Colors.black;
+  }
+  else if(color == 'blue'){
+    return Colors.blue;
+  }
+  else if(color == 'transparent'){
     return Colors.transparent;
   }
+  else if(color.isEmpty || color == ''){
+    return Colors.white;
+  }
   else{
-    color = color.replaceAll("#", "");
+    //color = color.replaceAll("#", "");
     if (color.length == 6) {
       return Color(int.parse("0xFF"+color));
     } else if (color.length == 8) {
@@ -4121,11 +4175,17 @@ Color stringToColor(String color) {
   }
 }
 Brightness stringToBrightness(String brightness) {
-  if(brightness == 'Brightness.light'){
-    return Brightness.light;
+  if(Platform.isAndroid){
+    if(brightness == 'dark'){
+      return Brightness.dark;
+    }
+    else return Brightness.light;
   }
-  else if(brightness == 'Brightness.dark'){
-    return Brightness.dark;
+  else if(Platform.isIOS){
+    if(brightness == 'dark'){
+      return Brightness.light;
+    }
+    else return Brightness.dark;
   }
   else return Brightness.light;
 }

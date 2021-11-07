@@ -1,10 +1,12 @@
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:horizontal_data_table/horizontal_data_table.dart';
 
 import 'app_drawer.dart';
 import 'home.dart';
+import 'main.dart';
 import 'models/models.dart';
 
 class Claims extends StatefulWidget {
@@ -15,23 +17,56 @@ class Claims extends StatefulWidget {
 class _ClaimsState extends State<Claims>{
   List<ClaimData> _claims = [];
   @override
+  void initState() {
+    super.initState();
+    startColor = stringToColor(prefs.getString('startColor') ?? 'white');
+    endColor = stringToColor(prefs.getString('endColor') ?? 'white');
+    textColor = stringToColor(prefs.getString('textColor') ?? 'black');
+    appBarBackgroundColor = stringToColor(prefs.getString('appBarBackgroundColor') ?? 'blue');
+    appBarTextColor = stringToColor(prefs.getString('appBarTextColor') ?? 'white');
+    statusBarBrightness = stringToBrightness(prefs.getString('statusBarBrightness') ?? 'light');
+  }
+  @override
   Widget build(BuildContext context) {
     _claims = ModalRoute.of(context)!.settings.arguments as List<ClaimData>;
-    return Scaffold(
-      appBar: AppBar(
-        leading: Container(
-          width: 40,
-          child: Image.asset('images/bcpl_logo.png'),
-        ),
-        title: Text('Connect - Claims'),
+    return Container(
+      decoration: BoxDecoration(
+          gradient: LinearGradient(
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+              //colors: [Color.fromRGBO(255, 239, 186, 1), Color.fromRGBO(255, 255, 255, 1)]
+              colors: [startColor, endColor]
+          )
       ),
-      endDrawer: AppDrawer(),
-      body:createTable(),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          iconTheme: IconThemeData(
+              color: appBarTextColor
+          ),
+          systemOverlayStyle: SystemUiOverlayStyle(
+            statusBarColor: appBarBackgroundColor,
+            statusBarIconBrightness: statusBarBrightness,),
+          backgroundColor: appBarBackgroundColor,
+          bottomOpacity: 0.0,
+          elevation: appBarElevation,
+          leading: Container(
+            width: 40,
+            child: Image.asset('images/bcpl_logo.png'),
+          ),
+          title: Text('Connect - Claims',style: TextStyle(
+            color:appBarTextColor,
+          ),),
+        ),
+        endDrawer: AppDrawer(),
+        body:createTable(),
+      ),
     );
   }
 
   Container createTable(){
     return Container(
+
       child: HorizontalDataTable(
         leftHandSideColumnWidth: 100,
         rightHandSideColumnWidth: 1200,
@@ -78,21 +113,37 @@ class _ClaimsState extends State<Claims>{
   }
   Widget _getTitleItemWidget(String label, double width) {
     return Container(
-      child: Text(label, style: TextStyle(fontWeight: FontWeight.bold)),
+      child: Text(label, style: TextStyle(fontWeight: FontWeight.bold,color:textColor)),
       width: width,
       height: 56,
       padding: EdgeInsets.fromLTRB(5, 0, 0, 0),
       alignment: Alignment.centerLeft,
+      decoration: BoxDecoration(
+          gradient: LinearGradient(
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+              //colors: [Color.fromRGBO(255, 239, 186, 1), Color.fromRGBO(255, 255, 255, 1)]
+              colors: [startColor, endColor]
+          )
+      ),
     );
   }
 
   Widget _generateFirstColumnRow(BuildContext context, int index) {
     return Container(
-      child: Text(_claims[index].CreationDt),
+      child: Text(_claims[index].CreationDt,style: TextStyle(color:textColor)),
       width: 100,
       height: 52,
       padding: EdgeInsets.fromLTRB(5, 0, 0, 0),
       alignment: Alignment.centerLeft,
+      decoration: BoxDecoration(
+          gradient: LinearGradient(
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+              //colors: [Color.fromRGBO(255, 239, 186, 1), Color.fromRGBO(255, 255, 255, 1)]
+              colors: [startColor, endColor]
+          )
+      ),
     );
   }
   Widget _generateRightHandSideColumnRow(BuildContext context,int index) {
@@ -112,11 +163,19 @@ class _ClaimsState extends State<Claims>{
   }
   Container createCell(String text, double? width){
     return Container(
-      child: Text(text),
+      child: Text(text,style: TextStyle(color:textColor)),
       width: width,
       height: 52,
       padding: EdgeInsets.fromLTRB(5, 0, 0, 0),
       alignment: Alignment.centerLeft,
+      decoration: BoxDecoration(
+          gradient: LinearGradient(
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+              //colors: [Color.fromRGBO(255, 239, 186, 1), Color.fromRGBO(255, 255, 255, 1)]
+              colors: [startColor, endColor]
+          )
+      ),
     );
   }
 

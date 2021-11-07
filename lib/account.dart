@@ -40,117 +40,151 @@ class _LoginState extends State<Login> with TickerProviderStateMixin{
   void initState(){
     initConnectivity();
     _connectivitySubscription = _connectivity.onConnectivityChanged.listen(_updateConnectionStatus);
+    startColor = stringToColor(prefs.getString('startColor') ?? 'white');
+    endColor = stringToColor(prefs.getString('endColor') ?? 'white');
+    textColor = stringToColor(prefs.getString('textColor') ?? 'black');
+    appBarBackgroundColor = stringToColor(prefs.getString('appBarBackgroundColor') ?? 'blue');
+    appBarTextColor = stringToColor(prefs.getString('appBarTextColor') ?? 'white');
+    statusBarBrightness = stringToBrightness(prefs.getString('statusBarBrightness') ?? 'light');
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        leading: Container(
-          width: 40,
-          child: Image.asset('images/bcpl_logo.png'),
-        ),
-        title: Text(
-          'Connect',style: TextStyle(
-          color:Colors.black54,
-          fontSize: 23.0, fontWeight: FontWeight.bold,
-        ),
-        ),
+    return Container(
+      decoration: BoxDecoration(
+          gradient: LinearGradient(
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+              //colors: [Color.fromRGBO(255, 239, 186, 1), Color.fromRGBO(255, 255, 255, 1)]
+              colors: [startColor, endColor]
+          )
       ),
-      body: Center(
-        child: connectionStatus != ConnectivityResult.none ?
-        _isLoading ? SingleChildScrollView(child: Column(
-          children: <Widget>[
-            Center(
-              child: Lottie.asset('animations/ani_loading_hexa.json',
-                width: 200,
-                height: 200,),
-            ),
-            Container(
-              padding: EdgeInsets.all(10),
-              child:Text('Login In...',style: TextStyle(
-                fontWeight: FontWeight.w500,
-                fontSize: 18,
-              ),),
-            ),
-          ],
-        ),) : SingleChildScrollView(
-          child: Column(
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          iconTheme: IconThemeData(
+              color: appBarTextColor
+          ),
+          systemOverlayStyle: SystemUiOverlayStyle(
+            statusBarColor: appBarBackgroundColor,
+            statusBarIconBrightness: statusBarBrightness,),
+          backgroundColor: appBarBackgroundColor,
+          bottomOpacity: 0.0,
+          elevation: appBarElevation,
+          leading: Container(
+            width: 40,
+            child: Image.asset('images/bcpl_logo.png'),
+          ),
+          title: Text(
+            'Connect',style: TextStyle(
+            color:appBarTextColor,
+            fontSize: 23.0, fontWeight: FontWeight.bold,
+          ),
+          ),
+        ),
+        body: Center(
+          child: connectionStatus != ConnectivityResult.none ?
+          _isLoading ? SingleChildScrollView(child: Column(
             children: <Widget>[
-              Container(
-                padding: EdgeInsets.all(10),
-                child: ScaleTransition(
-                  scale: _animation,
-                  child: Image.asset('images/connect_logo.png',scale: 2),
-                ),
+              Center(
+                child: Lottie.asset('animations/ani_loading_hexa.json',
+                  width: 200,
+                  height: 200,),
               ),
               Container(
                 padding: EdgeInsets.all(10),
-                child: TextField(
-                  controller: unameController,
-                  decoration: InputDecoration(
-                    border: OutlineInputBorder(),
-
-                    labelText: 'User Name',
+                child:Text('Login In...',style: TextStyle(
+                  fontWeight: FontWeight.w500,
+                  fontSize: 18,
+                ),),
+              ),
+            ],
+          ),) : SingleChildScrollView(
+            child: Column(
+              children: <Widget>[
+                Container(
+                  padding: EdgeInsets.all(10),
+                  child: ScaleTransition(
+                    scale: _animation,
+                    child: Image.asset('images/connect_logo.png',scale: 2),
                   ),
                 ),
-              ),
-              Container(
-                padding: EdgeInsets.all(10),
-                child: TextField(
-                  controller: pwdController,
-                  obscureText: true,
-                  decoration: InputDecoration(
-                    border: OutlineInputBorder(),
-                    labelText: 'Password',
+                Container(
+                  padding: EdgeInsets.all(10),
+                  child: TextField(
+                    controller: unameController,
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(),
+
+                      labelText: 'User Name',
+                    ),
                   ),
                 ),
-              ),
-              GestureDetector(
-                child: Lottie.asset('animations/ani_unlock.json',
-                  width: 50,
-                  height: 50,),
-                onTap: () async{
-                  // ScaffoldMessenger.of(context).showSnackBar(
-                  //   const SnackBar(content: Text('Login In...')),
-                  // );
-                  setState(() {
-                    _isLoading = true;
-                  });
-                  EmployeeLoginData emp = await authenticate(unameController.text,pwdController.text);
-                  if(emp != null) {
-                    if(emp.status){
-                      // obtain shared preferences
-                      final prefs = await SharedPreferences.getInstance();
-                      // set value
-                      prefs.setBool('isLoggedIn', true);
-                      // Create secure storage
-                      final storage = new FlutterSecureStorage();
-                      // Write value
-                      await storage.write(key: 'empno', value: emp.emp_no);
-                      await storage.write(key: 'name', value: emp.emp_name);
-                      await storage.write(key: 'desg', value: emp.emp_desg);
-                      await storage.write(key: 'disc', value: emp.emp_disc);
-                      await storage.write(key: 'grade', value: emp.emp_grade);
-                      await storage.write(key: 'auth_token', value: emp.auth_jwt);
+                Container(
+                  padding: EdgeInsets.all(10),
+                  child: TextField(
+                    controller: pwdController,
+                    obscureText: true,
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(),
+                      labelText: 'Password',
+                    ),
+                  ),
+                ),
+                GestureDetector(
+                  child: Lottie.asset('animations/ani_unlock.json',
+                    width: 50,
+                    height: 50,),
+                  onTap: () async{
+                    // ScaffoldMessenger.of(context).showSnackBar(
+                    //   const SnackBar(content: Text('Login In...')),
+                    // );
+                    setState(() {
+                      _isLoading = true;
+                    });
+                    EmployeeLoginData emp = await authenticate(unameController.text,pwdController.text);
+                    if(emp != null) {
+                      if(emp.status){
+                        // obtain shared preferences
+                        final prefs = await SharedPreferences.getInstance();
+                        // set value
+                        prefs.setBool('isLoggedIn', true);
+                        // Create secure storage
+                        final storage = new FlutterSecureStorage();
+                        // Write value
+                        await storage.write(key: 'empno', value: emp.emp_no);
+                        await storage.write(key: 'name', value: emp.emp_name);
+                        await storage.write(key: 'desg', value: emp.emp_desg);
+                        await storage.write(key: 'disc', value: emp.emp_disc);
+                        await storage.write(key: 'grade', value: emp.emp_grade);
+                        await storage.write(key: 'auth_token', value: emp.auth_jwt);
 
-                      //Set variables for first time view
-                      setState(() {
-                        empno = emp.emp_no!;
-                        user = emp.emp_name!;
-                        designation = emp.emp_desg!;
-                        discipline = emp.emp_disc!;
-                        grade = emp.emp_grade!;
-                        auth_token = emp.auth_jwt!;
-                      });
+                        //Set variables for first time view
+                        setState(() {
+                          empno = emp.emp_no!;
+                          user = emp.emp_name!;
+                          designation = emp.emp_desg!;
+                          discipline = emp.emp_disc!;
+                          grade = emp.emp_grade!;
+                          auth_token = emp.auth_jwt!;
+                        });
 
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text("Welcome, ${emp.emp_name}")),
-                      );
-                      setState(() {
-                        _isLoading = false;
-                      });
-                      Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (BuildContext context) => Home()), (Route<dynamic> route) => false);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text("Welcome, ${emp.emp_name}")),
+                        );
+                        setState(() {
+                          _isLoading = false;
+                        });
+                        Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (BuildContext context) => Home()), (Route<dynamic> route) => false);
+                      }
+                      else{
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Invalid Credentials. Unable to login')),
+                        );
+                        setState(() {
+                          _isLoading = false;
+                        });
+                      }
                     }
                     else{
                       ScaffoldMessenger.of(context).showSnackBar(
@@ -159,29 +193,20 @@ class _LoginState extends State<Login> with TickerProviderStateMixin{
                       setState(() {
                         _isLoading = false;
                       });
+                      // showDialog(
+                      //   context: context,
+                      //   builder: (context) {
+                      //     return AlertDialog(
+                      //       // Retrieve the text the that user has entered by using the
+                      //       // TextEditingController.
+                      //       content: Text('Authentication Failed'),
+                      //     );
+                      //   },
+                      // );
                     }
-                  }
-                  else{
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Invalid Credentials. Unable to login')),
-                    );
-                    setState(() {
-                      _isLoading = false;
-                    });
-                    // showDialog(
-                    //   context: context,
-                    //   builder: (context) {
-                    //     return AlertDialog(
-                    //       // Retrieve the text the that user has entered by using the
-                    //       // TextEditingController.
-                    //       content: Text('Authentication Failed'),
-                    //     );
-                    //   },
-                    // );
-                  }
-                },
-              ),
-         /*     Container(
+                  },
+                ),
+                /*     Container(
                 padding: EdgeInsets.all(10),
                 child: ElevatedButton(
                   child: Text('Login'),
@@ -258,16 +283,17 @@ class _LoginState extends State<Login> with TickerProviderStateMixin{
                 ),
 
               ),*/
-              errorMsg == null? Container(): Text(
-                "${errorMsg}",
-                style: TextStyle(
-                  color: Colors.redAccent,
-                  fontWeight: FontWeight.bold,
+                errorMsg == null? Container(): Text(
+                  "${errorMsg}",
+                  style: TextStyle(
+                    color: Colors.redAccent,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
-              ),
-            ],
-          ),
-        ) : noConnectivityError(),
+              ],
+            ),
+          ) : noConnectivityError(),
+        ),
       ),
     );
   }

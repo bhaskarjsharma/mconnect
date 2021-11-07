@@ -56,6 +56,8 @@ class NavigationRouter {
         return MaterialPageRoute(builder: (_) => ITAC());
       case notificationRoute:
         return MaterialPageRoute(builder: (_) => NotificationView());
+      case appThemeRoute:
+        return MaterialPageRoute(builder: (_) => AppTheme());
       case newsDetailsRoute:
         final args = settings.arguments as NewsContentArguments;
         return MaterialPageRoute(builder: (BuildContext context) => NewsDetails(args.contentId,args.contentType,args.contentTitle,args.contentDescription,args.creationDate));

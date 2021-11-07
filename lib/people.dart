@@ -5,6 +5,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_projects/services/webservice.dart';
 import 'package:hive/hive.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -45,20 +46,51 @@ class _PeopleState extends State<People>{
           }
         });
       });
+    startColor = stringToColor(prefs.getString('startColor') ?? 'white');
+    endColor = stringToColor(prefs.getString('endColor') ?? 'white');
+    textColor = stringToColor(prefs.getString('textColor') ?? 'black');
+    appBarBackgroundColor = stringToColor(prefs.getString('appBarBackgroundColor') ?? 'blue');
+    appBarTextColor = stringToColor(prefs.getString('appBarTextColor') ?? 'white');
+    statusBarBrightness = stringToBrightness(prefs.getString('statusBarBrightness') ?? 'light');
   }
 
   @override
   Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+          gradient: LinearGradient(
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+              //colors: [Color.fromRGBO(255, 239, 186, 1), Color.fromRGBO(255, 255, 255, 1)]
+              colors: [startColor, endColor]
+          )
+      ),
+      child: getScaffold(),
+    );
+  }
+  Scaffold getScaffold(){
     List<Employee> _peopleData = ModalRoute.of(context)!.settings.arguments as List<Employee>;
     return Scaffold(
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
+        iconTheme: IconThemeData(
+            color: appBarTextColor
+        ),
+        systemOverlayStyle: SystemUiOverlayStyle(
+          statusBarColor: appBarBackgroundColor,
+          statusBarIconBrightness: statusBarBrightness,),
+        backgroundColor: appBarBackgroundColor,
+        bottomOpacity: 0.0,
+        elevation: appBarElevation,
         leading: Container(
           width: 40,
           child: Image.asset('images/bcpl_logo.png'),
         ),
         title: Row(
           children:[
-            Text('Connect - People'),
+            Text('Connect - People',style: TextStyle(
+              color:appBarTextColor,
+            ),),
             Spacer(),
             IconButton(
               icon: Icon(Icons.sync),
@@ -106,7 +138,7 @@ class _PeopleState extends State<People>{
                   );
                 }
               },
-              color: Colors.white,
+              color: appBarTextColor,
             )
           ],
         ),
@@ -226,15 +258,52 @@ class PeopleDetails extends StatefulWidget {
 }
 class _PeopleDetailsState extends State<PeopleDetails>{
   bool _loadImageError = false;
+
+  @override
+  void initState() {
+    super.initState();
+    startColor = stringToColor(prefs.getString('startColor') ?? 'white');
+    endColor = stringToColor(prefs.getString('endColor') ?? 'white');
+    textColor = stringToColor(prefs.getString('textColor') ?? 'black');
+    appBarBackgroundColor = stringToColor(prefs.getString('appBarBackgroundColor') ?? 'blue');
+    appBarTextColor = stringToColor(prefs.getString('appBarTextColor') ?? 'white');
+    statusBarBrightness = stringToBrightness(prefs.getString('statusBarBrightness') ?? 'light');
+  }
+
   @override
   Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+          gradient: LinearGradient(
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+              //colors: [Color.fromRGBO(255, 239, 186, 1), Color.fromRGBO(255, 255, 255, 1)]
+              colors: [startColor, endColor]
+          )
+      ),
+      child: getScaffold(),
+    );
+  }
+  Scaffold getScaffold(){
     return Scaffold(
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
+        iconTheme: IconThemeData(
+            color: appBarTextColor
+        ),
+        systemOverlayStyle: SystemUiOverlayStyle(
+          statusBarColor: appBarBackgroundColor,
+          statusBarIconBrightness: statusBarBrightness,),
+        backgroundColor: appBarBackgroundColor,
+        bottomOpacity: 0.0,
+        elevation: appBarElevation,
         leading: Container(
           width: 40,
           child: Image.asset('images/bcpl_logo.png'),
         ),
-        title: Text('Connect - People'),
+        title: Text('Connect - People',style: TextStyle(
+          color:appBarTextColor,
+        ),),
       ),
       endDrawer: AppDrawer(),
       body: Column(
@@ -249,7 +318,7 @@ class _PeopleDetailsState extends State<PeopleDetails>{
                 nameSection(),
                 buttonSection(),
                 descSection("Unit",widget.empUnit,Icons.business),
-                descSection("Email",widget.empEmail.toLowerCase(),Icons.email),
+                descSection("Email",widget.empEmail.toLowerCase(),Icons.mail_outline),
                 doubleDisp("Intercom (O)","Intercom (R)",widget.empIntercom,widget.empIntercomResidence,ConnectAppIcon.phone),
               ],
             ),
@@ -258,10 +327,16 @@ class _PeopleDetailsState extends State<PeopleDetails>{
       ),
     );
   }
-
   Widget imageSection() {
-    return Card(
-        elevation:0,
+    return Container(
+      decoration: BoxDecoration(
+          gradient: LinearGradient(
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+              //colors: [Color.fromRGBO(255, 239, 186, 1), Color.fromRGBO(255, 255, 255, 1)]
+              colors: [startColor, endColor]
+          )
+      ),
       child: CachedNetworkImage(
         placeholder: (context, url) => CircularProgressIndicator(),
         errorWidget: (context, url, error) => new Container(
@@ -298,25 +373,36 @@ class _PeopleDetailsState extends State<PeopleDetails>{
   Widget nameSection(){
     return Card(
       elevation:2,
-      child: ListTile(
-        isThreeLine: true,
-      title: Text(widget.empName,
-          style: TextStyle(
-            fontWeight: FontWeight.w500,
-            fontSize: 20,
-          )),
-      subtitle:  Text(widget.empDesg +" ("+ widget.empDisc +")"+ "\n"+"+91 "+widget.empMobile,
-          style: TextStyle(
-            fontWeight: FontWeight.w400,
-            fontSize: 16,
-            color: Colors.blue[500],
-          )),
+      child: Container(
+        decoration: BoxDecoration(
+            gradient: LinearGradient(
+                begin: Alignment.centerLeft,
+                end: Alignment.centerRight,
+                //colors: [Color.fromRGBO(255, 239, 186, 1), Color.fromRGBO(255, 255, 255, 1)]
+                colors: [startColor, endColor]
+            )
+        ),
+        child: ListTile(
+          isThreeLine: true,
+          title: Text(widget.empName,
+              style: TextStyle(
+                fontWeight: FontWeight.w500,
+                fontSize: 20,
+                color: textColor,
+              )),
+          subtitle:  Text(widget.empDesg +" ("+ widget.empDisc +")"+ "\n"+"+91 "+widget.empMobile,
+              style: TextStyle(
+                fontWeight: FontWeight.w400,
+                fontSize: 16,
+                color: textColor,
+              )),
 
-      // leading: Icon(
-      //   icon,
-      //   color: Colors.blue[500],
-      // ),
-    ),
+          // leading: Icon(
+          //   icon,
+          //   color: Colors.blue[500],
+          // ),
+        ),
+      ),
     ) ;
   }
   Widget descSection(String title, String subtitle, IconData icon){
@@ -331,11 +417,11 @@ class _PeopleDetailsState extends State<PeopleDetails>{
           style: TextStyle(
             fontWeight: FontWeight.w400,
             fontSize: 18,
-            color: Colors.blue[500],
+            color: textColor,
           )),
       leading: Icon(
         icon,
-        color: Colors.blue[500],
+        color: textColor,
       ),
     );
   }
@@ -347,18 +433,19 @@ class _PeopleDetailsState extends State<PeopleDetails>{
             isThreeLine: true,
             leading: Icon(
               icon,
-              color: Colors.blue[500],
+              color: textColor,
             ),
             title: Text(title1,
                 style: TextStyle(
                   fontWeight: FontWeight.w300,
                   fontSize: 15,
+                  color: textColor,
                 )),
             subtitle: Text(subtitle1,
                 style: TextStyle(
                   fontWeight: FontWeight.w400,
                   fontSize: 18,
-                  color: Colors.blue[500],
+                  color: textColor,
                 )),
           ),
         ),
@@ -367,7 +454,7 @@ class _PeopleDetailsState extends State<PeopleDetails>{
             isThreeLine: true,
             leading: Icon(
               icon,
-              color: Colors.blue[500],
+              color: textColor,
             ),
             title: Text(title2,
                 style: TextStyle(
@@ -378,7 +465,7 @@ class _PeopleDetailsState extends State<PeopleDetails>{
                 style: TextStyle(
                   fontWeight: FontWeight.w400,
                   fontSize: 18,
-                  color: Colors.blue[500],
+                  color: textColor,
                 )),
           ),
         ),
@@ -439,8 +526,8 @@ InkWell _buildButtonColumn(Color color, IconData icon, String label,String data,
           label,
           style: TextStyle(
             fontSize: 16,
-            fontWeight: FontWeight.w300,
-            color: color,
+            fontWeight: FontWeight.w400,
+            color: textColor,
           ),
         ),
       ),

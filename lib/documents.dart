@@ -6,6 +6,7 @@ import 'dart:math';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_projects/services/permissions.dart';
 import 'package:flutter_projects/services/webservice.dart';
 import 'package:hive/hive.dart';
@@ -51,20 +52,52 @@ class _DocumentsState extends State<Documents>{
           }
         });
       });
+    startColor = stringToColor(prefs.getString('startColor') ?? 'white');
+    endColor = stringToColor(prefs.getString('endColor') ?? 'white');
+    textColor = stringToColor(prefs.getString('textColor') ?? 'black');
+    appBarBackgroundColor = stringToColor(prefs.getString('appBarBackgroundColor') ?? 'blue');
+    appBarTextColor = stringToColor(prefs.getString('appBarTextColor') ?? 'white');
+    statusBarBrightness = stringToBrightness(prefs.getString('statusBarBrightness') ?? 'light');
   }
 
   @override
   Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+          gradient: LinearGradient(
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+              //colors: [Color.fromRGBO(255, 239, 186, 1), Color.fromRGBO(255, 255, 255, 1)]
+              colors: [startColor, endColor]
+          )
+      ),
+      child: getScaffold(),
+    );
+  }
+
+  Scaffold getScaffold(){
     List<Document> _documents = ModalRoute.of(context)!.settings.arguments as List<Document>;
     return Scaffold(
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
+        iconTheme: IconThemeData(
+            color: appBarTextColor
+        ),
+        systemOverlayStyle: SystemUiOverlayStyle(
+          statusBarColor: appBarBackgroundColor,
+          statusBarIconBrightness: statusBarBrightness,),
+        backgroundColor: appBarBackgroundColor,
+        bottomOpacity: 0.0,
+        elevation: appBarElevation,
         leading: Container(
           width: 40,
           child: Image.asset('images/bcpl_logo.png'),
         ),
         title: Row(
           children:[
-            Text('Connect - Documents'),
+            Text('Connect - Documents',style: TextStyle(
+              color:appBarTextColor,
+            ),),
             Spacer(),
             IconButton(
               icon: Icon(Icons.sync),
@@ -110,7 +143,7 @@ class _DocumentsState extends State<Documents>{
                   );
                 }
               },
-              color: Colors.white,
+              color: appBarTextColor,
             )
           ],
         ),
