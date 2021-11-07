@@ -54,12 +54,6 @@ class _PayslipState extends State<Payslip> with SingleTickerProviderStateMixin{
   void initState(){
     _tabController = TabController(vsync: this, length: myTabs.length);
     super.initState();
-    startColor = stringToColor(prefs.getString('startColor') ?? 'white');
-    endColor = stringToColor(prefs.getString('endColor') ?? 'white');
-    textColor = stringToColor(prefs.getString('textColor') ?? 'black');
-    appBarBackgroundColor = stringToColor(prefs.getString('appBarBackgroundColor') ?? 'blue');
-    appBarTextColor = stringToColor(prefs.getString('appBarTextColor') ?? 'white');
-    statusBarBrightness = stringToBrightness(prefs.getString('statusBarBrightness') ?? 'light');
   }
 
   @override

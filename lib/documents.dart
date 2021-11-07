@@ -52,12 +52,6 @@ class _DocumentsState extends State<Documents>{
           }
         });
       });
-    startColor = stringToColor(prefs.getString('startColor') ?? 'white');
-    endColor = stringToColor(prefs.getString('endColor') ?? 'white');
-    textColor = stringToColor(prefs.getString('textColor') ?? 'black');
-    appBarBackgroundColor = stringToColor(prefs.getString('appBarBackgroundColor') ?? 'blue');
-    appBarTextColor = stringToColor(prefs.getString('appBarTextColor') ?? 'white');
-    statusBarBrightness = stringToBrightness(prefs.getString('statusBarBrightness') ?? 'light');
   }
 
   @override

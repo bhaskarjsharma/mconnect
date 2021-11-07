@@ -76,12 +76,12 @@ class _NewsState extends State<News>{
       });
     }
 
-    startColor = stringToColor(prefs.getString('startColor') ?? 'white');
+ /*   startColor = stringToColor(prefs.getString('startColor') ?? 'white');
     endColor = stringToColor(prefs.getString('endColor') ?? 'white');
     textColor = stringToColor(prefs.getString('textColor') ?? 'black');
     appBarBackgroundColor = stringToColor(prefs.getString('appBarBackgroundColor') ?? 'blue');
     appBarTextColor = stringToColor(prefs.getString('appBarTextColor') ?? 'white');
-    statusBarBrightness = stringToBrightness(prefs.getString('statusBarBrightness') ?? 'light');
+    statusBarBrightness = stringToBrightness(prefs.getString('statusBarBrightness') ?? 'light');*/
 
     _scrollController = ScrollController()..addListener(() {
         setState(() {
@@ -330,12 +330,6 @@ class _NewsDetailsState extends State<NewsDetails> {
         SnackBar(content: Text("No internet connection. Please check your settings")),
       );*/
     }
-    startColor = stringToColor(prefs.getString('startColor') ?? 'white');
-    endColor = stringToColor(prefs.getString('endColor') ?? 'white');
-    textColor = stringToColor(prefs.getString('textColor') ?? 'black');
-    appBarBackgroundColor = stringToColor(prefs.getString('appBarBackgroundColor') ?? 'blue');
-    appBarTextColor = stringToColor(prefs.getString('appBarTextColor') ?? 'white');
-    statusBarBrightness = stringToBrightness(prefs.getString('statusBarBrightness') ?? 'light');
 
     super.initState();
   }
@@ -845,12 +839,6 @@ class _NewsDisplayState extends State<NewsDisplay> {
       );
     }
     super.initState();
-    startColor = stringToColor(prefs.getString('startColor') ?? 'white');
-    endColor = stringToColor(prefs.getString('endColor') ?? 'white');
-    textColor = stringToColor(prefs.getString('textColor') ?? 'black');
-    appBarBackgroundColor = stringToColor(prefs.getString('appBarBackgroundColor') ?? 'blue');
-    appBarTextColor = stringToColor(prefs.getString('appBarTextColor') ?? 'white');
-    statusBarBrightness = stringToBrightness(prefs.getString('statusBarBrightness') ?? 'light');
   }
 
   @override

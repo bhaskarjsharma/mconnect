@@ -135,12 +135,12 @@ class HomeState extends State<Home>  {
     initConnectivity();
     _connectivitySubscription = _connectivity.onConnectivityChanged.listen(_updateConnectionStatus);
 
-    startColor = stringToColor(prefs.getString('startColor') ?? 'white');
+/*    startColor = stringToColor(prefs.getString('startColor') ?? 'white');
     endColor = stringToColor(prefs.getString('endColor') ?? 'white');
     textColor = stringToColor(prefs.getString('textColor') ?? 'black');
     appBarBackgroundColor = stringToColor(prefs.getString('appBarBackgroundColor') ?? 'blue');
     appBarTextColor = stringToColor(prefs.getString('appBarTextColor') ?? 'white');
-    statusBarBrightness = stringToBrightness(prefs.getString('statusBarBrightness') ?? 'light');
+    statusBarBrightness = stringToBrightness(prefs.getString('statusBarBrightness') ?? 'light');*/
 
     empUnitList = ['','BUSINESS DEVELOPMENT','Business Information System','C&P','Civil','Company Secretary','COO Office',
       'CPP','DF Cell','Duliajan','ECU','Electrical','Environment','Finance & Accounts','Fire & Safety','GM Office','GSU',
@@ -2302,12 +2302,6 @@ class _LeaveQuotaState extends State<LeaveQuotas>{
         isLoading = false;
       });
     }
-    startColor = stringToColor(prefs.getString('startColor') ?? 'white');
-    endColor = stringToColor(prefs.getString('endColor') ?? 'white');
-    textColor = stringToColor(prefs.getString('textColor') ?? 'black');
-    appBarBackgroundColor = stringToColor(prefs.getString('appBarBackgroundColor') ?? 'blue');
-    appBarTextColor = stringToColor(prefs.getString('appBarTextColor') ?? 'white');
-    statusBarBrightness = stringToBrightness(prefs.getString('statusBarBrightness') ?? 'light');
   }
 
   @override
@@ -2529,12 +2523,7 @@ class _HolidaysState extends State<Holidays> with SingleTickerProviderStateMixin
         isLoading = false;
       });
     }
-    startColor = stringToColor(prefs.getString('startColor') ?? 'white');
-    endColor = stringToColor(prefs.getString('endColor') ?? 'white');
-    textColor = stringToColor(prefs.getString('textColor') ?? 'black');
-    appBarBackgroundColor = stringToColor(prefs.getString('appBarBackgroundColor') ?? 'blue');
-    appBarTextColor = stringToColor(prefs.getString('appBarTextColor') ?? 'white');
-    statusBarBrightness = stringToBrightness(prefs.getString('statusBarBrightness') ?? 'light');
+
   }
 
   @override
@@ -2767,12 +2756,7 @@ class _ITACState extends State<ITAC>{
         ITACSRLocation = itacMasterData!.data2;
       });
     }
-    startColor = stringToColor(prefs.getString('startColor') ?? 'white');
-    endColor = stringToColor(prefs.getString('endColor') ?? 'white');
-    textColor = stringToColor(prefs.getString('textColor') ?? 'black');
-    appBarBackgroundColor = stringToColor(prefs.getString('appBarBackgroundColor') ?? 'blue');
-    appBarTextColor = stringToColor(prefs.getString('appBarTextColor') ?? 'white');
-    statusBarBrightness = stringToBrightness(prefs.getString('statusBarBrightness') ?? 'light');
+
   }
 
   @override
@@ -3060,12 +3044,7 @@ class _ECOFF_OTState extends State<ECOFF_OT>{
     _dio = new DioClient();
     _endpointProvider = new EndPointProvider(_dio.init());
     lastDateforClaim = new DateTime(DateTime.now().year,DateTime.now().month - 1, 20);
-    startColor = stringToColor(prefs.getString('startColor') ?? 'white');
-    endColor = stringToColor(prefs.getString('endColor') ?? 'white');
-    textColor = stringToColor(prefs.getString('textColor') ?? 'black');
-    appBarBackgroundColor = stringToColor(prefs.getString('appBarBackgroundColor') ?? 'blue');
-    appBarTextColor = stringToColor(prefs.getString('appBarTextColor') ?? 'white');
-    statusBarBrightness = stringToBrightness(prefs.getString('statusBarBrightness') ?? 'light');
+
   }
 
   @override
@@ -3540,12 +3519,6 @@ class _HospitalCreditLetterState extends State<HospitalCreditLetter>{
     _dio = new DioClient();
     _endpointProvider = new EndPointProvider(_dio.init());
     getHospCrLtrMasterData();
-    startColor = stringToColor(prefs.getString('startColor') ?? 'white');
-    endColor = stringToColor(prefs.getString('endColor') ?? 'white');
-    textColor = stringToColor(prefs.getString('textColor') ?? 'black');
-    appBarBackgroundColor = stringToColor(prefs.getString('appBarBackgroundColor') ?? 'blue');
-    appBarTextColor = stringToColor(prefs.getString('appBarTextColor') ?? 'white');
-    statusBarBrightness = stringToBrightness(prefs.getString('statusBarBrightness') ?? 'light');
   }
   @override
   void dispose() {

@@ -20,12 +20,6 @@ class _ShiftRosterViewState extends State<ShiftRosterView>{
   @override
   void initState() {
     super.initState();
-    startColor = stringToColor(prefs.getString('startColor') ?? 'white');
-    endColor = stringToColor(prefs.getString('endColor') ?? 'white');
-    textColor = stringToColor(prefs.getString('textColor') ?? 'black');
-    appBarBackgroundColor = stringToColor(prefs.getString('appBarBackgroundColor') ?? 'blue');
-    appBarTextColor = stringToColor(prefs.getString('appBarTextColor') ?? 'white');
-    statusBarBrightness = stringToBrightness(prefs.getString('statusBarBrightness') ?? 'light');
   }
   @override
   Widget build(BuildContext context) {

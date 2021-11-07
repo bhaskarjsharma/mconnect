@@ -49,12 +49,12 @@ class AppDrawerState extends State<AppDrawer> {
         bioAuth = localAuthEnabled;
       });
     }
-    startColor = stringToColor(prefs.getString('startColor') ?? 'white');
+/*    startColor = stringToColor(prefs.getString('startColor') ?? 'white');
     endColor = stringToColor(prefs.getString('endColor') ?? 'white');
     textColor = stringToColor(prefs.getString('textColor') ?? 'black');
     appBarBackgroundColor = stringToColor(prefs.getString('appBarBackgroundColor') ?? 'blue');
     appBarTextColor = stringToColor(prefs.getString('appBarTextColor') ?? 'white');
-    statusBarBrightness = stringToBrightness(prefs.getString('statusBarBrightness') ?? 'light');
+    statusBarBrightness = stringToBrightness(prefs.getString('statusBarBrightness') ?? 'light');*/
   }
 
   @override
@@ -542,12 +542,7 @@ class _AboutAppState extends State<AboutApp>{
     super.initState();
     _dio = new DioClient();
     _endpointProvider = new EndPointProvider(_dio.init());
-    startColor = stringToColor(prefs.getString('startColor') ?? 'white');
-    endColor = stringToColor(prefs.getString('endColor') ?? 'white');
-    textColor = stringToColor(prefs.getString('textColor') ?? 'black');
-    appBarBackgroundColor = stringToColor(prefs.getString('appBarBackgroundColor') ?? 'blue');
-    appBarTextColor = stringToColor(prefs.getString('appBarTextColor') ?? 'white');
-    statusBarBrightness = stringToBrightness(prefs.getString('statusBarBrightness') ?? 'light');
+
   }
   getPackageInfo(){
     PackageInfo.fromPlatform().then((PackageInfo packageInfo) {
@@ -889,12 +884,6 @@ class _DownloadDirectoryState extends State<DownloadDirectory>{
   void initState(){
     super.initState();
     file = getDownloads();
-    startColor = stringToColor(prefs.getString('startColor') ?? 'white');
-    endColor = stringToColor(prefs.getString('endColor') ?? 'white');
-    textColor = stringToColor(prefs.getString('textColor') ?? 'black');
-    appBarBackgroundColor = stringToColor(prefs.getString('appBarBackgroundColor') ?? 'blue');
-    appBarTextColor = stringToColor(prefs.getString('appBarTextColor') ?? 'white');
-    statusBarBrightness = stringToBrightness(prefs.getString('statusBarBrightness') ?? 'light');
 
   }
 
@@ -1124,13 +1113,6 @@ class _NotificationViewState extends State<NotificationView>{
     }*/
     _dio = new DioClient();
     _endpointProvider = new EndPointProvider(_dio.init());
-    startColor = stringToColor(prefs.getString('startColor') ?? 'white');
-    endColor = stringToColor(prefs.getString('endColor') ?? 'white');
-    textColor = stringToColor(prefs.getString('textColor') ?? 'black');
-    appBarBackgroundColor = stringToColor(prefs.getString('appBarBackgroundColor') ?? 'blue');
-    appBarTextColor = stringToColor(prefs.getString('appBarTextColor') ?? 'white');
-    statusBarBrightness = stringToBrightness(prefs.getString('statusBarBrightness') ?? 'light');
-
   }
 
   @override
@@ -1403,13 +1385,13 @@ class _AppThemeState extends State<AppTheme>{
   @override
   initState() {
     super.initState();
-    localThemeName = prefs.getString('appTheme') ?? 'Light';
-    localStartColor = stringToColor(prefs.getString('startColor') ?? 'white');
-    localendColor = stringToColor(prefs.getString('endColor') ?? 'white');
-    localtextColor = stringToColor(prefs.getString('textColor') ?? 'black');
-    localappBarBackgroundColor = stringToColor(prefs.getString('appBarBackgroundColor') ?? 'blue');
-    localappBarTextColor = stringToColor(prefs.getString('appBarTextColor') ?? 'white');
-    localstatusBarBrightness = stringToBrightness(prefs.getString('statusBarBrightness') ?? 'light');
+    localThemeName = themePrefs.getString('appTheme') ?? 'kindness';
+    localStartColor = stringToColor(themePrefs.getString('startColor') ?? 'e9defa');
+    localendColor = stringToColor(themePrefs.getString('endColor') ?? 'fbfcdb');
+    localtextColor = stringToColor(themePrefs.getString('textColor') ?? '000000');
+    localappBarBackgroundColor = stringToColor(themePrefs.getString('appBarBackgroundColor') ?? 'transparent');
+    localappBarTextColor = stringToColor(themePrefs.getString('appBarTextColor') ?? '000000');
+    localstatusBarBrightness = stringToBrightness(themePrefs.getString('statusBarBrightness') ?? 'dark');
   }
 
   @override
@@ -1492,14 +1474,22 @@ class _AppThemeState extends State<AppTheme>{
         ),
         floatingActionButton: FloatingActionButton.extended(
           onPressed: () {
-            prefs.setString('appTheme', localThemeName);
-            prefs.setString('startColor', startColorTxt);
-            prefs.setString('endColor', endColorTxt);
-            prefs.setString('textColor', textColorTxt);
-            prefs.setString('appBarBackgroundColor', appBarBackgroundColorTxt);
-            prefs.setString('appBarTextColor', appBarTextColorTxt);
-            prefs.setInt('appBarElevation', 0);
-            prefs.setString('statusBarBrightness', statusBarBrightnessTxt);
+            setState((){
+              startColor = stringToColor(startColorTxt);
+              endColor = stringToColor(endColorTxt);
+              textColor = stringToColor(textColorTxt);
+              appBarBackgroundColor = stringToColor(appBarBackgroundColorTxt);
+              appBarTextColor = stringToColor(appBarTextColorTxt);
+              statusBarBrightness = stringToBrightness(statusBarBrightnessTxt);
+            });
+            themePrefs.setString('appTheme', localThemeName);
+            themePrefs.setString('startColor', startColorTxt);
+            themePrefs.setString('endColor', endColorTxt);
+            themePrefs.setString('textColor', textColorTxt);
+            themePrefs.setString('appBarBackgroundColor', appBarBackgroundColorTxt);
+            themePrefs.setString('appBarTextColor', appBarTextColorTxt);
+            themePrefs.setInt('appBarElevation', 0);
+            themePrefs.setString('statusBarBrightness', statusBarBrightnessTxt);
             Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (BuildContext context) => Home()), (Route<dynamic> route) => false);
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(content: Text("Theme Set")),

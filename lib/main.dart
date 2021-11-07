@@ -19,18 +19,19 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 
 import 'models/models.dart';
 
-String app_theme = 'default';
-Color startColor = Colors.white;
-Color endColor = Colors.white;
-Color textColor = Colors.black;
-Color appBarBackgroundColor = Colors.blue;
-Color appBarTextColor = Colors.white;
+//String app_theme = 'kindness';
+late Color startColor;
+late Color endColor;
+late Color textColor;
+late Color appBarBackgroundColor;
+late Color appBarTextColor;
 double appBarElevation = 0;
-var statusBarBrightness = Brightness.light;
+late var statusBarBrightness;
 
 ConnectivityResult connectionStatus = ConnectivityResult.mobile;
 bool isLoggedIn = false;
 late var prefs;
+late var themePrefs;
 late var storage;
 String empno = '';
 String user = '';
@@ -153,6 +154,16 @@ void main() async{
   flutterLocalNotificationsPlugin.initialize(initSettings, onSelectNotification: onSelectNotification);
 
   prefs = await SharedPreferences.getInstance();
+  themePrefs = await SharedPreferences.getInstance(); //different shared pref for theme data which will not be cleared during logout
+
+  //set theme colour from saved data, else set to kindness theme
+  startColor = stringToColor(themePrefs.getString('startColor') ?? 'e9defa');
+  endColor = stringToColor(themePrefs.getString('endColor') ?? 'fbfcdb');
+  textColor = stringToColor(themePrefs.getString('textColor') ?? '000000');
+  appBarBackgroundColor = stringToColor(themePrefs.getString('appBarBackgroundColor') ?? 'transparent');
+  appBarTextColor = stringToColor(themePrefs.getString('appBarTextColor') ?? '000000');
+  statusBarBrightness = stringToBrightness(themePrefs.getString('statusBarBrightness') ?? 'dark');
+
   storage = new FlutterSecureStorage();
   isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
   if(isLoggedIn){
