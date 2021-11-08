@@ -241,6 +241,7 @@ class _NewsState extends State<News>{
     );
   }
   ListTile createListTileNews(data,index, IconData icon) {
+    String avatarUrl = "https://connect.bcplindia.co.in/MobileAppAPI/NewsLeadingImage?id="+data[index].contentId.toString();
     return ListTile(
       onTap: (){
         Navigator.pushNamed(context, newsDetailsRoute, arguments: NewsContentArguments(
@@ -260,7 +261,22 @@ class _NewsState extends State<News>{
             fontSize: 15,
             color: Colors.blue[500],
           )),
-      leading: CircleAvatar(
+      leading: CachedNetworkImage(
+        placeholder: (context, url) => CircularProgressIndicator(),
+        errorWidget: (context, url, error) => new CircleAvatar(
+          backgroundColor: RandomColorModel().getColor(),
+          child: Text(data[index].contentTitle.substring(0,1).toUpperCase(),style: TextStyle(
+            color: Colors.black,),) ,
+        ),
+        fit: BoxFit.contain,
+        imageUrl: avatarUrl,
+        imageBuilder: (context, imageProvider) { // you can access to imageProvider
+          return CircleAvatar( // or any widget that use imageProvider like (PhotoView)
+            backgroundImage: imageProvider,
+          );
+        },
+      ),
+/*      leading: CircleAvatar(
         backgroundColor: RandomColorModel().getColor(),
         child: Text(data[index].contentTitle.substring(0,1).toUpperCase(),style: TextStyle(
           color: Colors.black,
@@ -274,7 +290,7 @@ class _NewsState extends State<News>{
         // child:this._loadImageError? Text(title.substring(0,1).toUpperCase(),style: TextStyle(
         //   color: Colors.black,
         // )) : null
-      ),
+      ),*/
     );
   }
 
