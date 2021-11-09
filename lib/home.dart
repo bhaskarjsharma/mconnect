@@ -393,6 +393,7 @@ class HomeState extends State<Home>  {
                   makeDashboardItem("ITAC",const Icon(Icons.computer,size:30, color:Colors.blue),Colors.red,itacRoute),
                   makeDashboardItem("ECOFF & Overtime",const Icon(Icons.payments,size:30, color:Colors.lime),Colors.red,ecofOTRoute),
                   makeDashboardItem("Hosp. Credit Letter",const Icon(Icons.medical_services,size:30, color:Colors.red),Colors.red,hosCrLtrRoute),
+                  makeDashboardItem("Quiz",const Icon(Icons.quiz,size:30, color:Colors.orange),Colors.orange,quizRoute),
                 ],
               ),
             ),
@@ -2086,7 +2087,7 @@ class HomeState extends State<Home>  {
               );
             }
           }
-          else if(title == "ITAC" || title == "ECOFF & Overtime" || title == "Hosp. Credit Letter"){
+          else if(title == "ITAC" || title == "ECOFF & Overtime" || title == "Hosp. Credit Letter" || title == "Quiz"){
             if(connectionStatus != ConnectivityResult.none){
               Navigator.pushNamed(context, routeName);
             }

@@ -40,7 +40,15 @@ class _NewsState extends State<News>{
 
   @override
   void initState() {
-    //OpenHiveBox();
+    _scrollController = ScrollController()..addListener(() {
+      setState(() {
+        if (_scrollController.offset >= 400) {
+          _showBackToTopButton = true; // show the back-to-top button
+        } else {
+          _showBackToTopButton = false; // hide the back-to-top button
+        }
+      });
+    });
     super.initState();
     DioClient _dio = new DioClient();
     _endpointProvider = new EndPointProvider(_dio.init());
@@ -75,23 +83,6 @@ class _NewsState extends State<News>{
         isLoading = false;
       });
     }
-
- /*   startColor = stringToColor(prefs.getString('startColor') ?? 'white');
-    endColor = stringToColor(prefs.getString('endColor') ?? 'white');
-    textColor = stringToColor(prefs.getString('textColor') ?? 'black');
-    appBarBackgroundColor = stringToColor(prefs.getString('appBarBackgroundColor') ?? 'blue');
-    appBarTextColor = stringToColor(prefs.getString('appBarTextColor') ?? 'white');
-    statusBarBrightness = stringToBrightness(prefs.getString('statusBarBrightness') ?? 'light');*/
-
-    _scrollController = ScrollController()..addListener(() {
-        setState(() {
-          if (_scrollController.offset >= 400) {
-            _showBackToTopButton = true; // show the back-to-top button
-          } else {
-            _showBackToTopButton = false; // hide the back-to-top button
-          }
-        });
-      });
   }
 
   @override
@@ -297,7 +288,7 @@ class _NewsState extends State<News>{
   // This function is triggered when the user presses the back-to-top button
   void _scrollToTop() {
     _scrollController.animateTo(0,
-        duration: Duration(seconds: 3), curve: Curves.linear);
+        duration: Duration(seconds: 1), curve: Curves.linear);
   }
 }
 class NewsDetails extends StatefulWidget {

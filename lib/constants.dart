@@ -26,3 +26,6 @@ const String hosCrLtrRoute = '/HospitalCreditLetter';
 const String notificationRoute = '/NotificationView';
 const String newsDisplayRoute = '/NewsDisplay';
 const String appThemeRoute = '/AppTheme';
+const String quizRoute = '/QuizView';
+const String quizDetailRoute = '/QuizDetail';
+const String quizStartRoute = '/QuizStart';

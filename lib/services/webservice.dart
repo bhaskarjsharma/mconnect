@@ -58,6 +58,16 @@ class EndPointProvider{
       throw Exception('Data transfer error');
     }
   }
+  Future<APIResponseData> fetchQuizes() async{
+    final response = await _client.get('https://connect.bcplindia.co.in/MobileAppAPI/StartQuiz');
+
+    if (response.statusCode == 200) {
+      return APIResponseData.fromJson(response.data);
+    } else {
+      print("The error message is: ${response.data}");
+      throw Exception('Data transfer error');
+    }
+  }
   Future<APIResponseData> fetchSingleContent(String contentID, String contentType) async{
     final response = await _client.post('https://connect.bcplindia.co.in/MobileAppAPI/NewsByID',
         data: {'id': contentID, 'type': contentType});

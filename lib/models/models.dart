@@ -489,6 +489,63 @@ class AppNotification extends HiveObject{
           .map<AppNotification>((item) => AppNotification.fromJson(item))
           .toList();
 }
+class QuizData{
+  final int QuizID;
+  final String title;
+  final String StartTime;
+  final String EndTime;
+  final int timeDuration;
+  final int noOfQns;
+  final List<QuestionData> Questions ;
+
+  QuizData({required this.QuizID, required this.title, required this.StartTime,
+    required this.EndTime,required this.timeDuration,required this.noOfQns,required this.Questions});
+
+  factory QuizData.fromJson(Map<String, dynamic> json) {
+    return QuizData(
+      QuizID: json['QuizID'],
+      title: json['title'],
+      StartTime: json['StartTime'],
+      EndTime: json['EndTime'],
+      timeDuration: json['timeDuration'],
+      noOfQns: json['noOfQns'],
+      Questions: (json['Questions'] as List).map((e) => QuestionData.fromJson(e)).toList(),
+    );
+  }
+}
+class QuestionData{
+  final int QuestionId;
+  final String QuestionText;
+  final int AnswerId;
+  final List<AnswerChoiceData> AnswerChoices;
+
+QuestionData({required this.QuestionId, required this.QuestionText, required this.AnswerId,
+    required this.AnswerChoices});
+
+  factory QuestionData.fromJson(Map<String, dynamic> json) {
+    return QuestionData(
+      QuestionId: json['QuestionId'],
+      QuestionText: json['QuestionText'],
+      AnswerId: json['AnswerId'],
+      AnswerChoices: (json['AnswerChoices'] as List).map((e) => AnswerChoiceData.fromJson(e)).toList(),
+    );
+  }
+}
+class AnswerChoiceData{
+  final int AnswerChoiceID ;
+  final int choiceNo ;
+  final String AnswerText ;
+
+  AnswerChoiceData({required this.AnswerChoiceID, required this.choiceNo, required this.AnswerText});
+
+  factory AnswerChoiceData.fromJson(Map<String, dynamic> json) {
+    return AnswerChoiceData(
+      AnswerChoiceID: json['AnswerChoiceID'],
+      choiceNo: json['choiceNo'],
+      AnswerText: json['AnswerText'],
+    );
+  }
+}
 
 
 

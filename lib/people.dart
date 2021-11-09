@@ -33,20 +33,19 @@ class _PeopleState extends State<People>{
 
   @override
   void initState() {
+
     super.initState();
+    _scrollController = ScrollController()..addListener(() {
+      setState(() {
+        if (_scrollController.offset >= 400) {
+          _showBackToTopButton = true; // show the back-to-top button
+        } else {
+          _showBackToTopButton = false; // hide the back-to-top button
+        }
+      });
+    });
     _dio = new DioClient();
     _endpointProvider = new EndPointProvider(_dio.init());
-    _scrollController = ScrollController()
-      ..addListener(() {
-        setState(() {
-          if (_scrollController.offset >= 400) {
-            _showBackToTopButton = true; // show the back-to-top button
-          } else {
-            _showBackToTopButton = false; // hide the back-to-top button
-          }
-        });
-      });
-
   }
 
   @override
@@ -145,6 +144,7 @@ class _PeopleState extends State<People>{
           connectionStatus != ConnectivityResult.none ? SizedBox(height:0) : noConnectivityError(),
           Expanded(
             child: ListView.builder(
+                controller: _scrollController,
                 itemCount: _peopleData.length,
                 itemBuilder: (context, index) {
                   return Card(
@@ -155,7 +155,6 @@ class _PeopleState extends State<People>{
           ),
         ],
       ),
-
       floatingActionButton: _showBackToTopButton == false
           ? null
           : FloatingActionButton(

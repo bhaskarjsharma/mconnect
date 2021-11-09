@@ -1,6 +1,7 @@
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_projects/models/models.dart';
 import '../AttendanceView.dart';
 import '../Payslip.dart';
 import '../ShiftRosterView.dart';
@@ -12,6 +13,7 @@ import '../content.dart';
 import '../documents.dart';
 import '../home.dart';
 import '../people.dart';
+import '../quiz.dart';
 
 class NavigationRouter {
   static Route<dynamic> generateRoute(RouteSettings settings) {
@@ -40,6 +42,15 @@ class NavigationRouter {
       case claimsRoute:
         final args = settings.arguments;
         return MaterialPageRoute(builder: (BuildContext context) => Claims(),settings: RouteSettings(arguments: args,),);
+      case quizRoute:
+        final args = settings.arguments;
+        return MaterialPageRoute(builder: (BuildContext context) => QuizView(),settings: RouteSettings(arguments: args,),);
+      case quizDetailRoute:
+        final args = settings.arguments;
+        return MaterialPageRoute(builder: (BuildContext context) => QuizDetail(),settings: RouteSettings(arguments: args,),);
+      case quizStartRoute:
+        final args = settings.arguments as QuizData;
+        return MaterialPageRoute(builder: (BuildContext context) => QuizStart(args));
       case aboutAppRoute:
         return MaterialPageRoute(builder: (_) => AboutApp());
       case downloadsRoute:

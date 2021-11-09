@@ -39,19 +39,19 @@ class _DocumentsState extends State<Documents>{
 
   @override
   void initState() {
+    _scrollController = ScrollController()..addListener(() {
+      setState(() {
+        if (_scrollController.offset >= 400) {
+          _showBackToTopButton = true; // show the back-to-top button
+        } else {
+          _showBackToTopButton = false; // hide the back-to-top button
+        }
+      });
+    });
     super.initState();
     _dio = new DioClient();
     _endpointProvider = new EndPointProvider(_dio.init());
-    _scrollController = ScrollController()
-      ..addListener(() {
-        setState(() {
-          if (_scrollController.offset >= 400) {
-            _showBackToTopButton = true; // show the back-to-top button
-          } else {
-            _showBackToTopButton = false; // hide the back-to-top button
-          }
-        });
-      });
+
   }
 
   @override
@@ -160,6 +160,7 @@ class _DocumentsState extends State<Documents>{
 
           Expanded(
             child: ListView.builder(
+                controller: _scrollController,
                 itemCount: _documents.length,
                 itemBuilder: (context, index) {
                   return Card(
