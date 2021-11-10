@@ -1,4 +1,5 @@
 
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
@@ -176,34 +177,54 @@ class QuizStart extends StatefulWidget {
   @override
   State<QuizStart> createState() => _QuizStartState();
 }
-class _QuizStartState extends State<QuizStart> with SingleTickerProviderStateMixin{
+class _QuizStartState extends State<QuizStart>{
   int qnsId = 0;
   Color ansColor = Colors.white;
   int _answer = 0;
-  Duration _elapsed = Duration.zero;
-  late final Ticker _ticker;
-  double timer = 0;
+
+  late QuestionData question;
+  Duration duration = const Duration(seconds: 70);
+  Duration progressBarDuration = const Duration(seconds: 0);
+  Timer? timer;
+  double progressTimer = 0;
 
   @override
   void initState() {
+    duration = Duration(seconds: widget.quizData.timeDuration);
+    question = widget.quizData.Questions.elementAt(qnsId);
     super.initState();
-    _ticker = this.createTicker((elapsed) {
-      setState(() {
-        _elapsed = elapsed;
-        timer = _elapsed.inSeconds.toDouble() / widget.quizData.timeDuration;
-      });
-    });
-    _ticker.start();
+    startTimer();
+
   }
+  void startTimer(){
+    timer = Timer.periodic(Duration(seconds: 1),(_) => reduceTime());
+  }
+  void reduceTime(){
+    setState(() {
+      final seconds = duration.inSeconds - 1;
+      final secondsProgress = progressBarDuration.inSeconds + 1;
+      if (seconds < 0){
+        timer?.cancel();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Time ends")),
+        );
+      } else{
+        duration = Duration(seconds: seconds);
+        progressBarDuration = Duration(seconds: secondsProgress);
+        progressTimer = secondsProgress.toDouble() / widget.quizData.timeDuration;
+    }
+    });
+  }
+
   @override
   void dispose() {
-    _ticker.dispose();
+    //_ticker.dispose();
+    timer!.cancel();
     super.dispose();
   }
   @override
   Widget build(BuildContext context) {
-    //final QuizData quizData = ModalRoute.of(context)!.settings.arguments as QuizData;
-    final QuestionData question = widget.quizData.Questions.elementAt(qnsId) as QuestionData;
+
     return Container(
       decoration: BoxDecoration(
           gradient: LinearGradient(
@@ -229,7 +250,7 @@ class _QuizStartState extends State<QuizStart> with SingleTickerProviderStateMix
             width: 40,
             child: Image.asset('images/bcpl_logo.png'),
           ),
-          title: Text('Connect - News & Events',style: TextStyle(
+          title: Text('Quiz',style: TextStyle(
             color:appBarTextColor,
           ),),
         ),
@@ -237,56 +258,79 @@ class _QuizStartState extends State<QuizStart> with SingleTickerProviderStateMix
         body: Column(
           children: [
             connectionStatus != ConnectivityResult.none ? SizedBox(height:0) : noConnectivityError(),
-            LinearProgressIndicator(
-              value: timer,
-              backgroundColor: Colors.yellow,
-              valueColor: AlwaysStoppedAnimation<Color>(Colors.red),
+            Center(
+              child: Text('Question',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),),
             ),
-            Text('$_elapsed'),
-            Text('$timer'),
-            SizedBox(height: 20,),
-            Card(
-              elevation: 10,
-              child: Container(
-                padding: EdgeInsets.all(20),
-                child:Text(question.QuestionText,
-                  textAlign: TextAlign.justify,
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 18,
-                  ),),
+            Container(
+              margin: EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
+                //border: Border.all(color:Colors.black38),
+                color: Colors.white,
               ),
+              padding: EdgeInsets.all(20),
+              child:Text(question.QuestionText,
+                textAlign: TextAlign.justify,
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                ),),
             ),
-
+            Center(
+              child: Text('Choose Answer',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),),
+            ),
             Expanded(
-              child: Card(
-                child: ListView.builder(
-                    itemCount: question.AnswerChoices.length,
-                    itemBuilder: (context, index) {
-                      return ListTile(
-                        title: Text(question.AnswerChoices[index].AnswerText ?? ''),
-                        leading: Radio<int>(
-                          value: question.AnswerChoices[index].AnswerChoiceID,
-                          groupValue: _answer,
-                          onChanged: (int? value) {
+              flex: 4,
+              child: ListView.builder(
+                  itemCount: question.AnswerChoices.length,
+                  itemBuilder: (context, index) {
+                    int selIndex = _answer;
+                    return Container(
+                        margin: EdgeInsets.all(5),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color:Colors.black38),
+                          color: question.AnswerId == question.AnswerChoices[index].AnswerChoiceID ? Colors.lightGreen : Colors.white,
+                        ),
+                        child: ListTile(
+                          title: Text(question.AnswerChoices[index].AnswerText ?? ''),
+                          onTap: (){
+                            int selAns = question.AnswerChoices[index].AnswerChoiceID;
                             setState(() {
-                              _answer = value!;
+                              _answer = selAns!;
+                              question.AnswerId = selAns;
                             });
                           },
-                        ),
-                        onTap: (){
-                          int selAns = question.AnswerChoices[index].AnswerChoiceID;
-                          setState(() {
-                            _answer = selAns!;
-                          });
-                        },
-                      );
-                    }
-                ),
+                        )
+                    );
+                  }
               ),
             ),
+            Center(
+              child: Text('Remaining Time',
+                style: TextStyle(
+                  fontWeight: FontWeight.normal,
+                  fontSize: 14,
+                ),),
+            ),
+            SizedBox(height: 5,),
+            CircularProgressIndicator(
+              value: progressTimer,
+              backgroundColor: Colors.lightGreen,
+              valueColor: AlwaysStoppedAnimation<Color>(Colors.redAccent),
+            ),
+            buildTime(),
             Expanded(
-              child: Row(
+              flex: 1,
+              child:Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   ElevatedButton(
@@ -294,6 +338,7 @@ class _QuizStartState extends State<QuizStart> with SingleTickerProviderStateMix
                       if(qnsId != 0){
                         setState(() {
                           qnsId = qnsId - 1;
+                          question = widget.quizData.Questions.elementAt(qnsId);
                         });
                       }
                     },
@@ -301,19 +346,60 @@ class _QuizStartState extends State<QuizStart> with SingleTickerProviderStateMix
                   ),
                   ElevatedButton(
                     onPressed: (){
-
-                      setState(() {
-                        qnsId = qnsId + 1;
-                      });
+                      if(qnsId < widget.quizData.Questions.length){
+                        setState(() {
+                          qnsId = qnsId + 1;
+                          question = widget.quizData.Questions.elementAt(qnsId);
+                        });
+                      }
+                      else{
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text("Last Question")),
+                        );
+                      }
                     },
                     child: Text('Next'),
                   ),
                 ],
               ),
             ),
+
           ],
         ),
       ),
+    );
+  }
+
+  Widget buildTime(){
+    String twoDigits(int n) => n.toString().padLeft(2,'0');
+    final minutes =twoDigits(duration.inMinutes.remainder(60));
+    final seconds =twoDigits(duration.inSeconds.remainder(60));
+    return Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          buildTimeCard(minutes,'Minutes'),
+          SizedBox(width: 10,),
+          buildTimeCard(seconds,'Seconds'),
+        ]
+    );
+  }
+  Widget buildTimeCard(String time, String header) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Container(
+          padding: EdgeInsets.all(8),
+          decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20)
+          ),
+          child: Text(
+            time, style: TextStyle(fontWeight: FontWeight.bold,
+              color: Colors.black,fontSize: 30),),
+        ),
+        SizedBox(height: 5,),
+        Text(header,style: TextStyle(color: Colors.black45)),
+      ],
     );
   }
 }

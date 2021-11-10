@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_projects/services/webservice.dart';
 import 'package:hive/hive.dart';
+import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:share_plus/share_plus.dart';
 import 'account.dart';
@@ -479,6 +480,273 @@ class _PeopleDetailsState extends State<PeopleDetails>{
   // void _launchURL(String _url) async =>
   //     await canLaunch(_url) ? await launch(_url) : throw 'Could not launch $_url';
 }
+
+class Birthday extends StatefulWidget{
+  @override
+  State<Birthday> createState() => _BirthdayState();
+}
+class _BirthdayState extends State<Birthday>{
+  late Future<APIResponseData> _apiResponseData;
+  late var _endpointProvider;
+  List<Employee> _peopleData = <Employee>[];
+  bool isLoading = true;
+  TextEditingController _msgController = TextEditingController();
+  late String today;
+  Map<String, String> inputs = {};
+
+  @override
+  void initState() {
+    today = DateFormat('dd-MM').format(DateTime.now());
+    super.initState();
+    DioClient _dio = DioClient();
+    _endpointProvider = EndPointProvider(_dio.init());
+    var employeeBox = Hive.box<Employee>('employeeList');
+    if(employeeBox.values.isEmpty){
+      if(connectionStatus != ConnectivityResult.none){
+        _apiResponseData = _endpointProvider.fetchEmployees('','','','');
+        _apiResponseData.then((result) {
+          if(result.isAuthenticated && result.status){
+            final parsed = jsonDecode(result.data ?? '').cast<Map<String, dynamic>>();
+            setState(() {
+              _peopleData =  parsed.map<Employee>((json) => Employee.fromJson(json)).toList();
+              _peopleData = _peopleData.where((element) => element.emp_DOB!.contains(today) ||
+                  element.emp_DOB!.contains(today)).toList();
+              isLoading = false;
+            });
+            employeeBox.addAll(_peopleData);
+          }
+        });
+      }
+      else{
+        setState(() {
+          isLoading = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("No internet connection. Please check your settings")),
+        );
+      }
+
+    }
+    else{
+      setState(() {
+        _peopleData =  employeeBox.values.toList();
+        _peopleData = _peopleData.where((element) => element.emp_DOB!.contains(today) ||
+            element.emp_DOB!.contains(today)).toList();
+        isLoading = false;
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+          gradient: LinearGradient(
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+              //colors: [Color.fromRGBO(255, 239, 186, 1), Color.fromRGBO(255, 255, 255, 1)]
+              colors: [startColor, endColor]
+          )
+      ),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          iconTheme: IconThemeData(
+              color: appBarTextColor
+          ),
+          systemOverlayStyle: SystemUiOverlayStyle(
+            statusBarColor: appBarBackgroundColor,
+            statusBarIconBrightness: statusBarBrightness,),
+          backgroundColor: appBarBackgroundColor,
+          bottomOpacity: 0.0,
+          elevation: appBarElevation,
+          leading: Container(
+            width: 40,
+            child: Image.asset('images/bcpl_logo.png'),
+          ),
+          title: Row(
+            children:[
+              Text('Connect - People',style: TextStyle(
+                color:appBarTextColor,
+              ),),
+              Spacer(),
+              IconButton(
+                icon: Icon(Icons.sync),
+                onPressed: () {
+                  if(connectionStatus != ConnectivityResult.none){
+                    setState(() {
+                      isLoading = true;
+                    });
+                    _apiResponseData = _endpointProvider.fetchEmployees('','','','');
+                    _apiResponseData.then((result) async {
+                      if(result.isAuthenticated && result.status){
+                        final parsed = jsonDecode(result.data ?? '').cast<Map<String, dynamic>>();
+                        _peopleData =  parsed.map<Employee>((json) => Employee.fromJson(json)).toList();
+                        var employeeBox = await Hive.openBox<Employee>('employeeList');
+                        employeeBox.clear();
+                        employeeBox.addAll(_peopleData);
+                        setState(() {
+                          _peopleData = _peopleData.where((element) => element.emp_DOB!.contains(today) ||
+                              element.emp_DOB!.contains(today)).toList();
+                          isLoading = false;
+                        });
+/*                    Navigator.pop(context);
+                    Navigator.pushNamed(context, peopleRoute, arguments: peopleData,);*/
+                      }
+                      else{
+                        setState(() {
+                          isLoading = false;
+                        });
+                        Navigator.pop(context);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text("Error in data fetching")),
+                        );
+                      }
+                    }).catchError( (error) {
+                      setState(() {
+                        isLoading = false;
+                      });
+                      Navigator.pop(context);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text("Error in data fetching")),
+                      );
+                    });
+                  }
+                  else{
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text("No internet connection. Please check your settings")),
+                    );
+                  }
+                },
+                color: appBarTextColor,
+              )
+            ],
+          ),
+        ),
+        endDrawer: AppDrawer(),
+        body: isLoading ? refresh(context) :
+        Column(
+          children: [
+            connectionStatus != ConnectivityResult.none ? SizedBox(height:0) : noConnectivityError(),
+            Expanded(
+              child: ListView.builder(
+                  itemCount: _peopleData.length,
+                  itemBuilder: (context, index) {
+                    String? empMobile = _peopleData[index].emp_mobileNo;
+                    return Card(
+                        child: Column(
+                          children: [
+                            createListTilePeople(_peopleData,index),
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: Container(
+                                    child:TextField(
+                                      onChanged: (value) {
+                                        inputs['$_peopleData[index]'] = value;
+                                      },
+                                      decoration: InputDecoration(
+                                        border: OutlineInputBorder(),
+                                        labelText: 'Wish message',
+                                      ),
+                                    ),
+                                    padding: EdgeInsets.only(left:10,right:5,bottom:10),
+                                  ),
+                                ),
+                                Container(
+                                  child:ElevatedButton(
+                                    onPressed: () async{
+                                      String url= 'sms:'+empMobile!+'?body=${inputs['$_peopleData[index]']}';
+                                      if (await canLaunch(url)) {
+                                        await launch(url);
+                                      } else {
+                                        throw "Can't open launcher.";
+                                      }
+                                    },
+                                    child: Text('Message'),
+                                  ),
+                                  padding: EdgeInsets.only(right:10,bottom:10),
+                                ),
+
+                              ],
+                            ),
+                          ],
+                        ),
+                    );
+                  }
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  ListTile createListTilePeople(data,index) {
+    String profilePicUrl = "https://connect.bcplindia.co.in/MobileAppAPI/imageFile?empno="+data[index].emp_no;
+    String tx = '';
+    if(data[index].emp_DOB!.contains(today)){
+      tx = ' is celebrating Birthday today';
+    }
+    if(data[index].emp_DOJ!.contains(today)){
+      tx = ' is celebrating one more year in BCPL today';
+    }
+    return ListTile(
+      isThreeLine: true,
+      title: Text(data[index].emp_name,
+          style: TextStyle(
+            fontWeight: FontWeight.w400,
+            fontSize: 18,
+          )),
+      subtitle: Text("${data[index].emp_desg}, ${data[index].emp_discipline} $tx",
+          style: TextStyle(
+            fontWeight: FontWeight.w400,
+            fontSize: 15,
+            color: Colors.blue[500],
+          )),
+      leading: CachedNetworkImage(
+        placeholder: (context, url) => CircularProgressIndicator(),
+        errorWidget: (context, url, error) => new CircleAvatar(
+          backgroundColor: RandomColorModel().getColor(),
+          child: Text(data[index].emp_name.substring(0,1).toUpperCase(),style: TextStyle(
+            color: Colors.black,),) ,
+        ),
+        fit: BoxFit.contain,
+        imageUrl: profilePicUrl,
+        imageBuilder: (context, imageProvider) { // you can access to imageProvider
+          return CircleAvatar( // or any widget that use imageProvider like (PhotoView)
+            backgroundImage: imageProvider,
+          );
+        },
+      ),
+      trailing: Ink(
+        decoration: const ShapeDecoration(
+          color: Colors.lightBlueAccent,
+          shape: CircleBorder(),
+        ),
+        child: IconButton(
+          icon: const Icon(Icons.call,color: Colors.white, size:25),
+          onPressed: () async{
+            String url = "tel:"+data[index].emp_mobileNo;
+            if (await canLaunch(url)) {
+              await launch(url);
+            } else {
+              throw "Can't open launcher.";
+            }
+          },
+        ),
+      ),
+
+
+    );
+  }
+}
+
 InkWell _buildButtonColumn(Color color, IconData icon, String label,String data,String launcherType) {
   return InkWell(
     onTap: () async{

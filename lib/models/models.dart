@@ -149,12 +149,14 @@ class Employee extends HiveObject {
   final String? emp_gender;
   @HiveField(16)
   final String? emp_bloodgroup;
+  @HiveField(17)
+  final String? emp_DOJ;
 
   Employee({required this.status,required this.emp_no, required this.emp_name, required this.emp_desg, required this.emp_grade,
             required this.emp_dept,required this.emp_discipline,required this.emp_location,
     required this.emp_unit,required this.emp_email,required this.emp_mobileNo,
   required this.emp_intercom,required this.emp_intercomResidence,required this.emp_company,
-  required this.emp_DOB,required this.emp_gender,required this.emp_bloodgroup});
+  required this.emp_DOB,required this.emp_gender,required this.emp_bloodgroup,required this.emp_DOJ});
 
   factory Employee.fromJson(Map<String, dynamic> json) {
     return Employee(
@@ -175,6 +177,7 @@ class Employee extends HiveObject {
       emp_DOB: json['emp_DOB'],
       emp_gender: json['emp_gender'],
       emp_bloodgroup: json['emp_bloodgroup'],
+      emp_DOJ: json['emp_DOJ'],
     );
   }
 }
@@ -516,7 +519,7 @@ class QuizData{
 class QuestionData{
   final int QuestionId;
   final String QuestionText;
-  final int AnswerId;
+  int AnswerId;
   final List<AnswerChoiceData> AnswerChoices;
 
 QuestionData({required this.QuestionId, required this.QuestionText, required this.AnswerId,

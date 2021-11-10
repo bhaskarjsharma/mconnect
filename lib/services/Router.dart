@@ -24,6 +24,8 @@ class NavigationRouter {
         return MaterialPageRoute(builder: (_) => Home());
       case newsRoute:
         return MaterialPageRoute(builder: (_) => News());
+      case birthdayRoute:
+        return MaterialPageRoute(builder: (_) => Birthday());
       case peopleRoute:
         final args = settings.arguments;
         return MaterialPageRoute(builder: (BuildContext context) => People(),settings: RouteSettings(arguments: args,),);

@@ -80,13 +80,14 @@ class EmployeeAdapter extends TypeAdapter<Employee> {
       emp_DOB: fields[14] as String?,
       emp_gender: fields[15] as String?,
       emp_bloodgroup: fields[16] as String?,
+      emp_DOJ: fields[17] as String?,
     );
   }
 
   @override
   void write(BinaryWriter writer, Employee obj) {
     writer
-      ..writeByte(17)
+      ..writeByte(18)
       ..writeByte(0)
       ..write(obj.status)
       ..writeByte(1)
@@ -120,7 +121,9 @@ class EmployeeAdapter extends TypeAdapter<Employee> {
       ..writeByte(15)
       ..write(obj.emp_gender)
       ..writeByte(16)
-      ..write(obj.emp_bloodgroup);
+      ..write(obj.emp_bloodgroup)
+      ..writeByte(17)
+      ..write(obj.emp_DOJ);
   }
 
   @override

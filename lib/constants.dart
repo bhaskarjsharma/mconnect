@@ -29,3 +29,4 @@ const String appThemeRoute = '/AppTheme';
 const String quizRoute = '/QuizView';
 const String quizDetailRoute = '/QuizDetail';
 const String quizStartRoute = '/QuizStart';
+const String birthdayRoute = '/Birthday';

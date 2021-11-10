@@ -383,6 +383,7 @@ class HomeState extends State<Home>  {
                   makeDashboardItem("News & Events",const Icon(ConnectAppIcon.newspaper,size:30, color:Colors.blue),Colors.blue,newsRoute),
                   makeDashboardItem("People",const Icon(ConnectAppIcon.users,size:30, color:Colors.pink),Colors.pink,peopleRoute),
                   makeDashboardItem("Documents",const Icon(ConnectAppIcon.article_alt,size:30, color:Colors.green),Colors.green,documentsRoute),
+                  makeDashboardItem("Birthdays & Anniversaries",const Icon(Icons.celebration,size:30, color:Colors.red),Colors.red,birthdayRoute),
                   makeDashboardItem("Leave Quota",const Icon(Icons.info,size:30, color:Colors.cyan),Colors.orange,leaveQuotaRoute),
                   makeDashboardItem("Holiday List",const Icon(ConnectAppIcon.calendar,size:30, color:Colors.brown),Colors.brown,holidayListRoute),
                   makeDashboardItem("Payslips", const Icon(ConnectAppIcon.rupee_sign,size:30, color:Colors.orange),Colors.cyan,payslipRoute),
@@ -2098,7 +2099,6 @@ class HomeState extends State<Home>  {
             }
           }
           else{
-            //Navigator.of(context).push(MaterialPageRoute(builder: (BuildContext context) => News()));
             Navigator.pushNamed(context, routeName);
           }
         },
@@ -2114,21 +2114,6 @@ class HomeState extends State<Home>  {
         ),
       ),
     );
-/*    return Card(
-      //elevation: 1.0,
-      //margin: EdgeInsets.all(10.0),
-
-      child: Container(
-        decoration: BoxDecoration(
-          //color:Colors.white10,
-          borderRadius: BorderRadius.circular(100),
-          color: Colors.transparent,
-        ),
-
-        height:30,
-        child:
-      ),
-    );*/
   }
 
   Future<Null> _selectMonth(BuildContext context, var textController) async {
