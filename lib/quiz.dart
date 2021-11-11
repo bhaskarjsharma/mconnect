@@ -478,7 +478,7 @@ class _QuizStartState extends State<QuizStart>{
                               },
                             );
                           },
-                        )
+                        );
                       }
                     },
                     child: Text('Next'),
