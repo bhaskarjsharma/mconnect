@@ -68,6 +68,21 @@ class EndPointProvider{
       throw Exception('Data transfer error');
     }
   }
+  Future<APIResponseData> postQuizResponse(var quizData) async{
+    final response = await _client.post('https://connect.bcplindia.co.in/MobileAppAPI/SaveQuizResponse',
+      options: Options(headers: {
+        HttpHeaders.contentTypeHeader: "application/json; charset=UTF-8",
+      }),
+      data: jsonEncode(quizData),);
+
+    if (response.statusCode == 200) {
+      return APIResponseData.fromJson(response.data);
+
+    } else {
+      print("The error message is: ${response.data}");
+      throw Exception('Failed to post data.');
+    }
+  }
   Future<APIResponseData> fetchSingleContent(String contentID, String contentType) async{
     final response = await _client.post('https://connect.bcplindia.co.in/MobileAppAPI/NewsByID',
         data: {'id': contentID, 'type': contentType});
@@ -79,18 +94,6 @@ class EndPointProvider{
       throw Exception('Data transfer error');
     }
   }
-
-  // Future<List<NewsContent>> fetchContent() async{
-  //   final response = await _client.post('https://connect.bcplindia.co.in/MobileAppAPI/News_Events');
-  //
-  //   if (response.statusCode == 200) {
-  //     List jsonResponse = response.data;
-  //     return jsonResponse.map((newscontent) => new NewsContent.fromJson(newscontent)).toList();
-  //   } else {
-  //     print("The error message is: ${response.data}");
-  //     throw Exception('Failed to authenticate.');
-  //   }
-  // }
   Future<APIResponseData> fetchContentAttachments(int contentId, String contentType) async{
     final response = await _client.post('https://connect.bcplindia.co.in/MobileAppAPI/ContentAttachments',
         data: {'contentId': contentId, 'contentType': contentType});

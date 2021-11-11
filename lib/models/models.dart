@@ -549,6 +549,44 @@ class AnswerChoiceData{
     );
   }
 }
+class QuizRespnse{
+  final int QuizID;
+  final DateTime QuizStartTime;
+  final DateTime QuizEndTime;
+  final List<QuestionAnswer> answer;
+
+  QuizRespnse({required this.QuizID, required this.QuizStartTime, required this.QuizEndTime,
+    required this.answer});
+
+  factory QuizRespnse.fromJson(Map<String, dynamic> json) {
+    return QuizRespnse(
+      QuizID: json['QuizID'],
+      QuizStartTime: json['QuizStartTime'],
+      QuizEndTime: json['QuizEndTime'],
+      answer: (json['QuestionAnswer'] as List).map((e) => QuestionAnswer.fromJson(e)).toList(),
+    );
+  }
+  Map<String, dynamic> toJson() =>
+      {
+        'QuizID': QuizID,
+        'QuizStartTime': QuizStartTime,
+        'QuizEndTime': QuizEndTime,
+        'answer': answer,
+      };
+}
+class QuestionAnswer{
+  int QuestionId;
+  int AnswerId;
+
+  QuestionAnswer({required this.QuestionId,required this.AnswerId});
+
+  factory QuestionAnswer.fromJson(Map<String, dynamic> json) {
+    return QuestionAnswer(
+      QuestionId: json['QuestionId'],
+      AnswerId: json['AnswerId'],
+    );
+  }
+}
 
 
 

@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_projects/services/webservice.dart';
+import 'package:lottie/lottie.dart';
 import 'app_drawer.dart';
 import 'constants.dart';
 import 'home.dart';
@@ -180,21 +181,27 @@ class QuizStart extends StatefulWidget {
 class _QuizStartState extends State<QuizStart>{
   int qnsId = 0;
   Color ansColor = Colors.white;
-  int _answer = 0;
+  late Future<APIResponseData> _apiResponseData;
+  late var _endpointProvider;
+  bool isLoading = true;
 
   late QuestionData question;
   Duration duration = const Duration(seconds: 70);
   Duration progressBarDuration = const Duration(seconds: 0);
   Timer? timer;
   double progressTimer = 0;
+  List<QuestionAnswer> answeredQns = [];
+  DateTime quizStartTime = DateTime.now();
 
   @override
   void initState() {
-    duration = Duration(seconds: widget.quizData.timeDuration);
+    //duration = Duration(seconds: widget.quizData.timeDuration);
+    DioClient _dio = new DioClient();
+    _endpointProvider = new EndPointProvider(_dio.init());
     question = widget.quizData.Questions.elementAt(qnsId);
+    quizStartTime = DateTime.now();
     super.initState();
     startTimer();
-
   }
   void startTimer(){
     timer = Timer.periodic(Duration(seconds: 1),(_) => reduceTime());
@@ -205,14 +212,16 @@ class _QuizStartState extends State<QuizStart>{
       final secondsProgress = progressBarDuration.inSeconds + 1;
       if (seconds < 0){
         timer?.cancel();
-        ScaffoldMessenger.of(context).showSnackBar(
+        submitQuizResponse();
+/*        ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text("Time ends")),
-        );
-      } else{
+        );*/
+      }
+      else{
         duration = Duration(seconds: seconds);
         progressBarDuration = Duration(seconds: secondsProgress);
         progressTimer = secondsProgress.toDouble() / widget.quizData.timeDuration;
-    }
+      }
     });
   }
 
@@ -224,7 +233,6 @@ class _QuizStartState extends State<QuizStart>{
   }
   @override
   Widget build(BuildContext context) {
-
     return Container(
       decoration: BoxDecoration(
           gradient: LinearGradient(
@@ -255,7 +263,29 @@ class _QuizStartState extends State<QuizStart>{
           ),),
         ),
         endDrawer: AppDrawer(),
-        body: Column(
+        body: isLoading ? Container(
+          height: MediaQuery.of(context).size.height / 1.3,
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                //CircularProgressIndicator(),
+                Center(
+                  child: Lottie.asset('animations/ani_loading_hexa.json',
+                    width: 200,
+                    height: 200,),
+                ),
+                Container(
+                  padding: EdgeInsets.all(10),
+                  child:Text('Please wait. Submitting quiz responses',style: TextStyle(
+                    fontWeight: FontWeight.w500,fontSize: 16,),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ): Column(
           children: [
             connectionStatus != ConnectivityResult.none ? SizedBox(height:0) : noConnectivityError(),
             Center(
@@ -292,22 +322,37 @@ class _QuizStartState extends State<QuizStart>{
               child: ListView.builder(
                   itemCount: question.AnswerChoices.length,
                   itemBuilder: (context, index) {
-                    int selIndex = _answer;
+                    int selIndex = 0;
+                    if(answeredQns.map((item) => item.QuestionId).contains(question.QuestionId)){
+                      selIndex = answeredQns.elementAt(answeredQns.indexWhere((element) => element.QuestionId == question.QuestionId)).AnswerId;
+                    }
                     return Container(
                         margin: EdgeInsets.all(5),
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(color:Colors.black38),
-                          color: question.AnswerId == question.AnswerChoices[index].AnswerChoiceID ? Colors.lightGreen : Colors.white,
+                          color: selIndex == question.AnswerChoices[index].AnswerChoiceID ? Colors.lightGreen : Colors.white,
                         ),
                         child: ListTile(
                           title: Text(question.AnswerChoices[index].AnswerText ?? ''),
                           onTap: (){
                             int selAns = question.AnswerChoices[index].AnswerChoiceID;
-                            setState(() {
-                              _answer = selAns!;
-                              question.AnswerId = selAns;
-                            });
+                            if(answeredQns.map((item) => item.QuestionId).contains(question.QuestionId)){
+                              setState(() {
+                                QuestionAnswer newAnswer = QuestionAnswer(
+                                    QuestionId: question.QuestionId,
+                                    AnswerId: selAns);
+                                answeredQns[answeredQns.indexWhere((element) => element.QuestionId == question.QuestionId)] = newAnswer;
+                              });
+                            }
+                            else{
+                              QuestionAnswer newAnswer = QuestionAnswer(
+                                  QuestionId: question.QuestionId,
+                                  AnswerId: selAns);
+                              setState(() {
+                                answeredQns.add(newAnswer);
+                              });
+                            }
                           },
                         )
                     );
@@ -346,16 +391,94 @@ class _QuizStartState extends State<QuizStart>{
                   ),
                   ElevatedButton(
                     onPressed: (){
+                      qnsId = qnsId + 1;
                       if(qnsId < widget.quizData.Questions.length){
                         setState(() {
-                          qnsId = qnsId + 1;
                           question = widget.quizData.Questions.elementAt(qnsId);
                         });
                       }
                       else{
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text("Last Question")),
-                        );
+                        timer?.cancel();
+                        showDialog(
+                          context: context,
+                          builder: (context){
+                            return StatefulBuilder(
+                              builder: (context, setState){
+                                return AlertDialog (
+                                  insetPadding: EdgeInsets.all(0),
+                                  content: Builder(
+                                    builder: (context) {
+                                      // Get available height and width of the build area of this widget. Make a choice depending on the size.
+                                      var height = MediaQuery.of(context).size.height;
+                                      var width = MediaQuery.of(context).size.width;
+
+                                      return Container(
+                                        height: height - (height/1.8),
+                                        width: width - (width/4),
+                                        child: isLoading ? Container(
+                                          height: MediaQuery.of(context).size.height / 1.3,
+                                          child: Center(
+                                            child: Column(
+                                              mainAxisAlignment: MainAxisAlignment.center,
+                                              crossAxisAlignment: CrossAxisAlignment.center,
+                                              children: [
+                                                //CircularProgressIndicator(),
+                                                Center(
+                                                  child: Lottie.asset('animations/ani_loading_hexa.json',
+                                                    width: 200,
+                                                    height: 200,),
+                                                ),
+                                                Container(
+                                                  padding: EdgeInsets.all(10),
+                                                  child:Text('Please wait. Submitting quiz responses',style: TextStyle(
+                                                    fontWeight: FontWeight.w500,fontSize: 16,),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ) :
+                                        Column(
+                                          children: [
+                                            Center(
+                                              child: Text('You have reached the end of the questionnaire. Please click End Quiz to end and submit your responses. '
+                                                  'Click Cancel to review your answers',style: TextStyle(
+                                                fontWeight: FontWeight.w500,fontSize: 16,),
+                                              ),
+                                            ),
+                                            Row(
+                                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                              children: [
+                                                ElevatedButton(
+                                                  onPressed: () {
+                                                    Navigator.pop(context);
+                                                  },
+                                                  child: const Text('Cancel'),
+                                                  style: ButtonStyle(
+                                                    backgroundColor: MaterialStateProperty.all(Colors.red),
+                                                  ),
+                                                ),
+                                                ElevatedButton(
+                                                  onPressed: () {
+                                                    submitQuizResponse();
+                                                  },
+                                                  child: const Text('End Quiz'),
+                                                  style: ButtonStyle(
+                                                    backgroundColor: MaterialStateProperty.all(Colors.green),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                );
+                              },
+                            );
+                          },
+                        )
                       }
                     },
                     child: Text('Next'),
@@ -368,6 +491,39 @@ class _QuizStartState extends State<QuizStart>{
         ),
       ),
     );
+  }
+
+  submitQuizResponse(){
+    setState(() {
+      isLoading = true;
+    });
+    QuizRespnse quizResponse = QuizRespnse(
+        QuizID: widget.quizData.QuizID,
+        QuizStartTime: quizStartTime,
+        QuizEndTime: DateTime.now(),
+        answer: answeredQns);
+
+    if(connectionStatus != ConnectivityResult.none){
+      _apiResponseData = _endpointProvider.postQuizResponse(quizResponse);
+      _apiResponseData.then((result) {
+        if(result.isAuthenticated && result.status){
+          setState(() {
+            isLoading = false;
+          });
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Quiz response submitted successfully")),
+          );
+        }
+      });
+    }
+    else{
+      setState(() {
+        isLoading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("No internet connection. Please check your settings")),
+      );
+    }
   }
 
   Widget buildTime(){
