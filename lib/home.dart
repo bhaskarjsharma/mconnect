@@ -53,10 +53,8 @@ class HomeState extends State<Home>  {
   final _peopleFormKey = GlobalKey<FormState>();
   final _documentFormKey = GlobalKey<FormState>();
   final _paySlipFormKey = GlobalKey<FormState>();
-  final _attendanceFormKey = GlobalKey<FormState>();
-  final _shiftRosterFormKey = GlobalKey<FormState>();
   final _claimsFormKey = GlobalKey<FormState>();
-  final _attRegulFormKey = GlobalKey<FormState>();
+  final _attendanceFormKey = GlobalKey<FormState>();
   final _itacFormKey = GlobalKey<FormState>();
 
   final empNameContrl = TextEditingController();
@@ -76,21 +74,10 @@ class HomeState extends State<Home>  {
   DateTime attendanceSelectedFromDate = DateTime.now();
   DateTime attendanceSelectedToDate = DateTime.now();
 
-  final shiftFromDateContrl = TextEditingController();
-  final shiftToDateContrl = TextEditingController();
-  DateTime shiftSelectedFromDate = DateTime.now();
-  DateTime shiftSelectedToDate = DateTime.now();
-
   final claimsFromDateContrl = TextEditingController();
   final claimsToDateContrl = TextEditingController();
   DateTime claimsSelectedFromDate = DateTime.now();
   DateTime claimsSelectedToDate = DateTime.now();
-
-  final attRegInTimeContrl = TextEditingController();
-  final attRegOutTimeContrl = TextEditingController();
-  final attRegReasonContrl = TextEditingController();
-  DateTime attRegIntime = DateTime.now();
-  DateTime attRegOutTime = DateTime.now();
 
   bool isLoading = false;
 
@@ -99,7 +86,6 @@ class HomeState extends State<Home>  {
   late List<ClaimData> claimsData;
   late List<PayrollData> payrollData;
   late List<AttendanceData> attendanceData;
-  late List<ShiftRoster> shiftRosterData;
 
   late List<String> empUnitList;
   late List<String> empDiscList;
@@ -383,18 +369,22 @@ class HomeState extends State<Home>  {
                   makeDashboardItem("News & Events",const Icon(ConnectAppIcon.newspaper,size:30, color:Colors.blue),Colors.blue,newsRoute),
                   makeDashboardItem("People",const Icon(ConnectAppIcon.users,size:30, color:Colors.pink),Colors.pink,peopleRoute),
                   makeDashboardItem("Documents",const Icon(ConnectAppIcon.article_alt,size:30, color:Colors.green),Colors.green,documentsRoute),
+                  makeDashboardItem("Disha",const Icon(Icons.stream,size:30, color:Colors.teal),Colors.teal,dishaRoute),
+                  makeDashboardItem("Payslips", const Icon(ConnectAppIcon.rupee_sign,size:30, color:Colors.orange),Colors.cyan,payslipRoute),
                   makeDashboardItem("Birthdays & Anniversaries",const Icon(Icons.celebration,size:30, color:Colors.red),Colors.red,birthdayRoute),
+                  makeDashboardItem("Punch Time",const Icon(Icons.fingerprint,size:30, color:Colors.red),Colors.deepPurple,attendanceRoute),
                   makeDashboardItem("Leave Quota",const Icon(Icons.info,size:30, color:Colors.cyan),Colors.orange,leaveQuotaRoute),
                   makeDashboardItem("Holiday List",const Icon(ConnectAppIcon.calendar,size:30, color:Colors.brown),Colors.brown,holidayListRoute),
-                  makeDashboardItem("Payslips", const Icon(ConnectAppIcon.rupee_sign,size:30, color:Colors.orange),Colors.cyan,payslipRoute),
-                  makeDashboardItem("Punch Time",const Icon(Icons.fingerprint,size:30, color:Colors.red),Colors.deepPurple,attendanceRoute),
-                  makeDashboardItem("Shift Roster",const Icon(ConnectAppIcon.calendar_alt,size:30, color:Colors.teal),Colors.teal,shiftRosterRoute),
+
+
+                  //makeDashboardItem("Shift Roster",const Icon(ConnectAppIcon.calendar_alt,size:30, color:Colors.teal),Colors.teal,shiftRosterRoute),
                   makeDashboardItem("Claims",const Icon(Icons.receipt,size:30, color:Colors.deepPurple),Colors.red,homeRoute),
-                  makeDashboardItem("Regularise Attendance",const Icon(Icons.schedule,size:30, color:Colors.deepPurple),Colors.red,homeRoute),
+                  //makeDashboardItem("Regularise Attendance",const Icon(Icons.schedule,size:30, color:Colors.deepPurple),Colors.red,homeRoute),
                   makeDashboardItem("ITAC",const Icon(Icons.computer,size:30, color:Colors.blue),Colors.red,itacRoute),
-                  makeDashboardItem("ECOFF & Overtime",const Icon(Icons.payments,size:30, color:Colors.lime),Colors.red,ecofOTRoute),
-                  makeDashboardItem("Hosp. Credit Letter",const Icon(Icons.medical_services,size:30, color:Colors.red),Colors.red,hosCrLtrRoute),
-                  makeDashboardItem("Quiz",const Icon(Icons.quiz,size:30, color:Colors.orange),Colors.orange,quizRoute),
+                  //makeDashboardItem("ECOFF & Overtime",const Icon(Icons.payments,size:30, color:Colors.lime),Colors.red,ecofOTRoute),
+                  //makeDashboardItem("Hosp. Credit Letter",const Icon(Icons.medical_services,size:30, color:Colors.red),Colors.red,hosCrLtrRoute),
+                  makeDashboardItem("Quiz",const Icon(Icons.quiz,size:30, color:Colors.lime),Colors.lime,quizRoute),
+
                 ],
               ),
             ),
@@ -1318,343 +1308,7 @@ class HomeState extends State<Home>  {
                                                   style: ButtonStyle(
                                                     backgroundColor: MaterialStateProperty.all(Colors.red),
                                                   ),
-                                                )
-                                              ],
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
-                        ),
-                      );
-                    },
-                  );
-                },
-              );
-            }
-            else{
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text("No internet connection. Please check your settings")),
-              );
-            }
-
-          }
-          else if(title == "Shift Roster"){
-            if(connectionStatus != ConnectivityResult.none){
-              showDialog(
-                context: context,
-                builder: (context){
-                  return StatefulBuilder(
-                    builder: (context, setState){
-                      return AlertDialog (
-                        insetPadding: EdgeInsets.all(0),
-                        content: Builder(
-                          builder: (context) {
-                            // Get available height and width of the build area of this widget. Make a choice depending on the size.
-                            var height = MediaQuery.of(context).size.height;
-                            var width = MediaQuery.of(context).size.width;
-
-                            return Container(
-                              height: height - (height/2.3),
-                              width: width - (width/4),
-                              child: isLoading ? waiting(context) : Column(
-                                children:[
-                                  Container(
-                                    padding: EdgeInsets.all(10),
-                                    child: Center(child: Text('View Shift Roster',
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.w800,
-                                          fontSize: 20,
-                                          color: Colors.blue[500],
-                                        ))) ,
-                                  ),
-                                  Wrap(
-                                    //mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                    children:[
-                                      ElevatedButton(
-                                        style: ElevatedButton.styleFrom(
-                                          padding: const EdgeInsets.symmetric(horizontal: 5),
-                                          primary: Colors.deepOrange,
-                                          shape: RoundedRectangleBorder(
-                                              borderRadius: BorderRadius.circular(50)),
-                                        ),
-                                        onPressed: () {
-                                          setState(() {
-                                            isLoading = true;
-                                          });
-                                          DateTime fromDate = DateTime.now();
-                                          DateTime toDate = DateTime.now().add(Duration(days: 8));
-                                          _apiResponseData = _endpointProvider.fetchShiftRosterData(DateFormat('yyyy-MM-dd').format(fromDate),DateFormat('yyyy-MM-dd').format(toDate));
-                                          _apiResponseData.then((result) {
-                                            if(result.isAuthenticated && result.status){
-                                              final parsed = jsonDecode(result.data ?? '').cast<Map<String, dynamic>>();
-                                              setState(() {
-                                                shiftFromDateContrl.text = '';
-                                                shiftToDateContrl.text = '';
-                                                shiftRosterData =  parsed.map<ShiftRoster>((json) => ShiftRoster.fromJson(json)).toList();
-                                                isLoading = false;
-                                                Navigator.pop(context);
-                                                Navigator.pushNamed(context, shiftRosterRoute, arguments: shiftRosterData,);
-                                              });
-                                            }
-                                            else{
-                                              setState(() {
-                                                shiftFromDateContrl.text = '';
-                                                shiftToDateContrl.text = '';
-                                                isLoading = false;
-                                              });
-                                              Navigator.pop(context);
-                                              ScaffoldMessenger.of(context).showSnackBar(
-                                                SnackBar(content: Text("Data not available")),
-                                              );
-                                            }
-                                          }).catchError( (error) {
-                                            setState(() {
-                                              shiftFromDateContrl.text = '';
-                                              shiftToDateContrl.text = '';
-                                              isLoading = false;
-                                            });
-                                            Navigator.pop(context);
-                                            ScaffoldMessenger.of(context).showSnackBar(
-                                              SnackBar(content: Text("Error in data fetching")),
-                                            );
-                                          });
-                                        },
-                                        child: const Text('Next 8 days'),
-                                      ),
-                                      ElevatedButton(
-                                        style: ElevatedButton.styleFrom(
-                                          padding: const EdgeInsets.symmetric(horizontal: 5),
-                                          primary: Colors.blueGrey,
-                                          shape: RoundedRectangleBorder(
-                                              borderRadius: BorderRadius.circular(50)),
-                                        ),
-                                        onPressed: () {
-                                          setState(() {
-                                            isLoading = true;
-                                          });
-                                          DateTime fromDate = new DateTime(DateTime.now().year,DateTime.now().month,1);
-                                          DateTime toDate = (DateTime.now().month < 12) ? new DateTime(DateTime.now().year, DateTime.now().month + 1, 0) : new DateTime(DateTime.now().year + 1, 1, 0);
-                                          _apiResponseData = _endpointProvider.fetchShiftRosterData(DateFormat('yyyy-MM-dd').format(fromDate),DateFormat('yyyy-MM-dd').format(toDate));
-                                          _apiResponseData.then((result) {
-                                            if(result.isAuthenticated && result.status){
-                                              final parsed = jsonDecode(result.data ?? '').cast<Map<String, dynamic>>();
-                                              setState(() {
-                                                shiftFromDateContrl.text = '';
-                                                shiftToDateContrl.text = '';
-                                                shiftRosterData =  parsed.map<ShiftRoster>((json) => ShiftRoster.fromJson(json)).toList();
-                                                isLoading = false;
-                                                Navigator.pop(context);
-                                                Navigator.pushNamed(context, shiftRosterRoute, arguments: shiftRosterData,);
-                                              });
-                                            }
-                                            else{
-                                              setState(() {
-                                                shiftFromDateContrl.text = '';
-                                                shiftToDateContrl.text = '';
-                                                isLoading = false;
-                                              });
-                                              Navigator.pop(context);
-                                              ScaffoldMessenger.of(context).showSnackBar(
-                                                SnackBar(content: Text("Data not available")),
-                                              );
-                                            }
-                                          }).catchError( (error) {
-                                            setState(() {
-                                              shiftFromDateContrl.text = '';
-                                              shiftToDateContrl.text = '';
-                                              isLoading = false;
-                                            });
-                                            Navigator.pop(context);
-                                            ScaffoldMessenger.of(context).showSnackBar(
-                                              SnackBar(content: Text("Error in data fetching")),
-                                            );
-                                          });
-                                        },
-                                        child: const Text('Current Month'),
-                                      ),
-                                      ElevatedButton(
-                                        style: ElevatedButton.styleFrom(
-                                          padding: const EdgeInsets.symmetric(horizontal: 5),
-                                          primary: Colors.teal,
-                                          shape: RoundedRectangleBorder(
-                                              borderRadius: BorderRadius.circular(50)),
-                                        ),
-                                        onPressed: () {
-                                          setState(() {
-                                            isLoading = true;
-                                          });
-                                          DateTime fromDate = (DateTime.now().month < 12) ? new DateTime(DateTime.now().year, DateTime.now().month + 1, 1) : new DateTime(DateTime.now().year + 1, 1, 1);
-                                          DateTime toDate = (fromDate.month < 12) ? new DateTime(fromDate.year, fromDate.month + 1, 0) : new DateTime(fromDate.year + 1, 1, 0);
-                                          _apiResponseData = _endpointProvider.fetchShiftRosterData(DateFormat('yyyy-MM-dd').format(fromDate),DateFormat('yyyy-MM-dd').format(toDate));
-                                          _apiResponseData.then((result) {
-                                            if(result.isAuthenticated && result.status){
-                                              final parsed = jsonDecode(result.data ?? '').cast<Map<String, dynamic>>();
-                                              setState(() {
-                                                shiftFromDateContrl.text = '';
-                                                shiftToDateContrl.text = '';
-                                                shiftRosterData =  parsed.map<ShiftRoster>((json) => ShiftRoster.fromJson(json)).toList();
-                                                isLoading = false;
-                                                Navigator.pop(context);
-                                                Navigator.pushNamed(context, shiftRosterRoute, arguments: shiftRosterData,);
-                                              });
-                                            }
-                                            else{
-                                              setState(() {
-                                                shiftFromDateContrl.text = '';
-                                                shiftToDateContrl.text = '';
-                                                isLoading = false;
-                                              });
-                                              Navigator.pop(context);
-                                              ScaffoldMessenger.of(context).showSnackBar(
-                                                SnackBar(content: Text("Data not available")),
-                                              );
-                                            }
-                                          }).catchError( (error) {
-                                            setState(() {
-                                              shiftFromDateContrl.text = '';
-                                              shiftToDateContrl.text = '';
-                                              isLoading = false;
-                                            });
-                                            Navigator.pop(context);
-                                            ScaffoldMessenger.of(context).showSnackBar(
-                                              SnackBar(content: Text("Error in data fetching")),
-                                            );
-                                          });
-                                        },
-                                        child: const Text('Next Month'),
-                                      ),
-                                    ],
-                                  ),
-                                  divider(),
-                                  Form(
-                                    key: _shiftRosterFormKey,
-                                    child: Container(
-                                      margin: EdgeInsets.symmetric(vertical: 20),
-                                      child:Column(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        crossAxisAlignment: CrossAxisAlignment.center,
-
-                                        children: <Widget>[
-                                          Container(
-                                            padding: const EdgeInsets.all(10.0),
-                                            child: Text('Check for other period'),
-                                          ),
-                                          Container(
-                                            padding: EdgeInsets.all(10),
-                                            child: TextFormField(
-                                              controller: shiftFromDateContrl,
-                                              decoration: InputDecoration(
-                                                border: OutlineInputBorder(),
-                                                labelText: 'From Date',
-                                              ),
-                                              onTap: (){
-                                                // Below line stops keyboard from appearing
-                                                FocusScope.of(context).requestFocus(new FocusNode());
-                                                _selectDate(context,shiftSelectedFromDate,shiftFromDateContrl);
-                                              },
-                                              // The validator receives the text that the user has entered.
-                                              validator: (value) {
-                                                if (value == null || value.isEmpty) {
-                                                  return 'Please enter From Date';
-                                                }
-                                                return null;
-                                              },
-                                            ),
-                                          ),
-                                          Container(
-                                            padding: EdgeInsets.all(10),
-                                            child: TextFormField(
-                                              controller: shiftToDateContrl,
-                                              decoration: InputDecoration(
-                                                border: OutlineInputBorder(),
-                                                labelText: 'To Date',
-                                              ),
-                                              onTap: (){
-                                                // Below line stops keyboard from appearing
-                                                FocusScope.of(context).requestFocus(new FocusNode());
-                                                _selectDate(context,shiftSelectedToDate,shiftToDateContrl);
-                                              },
-                                              // The validator receives the text that the user has entered.
-                                              validator: (value) {
-                                                if (value == null || value.isEmpty) {
-                                                  return 'Please enter To Date';
-                                                }
-                                                return null;
-                                              },
-                                            ),
-                                          ),
-                                          Container(
-                                            padding: const EdgeInsets.all(10.0),
-                                            child: Row(
-                                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                              children: [
-                                                ElevatedButton(
-                                                  onPressed: () {
-                                                    // Validate returns true if the form is valid, or false otherwise.
-                                                    if (_shiftRosterFormKey.currentState!.validate()) {
-                                                      setState(() {
-                                                        isLoading = true;
-                                                      });
-
-                                                      _apiResponseData = _endpointProvider.fetchShiftRosterData(shiftFromDateContrl.text,shiftToDateContrl.text);
-                                                      _apiResponseData.then((result) {
-                                                        if(result.isAuthenticated && result.status){
-                                                          final parsed = jsonDecode(result.data ?? '').cast<Map<String, dynamic>>();
-                                                          setState(() {
-                                                            shiftFromDateContrl.text = '';
-                                                            shiftToDateContrl.text = '';
-                                                            shiftRosterData =  parsed.map<ShiftRoster>((json) => ShiftRoster.fromJson(json)).toList();
-                                                            isLoading = false;
-                                                            Navigator.pop(context);
-                                                            Navigator.pushNamed(context, shiftRosterRoute, arguments: shiftRosterData,);
-                                                          });
-                                                        }
-                                                        else{
-                                                          setState(() {
-                                                            shiftFromDateContrl.text = '';
-                                                            shiftToDateContrl.text = '';
-                                                            isLoading = false;
-                                                          });
-                                                          Navigator.pop(context);
-                                                          ScaffoldMessenger.of(context).showSnackBar(
-                                                            SnackBar(content: Text("Data not available")),
-                                                          );
-                                                        }
-                                                      }).catchError( (error) {
-                                                        setState(() {
-                                                          shiftFromDateContrl.text = '';
-                                                          shiftToDateContrl.text = '';
-                                                          isLoading = false;
-                                                        });
-                                                        Navigator.pop(context);
-                                                        ScaffoldMessenger.of(context).showSnackBar(
-                                                          SnackBar(content: Text("Error in data fetching")),
-                                                        );
-                                                      });
-                                                    }
-                                                  },
-                                                  child: const Text('Show Shift Roster'),
                                                 ),
-                                                ElevatedButton(
-                                                  onPressed: () {
-                                                    setState(() {
-                                                      shiftFromDateContrl.text = '';
-                                                      shiftToDateContrl.text = '';
-                                                    });
-                                                    Navigator.pop(context);
-                                                  },
-                                                  child: const Text('Cancel'),
-                                                  style: ButtonStyle(
-                                                    backgroundColor: MaterialStateProperty.all(Colors.red),
-                                                  ),
-                                                )
                                               ],
                                             ),
                                           ),
@@ -1665,9 +1319,6 @@ class HomeState extends State<Home>  {
                                   ),
                                 ],
                               ),
-
-
-
                             );
                           },
                         ),
@@ -1682,7 +1333,6 @@ class HomeState extends State<Home>  {
                 SnackBar(content: Text("No internet connection. Please check your settings")),
               );
             }
-
           }
           else if(title == "Claims"){
             if(connectionStatus != ConnectivityResult.none){
@@ -1880,198 +1530,6 @@ class HomeState extends State<Home>  {
                                     ],
                                   ),
                                 ),
-
-                              ),
-                            );
-                          },
-                        ),
-                      );
-                    },
-                  );
-                },
-              );
-            }
-            else{
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text("No internet connection. Please check your settings")),
-              );
-            }
-
-          }
-          else if(title == "Regularise Attendance"){
-            if(connectionStatus != ConnectivityResult.none){
-              showDialog(
-                context: context,
-                builder: (context){
-                  return StatefulBuilder(
-                    builder: (context, setState){
-                      return AlertDialog (
-                        insetPadding: EdgeInsets.all(0),
-                        content: Builder(
-                          builder: (context) {
-                            // Get available height and width of the build area of this widget. Make a choice depending on the size.
-                            var height = MediaQuery.of(context).size.height;
-                            var width = MediaQuery.of(context).size.width;
-
-                            return Container(
-                              height: height - (height/3),
-                              width: width - (width/4),
-                              child: isLoading ? waiting(context) : Form(
-                                key: _attRegulFormKey,
-                                child: Container(
-                                  margin: EdgeInsets.symmetric(vertical: 20),
-                                  child:Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    crossAxisAlignment: CrossAxisAlignment.center,
-
-                                    children: <Widget>[
-                                      Container(
-
-                                        padding: EdgeInsets.all(10),
-                                        child: Center(child: Text('Attendance Regularisation Request',
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.w800,
-                                              fontSize: 20,
-                                              color: Colors.blue[500],
-                                            ))) ,
-                                      ),
-                                      Container(
-                                        padding: EdgeInsets.all(10),
-                                        child: TextFormField(
-                                          controller: attRegInTimeContrl,
-                                          decoration: InputDecoration(
-                                            border: OutlineInputBorder(),
-                                            labelText: 'In Date & Time',
-                                          ),
-                                          onTap: (){
-                                            // Below line stops keyboard from appearing
-                                            FocusScope.of(context).requestFocus(new FocusNode());
-                                            _selectDateTimeInTime(context,attRegInTimeContrl);
-                                          },
-                                          // The validator receives the text that the user has entered.
-                                          validator: (value) {
-                                            if (value == null || value.isEmpty) {
-                                              return 'Please enter In Date & Time';
-                                            }
-                                            return null;
-                                          },
-                                        ),
-                                      ),
-                                      Container(
-                                        padding: EdgeInsets.all(10),
-                                        child: TextFormField(
-                                          controller: attRegOutTimeContrl,
-                                          decoration: InputDecoration(
-                                            border: OutlineInputBorder(),
-                                            labelText: 'Out Date & Time',
-                                          ),
-                                          onTap: (){
-                                            // Below line stops keyboard from appearing
-                                            FocusScope.of(context).requestFocus(new FocusNode());
-                                            _selectDateTimeOutTime(context,attRegOutTimeContrl);
-                                          },
-                                          // The validator receives the text that the user has entered.
-                                          validator: (value) {
-                                            if (value == null || value.isEmpty) {
-                                              return 'Please enter Out Date & Time';
-                                            }
-                                            return null;
-                                          },
-                                        ),
-                                      ),
-                                      Container(
-                                        padding: EdgeInsets.all(10),
-                                        child: TextFormField(
-                                          controller: attRegReasonContrl,
-                                          maxLines: 3,
-                                          decoration: InputDecoration(
-                                            border: OutlineInputBorder(),
-                                            labelText: 'Reason for regularisation',
-                                          ),
-                                          // The validator receives the text that the user has entered.
-                                          validator: (value) {
-                                            if (value == null || value.isEmpty) {
-                                              return 'Please enter your reason for fegularisation';
-                                            }
-                                            return null;
-                                          },
-                                        ),
-                                      ),
-                                      Container(
-                                        padding: const EdgeInsets.all(10.0),
-                                        child: Row(
-                                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                          children: [
-                                            ElevatedButton(
-                                              onPressed: () {
-                                                // Validate returns true if the form is valid, or false otherwise.
-                                                if (_attRegulFormKey.currentState!.validate()) {
-                                                  setState(() {
-                                                    isLoading = true;
-                                                  });
-
-                                                  _apiResponseData = _endpointProvider.postAttendRegulRequest(attRegIntime.toString(),attRegOutTime.toString(),
-                                                      attRegReasonContrl.text);
-
-                                                  _apiResponseData.then((result) {
-                                                    if(result.isAuthenticated && result.status){
-                                                      setState(() {
-                                                        attRegInTimeContrl.text = '';
-                                                        attRegOutTimeContrl.text = '';
-                                                        isLoading = false;
-                                                      });
-                                                      Navigator.pop(context);
-                                                      ScaffoldMessenger.of(context).showSnackBar(
-                                                        SnackBar(content: Text("Request successfully submitted")),
-                                                      );
-                                                    }
-                                                    else{
-                                                      setState(() {
-                                                        attRegInTimeContrl.text = '';
-                                                        attRegOutTimeContrl.text = '';
-                                                        isLoading = false;
-                                                      });
-                                                      Navigator.pop(context);
-                                                      ScaffoldMessenger.of(context).showSnackBar(
-                                                        SnackBar(content: Text("Error in submitting request")),
-                                                      );
-                                                    }
-                                                  }).catchError( (error) {
-                                                    setState(() {
-                                                      attRegInTimeContrl.text = '';
-                                                      attRegOutTimeContrl.text = '';
-                                                      isLoading = false;
-                                                    });
-                                                    Navigator.pop(context);
-                                                    ScaffoldMessenger.of(context).showSnackBar(
-                                                      SnackBar(content: Text("Error in submitting request")),
-                                                    );
-                                                  });
-                                                }
-                                              },
-                                              child: const Text('Submit Request'),
-                                            ),
-                                            ElevatedButton(
-                                              onPressed: () {
-                                                setState(() {
-                                                  attRegInTimeContrl.text = '';
-                                                  attRegOutTimeContrl.text = '';
-                                                });
-                                                Navigator.pop(context);
-                                              },
-                                              child: const Text('Cancel'),
-                                              style: ButtonStyle(
-                                                backgroundColor: MaterialStateProperty.all(Colors.red),
-                                              ),
-                                            )
-                                          ],
-                                        ),
-                                      ),
-
-                                    ],
-                                  ),
-                                ),
-
                               ),
                             );
                           },
@@ -2088,7 +1546,7 @@ class HomeState extends State<Home>  {
               );
             }
           }
-          else if(title == "ITAC" || title == "ECOFF & Overtime" || title == "Hosp. Credit Letter" || title == "Quiz"){
+          else if(title == "ITAC" || title == "Quiz"){
             if(connectionStatus != ConnectivityResult.none){
               Navigator.pushNamed(context, routeName);
             }
@@ -2141,46 +1599,6 @@ class HomeState extends State<Home>  {
         date = selected;
         textController.text = "${selected.toLocal()}".split(' ')[0];
       });
-  }
-
-  Future<Null> _selectDateTimeInTime(BuildContext context,var textController) async {
-    final datePicked = await showDatePicker(
-        context: context,
-        initialDate: DateTime.now(),
-        firstDate: DateTime(2021),
-        lastDate: DateTime(2101));
-    if (datePicked != null){
-      final timePicked = await showTimePicker(
-        context: context,
-        initialTime: TimeOfDay(hour: 00, minute: 00),
-      );
-      if(timePicked != null){
-        setState(() {
-          attRegIntime = DateTime(datePicked.year, datePicked.month, datePicked.day, timePicked.hour,timePicked.minute);
-          textController.text = DateFormat('dd-MM-yyyy hh:mm aaa').format(attRegIntime);
-        });
-      }
-    }
-  }
-
-  Future<Null> _selectDateTimeOutTime(BuildContext context,var textController) async {
-    final datePicked = await showDatePicker(
-        context: context,
-        initialDate: DateTime.now(),
-        firstDate: DateTime(2021),
-        lastDate: DateTime(2101));
-    if (datePicked != null){
-      final timePicked = await showTimePicker(
-        context: context,
-        initialTime: TimeOfDay(hour: 00, minute: 00),
-      );
-      if(timePicked != null){
-        setState(() {
-          attRegOutTime = DateTime(datePicked.year, datePicked.month, datePicked.day, timePicked.hour,timePicked.minute);
-          textController.text = DateFormat('dd-MM-yyyy hh:mm aaa').format(attRegOutTime);
-        });
-      }
-    }
   }
   Future<void> initConnectivity() async {
     late ConnectivityResult result;

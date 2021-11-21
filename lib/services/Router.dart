@@ -10,6 +10,7 @@ import '../app_drawer.dart';
 import '../claim.dart';
 import '../constants.dart';
 import '../content.dart';
+import '../disha.dart';
 import '../documents.dart';
 import '../home.dart';
 import '../people.dart';
@@ -26,6 +27,8 @@ class NavigationRouter {
         return MaterialPageRoute(builder: (_) => News());
       case birthdayRoute:
         return MaterialPageRoute(builder: (_) => Birthday());
+      case dishaRoute:
+        return MaterialPageRoute(builder: (_) => Disha());
       case peopleRoute:
         final args = settings.arguments;
         return MaterialPageRoute(builder: (BuildContext context) => People(),settings: RouteSettings(arguments: args,),);

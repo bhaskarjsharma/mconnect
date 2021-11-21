@@ -30,3 +30,4 @@ const String quizRoute = '/QuizView';
 const String quizDetailRoute = '/QuizDetail';
 const String quizStartRoute = '/QuizStart';
 const String birthdayRoute = '/Birthday';
+const String dishaRoute = '/Disha';

@@ -186,7 +186,7 @@ class _QuizStartState extends State<QuizStart>{
   bool isLoading = true;
 
   late QuestionData question;
-  Duration duration = const Duration(seconds: 70);
+  Duration duration = const Duration(seconds: 0);
   Duration progressBarDuration = const Duration(seconds: 0);
   Timer? timer;
   double progressTimer = 0;
@@ -195,7 +195,7 @@ class _QuizStartState extends State<QuizStart>{
 
   @override
   void initState() {
-    //duration = Duration(seconds: widget.quizData.timeDuration);
+    duration = Duration(seconds: widget.quizData.timeDuration);
     DioClient _dio = new DioClient();
     _endpointProvider = new EndPointProvider(_dio.init());
     question = widget.quizData.Questions.elementAt(qnsId);
