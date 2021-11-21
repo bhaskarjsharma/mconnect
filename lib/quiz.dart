@@ -183,7 +183,7 @@ class _QuizStartState extends State<QuizStart>{
   Color ansColor = Colors.white;
   late Future<APIResponseData> _apiResponseData;
   late var _endpointProvider;
-  bool isLoading = true;
+  bool isLoading = false;
 
   late QuestionData question;
   Duration duration = const Duration(seconds: 0);

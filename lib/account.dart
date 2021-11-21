@@ -27,6 +27,8 @@ class _LoginState extends State<Login> with TickerProviderStateMixin{
   final unameController = TextEditingController();
   final pwdController = TextEditingController();
   bool apiCall = false;
+  late Future<EmployeeLoginData> _empLoginData;
+
   late final AnimationController _controller = AnimationController(
     duration: Duration(seconds: 3),
     vsync: this,
@@ -136,7 +138,59 @@ class _LoginState extends State<Login> with TickerProviderStateMixin{
                     setState(() {
                       _isLoading = true;
                     });
-                    EmployeeLoginData emp = await authenticate(unameController.text,pwdController.text);
+
+                    _empLoginData = authenticate(unameController.text,pwdController.text);
+                    _empLoginData.then((result) async {
+                      if(result.status){
+                        // obtain shared preferences
+                        final prefs = await SharedPreferences.getInstance();
+                        // set value
+                        prefs.setBool('isLoggedIn', true);
+                        // Create secure storage
+                        final storage = new FlutterSecureStorage();
+                        // Write value
+                        await storage.write(key: 'empno', value: result.emp_no);
+                        await storage.write(key: 'name', value: result.emp_name);
+                        await storage.write(key: 'desg', value: result.emp_desg);
+                        await storage.write(key: 'disc', value: result.emp_disc);
+                        await storage.write(key: 'grade', value: result.emp_grade);
+                        await storage.write(key: 'auth_token', value: result.auth_jwt);
+
+                        //Set variables for first time view
+                        setState(() {
+                          empno = result.emp_no!;
+                          user = result.emp_name!;
+                          designation = result.emp_desg!;
+                          discipline = result.emp_disc!;
+                          grade = result.emp_grade!;
+                          auth_token = result.auth_jwt!;
+                        });
+
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text("Welcome, ${result.emp_name}")),
+                        );
+                        setState(() {
+                          _isLoading = false;
+                        });
+
+                        Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (BuildContext context) => Home()), (Route<dynamic> route) => false);
+                      }
+                      else{
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Invalid Credentials. Unable to login')),
+                        );
+                        setState(() {
+                          _isLoading = false;
+                        });
+                      }
+                    }).catchError( (error) {
+                      Navigator.pop(context);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text("Unable to connect to server")),
+                      );
+                    });
+
+/*                  EmployeeLoginData emp = await authenticate(unameController.text,pwdController.text);
                     if(emp != null) {
                       if(emp.status){
                         // obtain shared preferences
@@ -197,7 +251,7 @@ class _LoginState extends State<Login> with TickerProviderStateMixin{
                       //     );
                       //   },
                       // );
-                    }
+                    }*/
                   },
                 ),
                 /*     Container(
