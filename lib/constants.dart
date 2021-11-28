@@ -31,3 +31,14 @@ const String quizDetailRoute = '/QuizDetail';
 const String quizStartRoute = '/QuizStart';
 const String birthdayRoute = '/Birthday';
 const String dishaRoute = '/Disha';
+const String addrProofRoute = '/AddProofApp';
+const String addrChangeRoute = '/AddChangeApp';
+const String outEmpRoute = '/OutEmpApp';
+const String medBenefitRoute = '/MedBenApp';
+const String highEduRoute = '/HighEduApp';
+const String claRoute = '/CLAApp';
+const String hraRoute = '/HRAApp';
+const String qtrAllocRoute = '/QtrAlloc';
+
+
+

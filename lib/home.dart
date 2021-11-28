@@ -3413,7 +3413,6 @@ class _HospitalCreditLetterState extends State<HospitalCreditLetter>{
        _attachmentName = path.basename(_attachment!.path);
      });
   }
-
   _imgFromGallery() async {
     final XFile? image = await _picker.pickImage(source: ImageSource.gallery, imageQuality: 50);
     setState(() {
