@@ -3102,7 +3102,7 @@ class QtrAllocState extends State<QtrAlloc>{
                       ),
                       FormBuilderTextField(
                         name: 'qtr_pref',
-                        maxLines: 5,
+                        maxLines: 2,
                         decoration: InputDecoration(
                           labelText:
                           'Preference of House',

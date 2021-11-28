@@ -29,6 +29,22 @@ class NavigationRouter {
         return MaterialPageRoute(builder: (_) => Birthday());
       case dishaRoute:
         return MaterialPageRoute(builder: (_) => Disha());
+      case addrProofRoute:
+        return MaterialPageRoute(builder: (_) => AddProofApp());
+      case addrChangeRoute:
+        return MaterialPageRoute(builder: (_) => AddChangeApp());
+      case outEmpRoute:
+        return MaterialPageRoute(builder: (_) => OutEmpApp());
+      case medBenefitRoute:
+        return MaterialPageRoute(builder: (_) => MedBenApp());
+      case highEduRoute:
+        return MaterialPageRoute(builder: (_) => HighEduApp());
+      case claRoute:
+        return MaterialPageRoute(builder: (_) => CLAApp());
+      case hraRoute:
+        return MaterialPageRoute(builder: (_) => HRAApp());
+      case qtrAllocRoute:
+        return MaterialPageRoute(builder: (_) => QtrAlloc());
       case peopleRoute:
         final args = settings.arguments;
         return MaterialPageRoute(builder: (BuildContext context) => People(),settings: RouteSettings(arguments: args,),);
