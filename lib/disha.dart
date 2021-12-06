@@ -1320,7 +1320,7 @@ class OutEmpAppState extends State<OutEmpApp>{
                   child: Column(
                     children: [
                       FormBuilderChoiceChip(
-                        name: 'cert_type',
+                        name: 'req_type',
                         decoration: InputDecoration(
                           labelText: 'Request Type',
                           //helperText: 'Certificate will be issued as per address maintained in SAP',
@@ -2428,6 +2428,20 @@ class CLAAppState extends State<CLAApp>{
                         onChanged: (DateTime? newValue) {
                         },
                         // enabled: true,
+                      ),
+                      FormBuilderTextField(
+                        name: 'monthly_rent',
+                        maxLines: 2,
+                        decoration: InputDecoration(
+                          labelText:
+                          'Monthly Rent',
+                        ),
+                        //onChanged: _onChanged,
+                        // valueTransformer: (text) => num.tryParse(text),
+                        validator: FormBuilderValidators.compose([
+                          FormBuilderValidators.required(context),
+                        ]),
+                        keyboardType: TextInputType.number,
                       ),
                       FormBuilderTextField(
                         name: 'owner_name',

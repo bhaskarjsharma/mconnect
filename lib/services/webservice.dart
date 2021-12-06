@@ -274,6 +274,94 @@ class EndPointProvider{
       throw Exception('Failed to retrieve data.');
     }
   }
+  Future<APIResponseData> postAddCertRequest(var formDataMap) async{
+    FormData formData = FormData.fromMap(formDataMap);
+    final response = await _client.post('https://connect.bcplindia.co.in/MobileAppAPI/DishaAddCert',
+        data: formData);
+    if (response.statusCode == 200) {
+      return APIResponseData.fromJson(response.data);
+    } else {
+      print("The error message is: ${response.data}");
+      throw Exception('Failed to post data.');
+    }
+  }
+  Future<APIResponseData> postAddChangeRequest(var formDataMap) async{
+    FormData formData = FormData.fromMap(formDataMap);
+    final response = await _client.post('https://connect.bcplindia.co.in/MobileAppAPI/DishaAddChange',
+        data: formData);
+    if (response.statusCode == 200) {
+      return APIResponseData.fromJson(response.data);
+    } else {
+      print("The error message is: ${response.data}");
+      throw Exception('Failed to post data.');
+    }
+  }
+  Future<APIResponseData> postOutEmpRequest(var formDataMap) async{
+    FormData formData = FormData.fromMap(formDataMap);
+    final response = await _client.post('https://connect.bcplindia.co.in/MobileAppAPI/DishaOutEmployment',
+        data: formData);
+    if (response.statusCode == 200) {
+      return APIResponseData.fromJson(response.data);
+    } else {
+      print("The error message is: ${response.data}");
+      throw Exception('Failed to post data.');
+    }
+  }
+  Future<APIResponseData> postMedBenefitRequest(var formDataMap) async{
+    FormData formData = FormData.fromMap(formDataMap);
+    final response = await _client.post('https://connect.bcplindia.co.in/MobileAppAPI/DishaMedBenefit',
+        data: formData);
+    if (response.statusCode == 200) {
+      return APIResponseData.fromJson(response.data);
+    } else {
+      print("The error message is: ${response.data}");
+      throw Exception('Failed to post data.');
+    }
+  }
+  Future<APIResponseData> postHighEduRequest(var formDataMap) async{
+    FormData formData = FormData.fromMap(formDataMap);
+    final response = await _client.post('https://connect.bcplindia.co.in/MobileAppAPI/DishaHighEdu',
+        data: formData);
+    if (response.statusCode == 200) {
+      return APIResponseData.fromJson(response.data);
+    } else {
+      print("The error message is: ${response.data}");
+      throw Exception('Failed to post data.');
+    }
+  }
+  Future<APIResponseData> postCLARequest(var formDataMap) async{
+    FormData formData = FormData.fromMap(formDataMap);
+    final response = await _client.post('https://connect.bcplindia.co.in/MobileAppAPI/DishaCLAReq',
+        data: formData);
+    if (response.statusCode == 200) {
+      return APIResponseData.fromJson(response.data);
+    } else {
+      print("The error message is: ${response.data}");
+      throw Exception('Failed to post data.');
+    }
+  }
+  Future<APIResponseData> postHRARequest(var formDataMap) async{
+    FormData formData = FormData.fromMap(formDataMap);
+    final response = await _client.post('https://connect.bcplindia.co.in/MobileAppAPI/DishaHRAReq',
+        data: formData);
+    if (response.statusCode == 200) {
+      return APIResponseData.fromJson(response.data);
+    } else {
+      print("The error message is: ${response.data}");
+      throw Exception('Failed to post data.');
+    }
+  }
+  Future<APIResponseData> postQtrAllocRequest(var formDataMap) async{
+    FormData formData = FormData.fromMap(formDataMap);
+    final response = await _client.post('https://connect.bcplindia.co.in/MobileAppAPI/DishaQtrAlloc',
+        data: formData);
+    if (response.statusCode == 200) {
+      return APIResponseData.fromJson(response.data);
+    } else {
+      print("The error message is: ${response.data}");
+      throw Exception('Failed to post data.');
+    }
+  }
   Future<APIResponseData> checkUpdate(String currentAppVersion, String currentAppBuildNumber) async{
     final response = await _client.post('https://connect.bcplindia.co.in/MobileAppAPI/checkAppUpdate',
         data: {'currentAppVersion': currentAppVersion, 'currentAppBuildNumber': currentAppBuildNumber});
