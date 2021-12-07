@@ -633,6 +633,7 @@ class _BirthdayState extends State<Birthday>{
         Column(
           children: [
             connectionStatus != ConnectivityResult.none ? SizedBox(height:0) : noConnectivityError(),
+            _peopleData.length != 0 ?
             Expanded(
               child: ListView.builder(
                   itemCount: _peopleData.length,
@@ -680,7 +681,8 @@ class _BirthdayState extends State<Birthday>{
                     );
                   }
               ),
-            ),
+            )
+                : Text('No birthdays or work anniversaries today'),
           ],
         ),
       ),

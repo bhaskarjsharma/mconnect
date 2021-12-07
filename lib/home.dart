@@ -378,7 +378,7 @@ class HomeState extends State<Home>  {
 
 
                   //makeDashboardItem("Shift Roster",const Icon(ConnectAppIcon.calendar_alt,size:30, color:Colors.teal),Colors.teal,shiftRosterRoute),
-                  makeDashboardItem("Claims",const Icon(Icons.receipt,size:30, color:Colors.deepPurple),Colors.red,homeRoute),
+                  makeDashboardItem("View Claims",const Icon(Icons.receipt,size:30, color:Colors.deepPurple),Colors.red,homeRoute),
                   //makeDashboardItem("Regularise Attendance",const Icon(Icons.schedule,size:30, color:Colors.deepPurple),Colors.red,homeRoute),
                   makeDashboardItem("ITAC",const Icon(Icons.computer,size:30, color:Colors.blue),Colors.red,itacRoute),
                   //makeDashboardItem("ECOFF & Overtime",const Icon(Icons.payments,size:30, color:Colors.lime),Colors.red,ecofOTRoute),
@@ -1334,7 +1334,7 @@ class HomeState extends State<Home>  {
               );
             }
           }
-          else if(title == "Claims"){
+          else if(title == "View Claims"){
             if(connectionStatus != ConnectivityResult.none){
               showDialog(
                 context: context,

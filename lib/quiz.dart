@@ -94,7 +94,7 @@ class _QuizViewState extends State<QuizView>{
               return Card(
                 child: ListTile(
                   title: Text(quizData[index].title ?? ''),
-                  subtitle: Text(quizData[index].StartTime ?? ''),
+                  subtitle: Text('Starting: ${quizData[index].StartTime} and Ending: ${quizData[index].EndTime}'),
                   onTap: () async{
                     Navigator.pushNamed(context, quizDetailRoute, arguments: quizData[index],);
                   },
@@ -154,12 +154,33 @@ class _QuizDetailState extends State<QuizDetail> {
         body: Column(
           children: [
             connectionStatus != ConnectivityResult.none ? SizedBox(height:0) : noConnectivityError(),
-            Text(quizData.title,
+            SizedBox(height:20),
+            Container(
+              decoration: BoxDecoration(
+                color:Colors.white,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              padding: EdgeInsets.all(15),
+              child: Text(quizData.title,
                 textAlign: TextAlign.justify,
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   fontSize: 18,
                 ),),
+            ),
+            SizedBox(height:20),
+            Container(
+              decoration: BoxDecoration(
+                color:Colors.white,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              padding: EdgeInsets.all(15),
+              child: Text('Do not press the Back button once the quiz starts and complete the quiz at one go',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                ),),
+            ),
             ElevatedButton(
                 onPressed: (){
                   Navigator.pushNamed(context, quizStartRoute, arguments: quizData,);
