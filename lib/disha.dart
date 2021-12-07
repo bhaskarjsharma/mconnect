@@ -2,6 +2,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -825,9 +826,9 @@ class AddProofAppState extends State<AddProofApp>{
                         ),
                         options: [
                           FormBuilderFieldOption(
-                              value: 'pres_addr', child: Text('Present Address')),
+                              value: 'Present Address', child: Text('Present Address')),
                           FormBuilderFieldOption(
-                              value: 'perm_addr', child: Text('Permanent Address')),
+                              value: 'Permanent Address', child: Text('Permanent Address')),
                         ],
                         validator: FormBuilderValidators.compose(
                             [FormBuilderValidators.required(context)]),
@@ -1028,16 +1029,16 @@ class AddChangeAppState extends State<AddChangeApp>{
                   child: Column(
                     children: [
                       FormBuilderChoiceChip(
-                        name: 'cert_type',
+                        name: 'req_type',
                         decoration: InputDecoration(
                           labelText: 'Address Type',
                           //helperText: 'Certificate will be issued as per address maintained in SAP',
                         ),
                         options: [
                           FormBuilderFieldOption(
-                              value: 'pres_addr', child: Text('Present Address')),
+                              value: 'Present Address', child: Text('Present Address')),
                           FormBuilderFieldOption(
-                              value: 'perm_addr', child: Text('Permanent Address')),
+                              value: 'Permanent Address', child: Text('Permanent Address')),
                         ],
                         validator: FormBuilderValidators.compose(
                             [FormBuilderValidators.required(context)]),
@@ -1105,12 +1106,17 @@ class AddChangeAppState extends State<AddChangeApp>{
                                 if(connectionStatus != ConnectivityResult.none){
                                   _addChangeFormKey.currentState!.save();
                                   var formDataMap = _addChangeFormKey.currentState!.value;
+                                  var formDataMapM = Map.of(formDataMap);
+
+                                  if(_attachment != null){
+                                    formDataMapM['file'] =  MultipartFile.fromFileSync(_attachment!.path, filename:_attachmentName);
+                                  }
 
                                   if (_addChangeFormKey.currentState!.validate()) {
                                     setState(() {
                                       isLoading = true;
                                     });
-                                    _apiResponseData = _endpointProvider.postAddChangeRequest(formDataMap);
+                                    _apiResponseData = _endpointProvider.postAddChangeRequest(formDataMapM);
 
                                     _apiResponseData.then((result) {
                                       if(result.isAuthenticated && result.status){
@@ -1425,12 +1431,16 @@ class OutEmpAppState extends State<OutEmpApp>{
                                 if(connectionStatus != ConnectivityResult.none){
                                   _outEmpFormKey.currentState!.save();
                                   var formDataMap = _outEmpFormKey.currentState!.value;
+                                  var formDataMapM = Map.of(formDataMap);
 
+                                  if(_attachment != null){
+                                    formDataMapM['file'] =  MultipartFile.fromFileSync(_attachment!.path, filename:_attachmentName);
+                                  }
                                   if (_outEmpFormKey.currentState!.validate()) {
                                     setState(() {
                                       isLoading = true;
                                     });
-                                    _apiResponseData = _endpointProvider.postOutEmpRequest(formDataMap);
+                                    _apiResponseData = _endpointProvider.postOutEmpRequest(formDataMapM);
 
                                     _apiResponseData.then((result) {
                                       if(result.isAuthenticated && result.status){
@@ -1780,12 +1790,16 @@ class MedBenAppState extends State<MedBenApp>{
                                 if(connectionStatus != ConnectivityResult.none){
                                   _medBenefitFormKey.currentState!.save();
                                   var formDataMap = _medBenefitFormKey.currentState!.value;
+                                  var formDataMapM = Map.of(formDataMap);
 
+                                  if(_attachment != null){
+                                    formDataMapM['file'] =  MultipartFile.fromFileSync(_attachment!.path, filename:_attachmentName);
+                                  }
                                   if (_medBenefitFormKey.currentState!.validate()) {
                                     setState(() {
                                       isLoading = true;
                                     });
-                                    _apiResponseData = _endpointProvider.postMedBenefitRequest(formDataMap);
+                                    _apiResponseData = _endpointProvider.postMedBenefitRequest(formDataMapM);
 
                                     _apiResponseData.then((result) {
                                       if(result.isAuthenticated && result.status){
@@ -2022,7 +2036,7 @@ class HighEduAppState extends State<HighEduApp>{
                         keyboardType: TextInputType.number,
                       ),
                       FormBuilderChoiceChip(
-                        name: 'req_type',
+                        name: 'course_mode',
                         decoration: InputDecoration(
                           labelText: 'Course Type',
                           //helperText: 'Certificate will be issued as per address maintained in SAP',
@@ -2131,12 +2145,16 @@ class HighEduAppState extends State<HighEduApp>{
                                 if(connectionStatus != ConnectivityResult.none){
                                   _highEduFormKey.currentState!.save();
                                   var formDataMap = _highEduFormKey.currentState!.value;
+                                  var formDataMapM = Map.of(formDataMap);
 
+                                  if(_attachment != null){
+                                    formDataMapM['file'] =  MultipartFile.fromFileSync(_attachment!.path, filename:_attachmentName);
+                                  }
                                   if (_highEduFormKey.currentState!.validate()) {
                                     setState(() {
                                       isLoading = true;
                                     });
-                                    _apiResponseData = _endpointProvider.postHighEduRequest(formDataMap);
+                                    _apiResponseData = _endpointProvider.postHighEduRequest(formDataMapM);
 
                                     _apiResponseData.then((result) {
                                       if(result.isAuthenticated && result.status){
@@ -2347,7 +2365,7 @@ class CLAAppState extends State<CLAApp>{
                       FormBuilderChoiceChip(
                         name: 'req_type',
                         decoration: InputDecoration(
-                          labelText: 'Course Type',
+                          labelText: 'Request Type',
                           //helperText: 'Certificate will be issued as per address maintained in SAP',
                         ),
                         options: [
@@ -2369,13 +2387,14 @@ class CLAAppState extends State<CLAApp>{
                           FormBuilderFieldOption(
                               value: 'Duliajan', child: Text('Duliajan')),
                           FormBuilderFieldOption(
-                              value: 'Lakwa/Sivsagar', child: Text('Lakwa/Sivsagar')),
-                          FormBuilderFieldOption(
-                              value: 'Dibrugarh', child: Text('Dibrugarh')),
-                          FormBuilderFieldOption(
                               value: 'Guwahati', child: Text('Guwahati')),
                           FormBuilderFieldOption(
+                              value: 'Lakwa', child: Text('Lakwa/Sivsagar')),
+                          FormBuilderFieldOption(
+                              value: 'Lepetkata', child: Text('Lepetkata/Dibrugarh')),
+                          FormBuilderFieldOption(
                               value: 'Noida/Delhi', child: Text('Noida/Delhi')),
+
                         ],
                         validator: FormBuilderValidators.compose(
                             [FormBuilderValidators.required(context)]),
@@ -2594,12 +2613,16 @@ class CLAAppState extends State<CLAApp>{
                                 if(connectionStatus != ConnectivityResult.none){
                                   _claFormKey.currentState!.save();
                                   var formDataMap = _claFormKey.currentState!.value;
+                                  var formDataMapM = Map.of(formDataMap);
 
+                                  if(_attachment != null){
+                                    formDataMapM['file'] =  MultipartFile.fromFileSync(_attachment!.path, filename:_attachmentName);
+                                  }
                                   if (_claFormKey.currentState!.validate()) {
                                     setState(() {
                                       isLoading = true;
                                     });
-                                    _apiResponseData = _endpointProvider.postCLARequest(formDataMap);
+                                    _apiResponseData = _endpointProvider.postCLARequest(formDataMapM);
 
                                     _apiResponseData.then((result) {
                                       if(result.isAuthenticated && result.status){
