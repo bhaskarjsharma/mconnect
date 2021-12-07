@@ -39,6 +39,7 @@ const String highEduRoute = '/HighEduApp';
 const String claRoute = '/CLAApp';
 const String hraRoute = '/HRAApp';
 const String qtrAllocRoute = '/QtrAlloc';
+const String profileRoute = '/UserProfile';
 
 
 

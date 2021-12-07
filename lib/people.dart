@@ -397,7 +397,6 @@ class _PeopleDetailsState extends State<PeopleDetails>{
   }
   Widget descSection(String title, String subtitle, IconData icon){
     return ListTile(
-
       title: Text(title,
           style: TextStyle(
             fontWeight: FontWeight.w300,

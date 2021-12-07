@@ -45,6 +45,8 @@ class NavigationRouter {
         return MaterialPageRoute(builder: (_) => HRAApp());
       case qtrAllocRoute:
         return MaterialPageRoute(builder: (_) => QtrAlloc());
+      case profileRoute:
+        return MaterialPageRoute(builder: (_) => UserProfile());
       case peopleRoute:
         final args = settings.arguments;
         return MaterialPageRoute(builder: (BuildContext context) => People(),settings: RouteSettings(arguments: args,),);

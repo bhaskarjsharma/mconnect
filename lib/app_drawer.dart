@@ -129,9 +129,7 @@ class AppDrawerState extends State<AppDrawer> {
             leading: Icon(Icons.manage_accounts,color: Colors.deepOrange, size:25),
             title: const Text('Profile'),
             onTap: () {
-              //Navigator.pushNamed(context, homeRoute);
-              //to prevent multiple back press, close all views and go to home
-              Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (BuildContext context) => Home()), (Route<dynamic> route) => false);
+              Navigator.pushNamed(context, profileRoute);
             },
           ),
           ListTile(
@@ -523,6 +521,184 @@ class AppDrawerState extends State<AppDrawer> {
     await prefs.clear();
     await storage.deleteAll();
     Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (BuildContext context) => Login()), (Route<dynamic> route) => false);
+  }
+}
+
+class UserProfile extends StatefulWidget {
+  @override
+  State<UserProfile> createState() => _UserProfileState();
+}
+class _UserProfileState extends State<UserProfile>{
+  bool isLoading = false;
+  late Future<APIResponseData> _apiResponseData;
+  late DioClient _dio;
+  late var _endpointProvider;
+  late Employee _profileData;
+
+  @override
+  void initState(){
+    super.initState();
+    _dio = new DioClient();
+    _endpointProvider = new EndPointProvider(_dio.init());
+    final userProfileBox = Hive.box('userProfile');
+    if(userProfileBox.values.isEmpty){
+      if(connectionStatus != ConnectivityResult.none){
+        _apiResponseData = _endpointProvider.fetchUserProfile();
+        _apiResponseData.then((result) {
+          if(result.isAuthenticated && result.status){
+            setState(() {
+              _profileData = Employee.fromJson(jsonDecode(result.data ?? ''));
+              isLoading = false;
+            });
+            userProfileBox.add(_profileData);
+          }
+        });
+      }
+      else{
+        setState(() {
+          isLoading = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("No internet connection. Please check your settings")),
+        );
+      }
+    }
+    else{
+      setState((){
+        _profileData = userProfileBox.getAt(0) as Employee;
+        isLoading = false;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+          gradient: LinearGradient(
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+              //colors: [Color.fromRGBO(255, 239, 186, 1), Color.fromRGBO(255, 255, 255, 1)]
+              colors: [startColor, endColor]
+          )
+      ),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          iconTheme: IconThemeData(
+              color: appBarTextColor
+          ),
+          systemOverlayStyle: SystemUiOverlayStyle(
+            statusBarColor: appBarBackgroundColor,
+            statusBarIconBrightness: statusBarBrightness,),
+          backgroundColor: appBarBackgroundColor,
+          bottomOpacity: 0.0,
+          elevation: appBarElevation,
+          leading: Container(
+            width: 40,
+            child: Image.asset('images/bcpl_logo.png'),
+          ),
+          title: Row(
+            children:[
+              Text('Profile',style: TextStyle(
+                color:appBarTextColor,
+              ),),
+              Spacer(),
+              IconButton(
+                icon: Icon(Icons.sync),
+                onPressed: () {
+                  if(connectionStatus != ConnectivityResult.none){
+                    setState(() {
+                      isLoading = true;
+                    });
+                    _apiResponseData = _endpointProvider.fetchUserProfile();
+                    _apiResponseData.then((result) async {
+                      if(result.isAuthenticated && result.status){
+                        _profileData = Employee.fromJson(jsonDecode(result.data ?? ''));
+                        var userProfileBox = await Hive.openBox<Employee>('userProfile');
+                        userProfileBox.clear();
+                        userProfileBox.add(_profileData);
+                        setState(() {
+                          isLoading = false;
+                        });
+                      }
+                      else{
+                        setState(() {
+                          isLoading = false;
+                        });
+                        Navigator.pop(context);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text("Error in data fetching")),
+                        );
+                      }
+                    }).catchError( (error) {
+                      setState(() {
+                        isLoading = false;
+                      });
+                      Navigator.pop(context);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text("Error in data fetching")),
+                      );
+                    });
+                  }
+                  else{
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text("No internet connection. Please check your settings")),
+                    );
+                  }
+                },
+                color: appBarTextColor,
+              )
+            ],
+          ),
+        ),
+        endDrawer: AppDrawer(),
+        body: Column(
+          children: [
+            connectionStatus != ConnectivityResult.none ? SizedBox(height:0) : noConnectivityError(),
+            Expanded(
+              child: ListView(
+                //padding: EdgeInsets.all(10.0),
+                children: [
+                  Container(
+                    padding:EdgeInsets.all(8),
+                    height:150,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.black12),
+                      image: DecorationImage (
+                        image: CachedNetworkImageProvider("https://connect.bcplindia.co.in/MobileAppAPI/imageFile?empno="+empno),
+                        fit: BoxFit.contain,
+                      ),
+                    ),
+                  ),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(user,
+                      style: TextStyle(
+                        fontWeight: FontWeight.w500,
+                        fontSize: 20,
+                        color:textColor,
+                      ),
+                    ),
+                  ),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(designation + " (" + discipline +")",
+                      style: TextStyle(
+                        fontWeight: FontWeight.w400,
+                        fontSize: 18,
+                        color:textColor,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 
