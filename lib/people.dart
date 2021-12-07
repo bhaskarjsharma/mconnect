@@ -9,6 +9,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_projects/services/webservice.dart';
 import 'package:hive/hive.dart';
 import 'package:intl/intl.dart';
+import 'package:lottie/lottie.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:share_plus/share_plus.dart';
 import 'account.dart';
@@ -682,7 +683,29 @@ class _BirthdayState extends State<Birthday>{
                   }
               ),
             )
-                : Text('No birthdays or work anniversaries today'),
+                : Container(
+              height: MediaQuery.of(context).size.height / 1.3,
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    //CircularProgressIndicator(),
+                    Center(
+                      child: Lottie.asset('animations/ani_empty.json',
+                        width: 231,
+                        height: 95,),
+                    ),
+                    Container(
+                      padding: EdgeInsets.all(10),
+                      child:Text('No birthdays or work anniversaries today',style: TextStyle(
+                        fontWeight: FontWeight.w500,fontSize: 16,),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ],
         ),
       ),
