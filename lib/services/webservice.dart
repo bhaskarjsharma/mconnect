@@ -229,6 +229,17 @@ class EndPointProvider{
       throw Exception('Failed to post data.');
     }
   }
+  Future<APIResponseData> fetchUserProfile() async{
+    final response = await _client.get('https://connect.bcplindia.co.in/MobileAppAPI/UserProfile');
+
+    if (response.statusCode == 200) {
+      return APIResponseData.fromJson(response.data);
+
+    } else {
+      print("The error message is: ${response.data}");
+      throw Exception('Failed to retrieve data.');
+    }
+  }
   Future<APIResponseData> fetchHosCrLtrMasterData() async{
     final response = await _client.get('https://connect.bcplindia.co.in/MobileAppAPI/getHospCrLetterMaster');
 

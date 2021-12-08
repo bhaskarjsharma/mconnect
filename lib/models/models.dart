@@ -587,6 +587,174 @@ class QuestionAnswer{
     );
   }
 }
+@HiveType(typeId: 8)
+class EmpProfileData extends HiveObject {
+  @HiveField(0)
+  final String? emp_no;
+  @HiveField(1)
+  final String? emp_name;
+  @HiveField(2)
+  final String? emp_desg;
+  @HiveField(3)
+  final String? emp_grade;
+  @HiveField(4)
+  final String? emp_dept;
+  @HiveField(5)
+  final String? emp_discipline;
+  @HiveField(6)
+  final String? emp_location;
+  @HiveField(7)
+  final String? emp_unit;
+  @HiveField(8)
+  final String? emp_email;
+  @HiveField(9)
+  final String? emp_mobileNo;
+  @HiveField(10)
+  final String? emp_intercom;
+  @HiveField(11)
+  final String? emp_intercomResidence;
+  @HiveField(12)
+  final String? emp_DOB;
+  @HiveField(13)
+  final String? emp_DOJ;
+  @HiveField(14)
+  final String? emp_gender;
+  @HiveField(15)
+  final String? emp_bloodgroup;
+  @HiveField(16)
+  final List<EmpAddressData> addressData ;
+  @HiveField(17)
+  final List<EmpTrainingData> trainingData ;
+  @HiveField(18)
+  final List<EmpDependentData> dependentData ;
+  @HiveField(19)
+  final List<EmpNomineeData> nomineeData ;
+
+  EmpProfileData({required this.emp_no, required this.emp_name, required this.emp_desg, required this.emp_grade,
+    required this.emp_dept,required this.emp_discipline,required this.emp_location,
+    required this.emp_unit,required this.emp_email,required this.emp_mobileNo,
+    required this.emp_intercom,required this.emp_intercomResidence,required this.emp_DOB,
+    required this.emp_gender,required this.emp_bloodgroup,required this.emp_DOJ,required this.addressData
+    ,required this.trainingData,required this.dependentData,required this.nomineeData});
+
+  factory EmpProfileData.fromJson(Map<String, dynamic> json) {
+    return EmpProfileData(
+      emp_no: json['emp_no'],
+      emp_name: json['emp_name'],
+      emp_desg: json['emp_desg'],
+      emp_grade: json['emp_grade'],
+      emp_dept: json['emp_dept'],
+      emp_discipline: json['emp_discipline'],
+      emp_location: json['emp_location'],
+      emp_unit: json['emp_unit'],
+      emp_email: json['emp_email'],
+      emp_mobileNo: json['emp_mobileNo'],
+      emp_intercom: json['emp_intercom'],
+      emp_intercomResidence: json['emp_intercomResidence'],
+      emp_DOB: json['emp_DOB'],
+      emp_gender: json['emp_gender'],
+      emp_bloodgroup: json['emp_bloodgroup'],
+      emp_DOJ: json['emp_DOJ'],
+      addressData: (json['addressData'] as List).map((e) => EmpAddressData.fromJson(e)).toList(),
+      trainingData: (json['trainingData'] as List).map((e) => EmpTrainingData.fromJson(e)).toList(),
+      dependentData: (json['dependentData'] as List).map((e) => EmpDependentData.fromJson(e)).toList(),
+      nomineeData: (json['nomineeData'] as List).map((e) => EmpNomineeData.fromJson(e)).toList(),
+    );
+  }
+}
+class EmpAddressData{
+  final String addressTypeText;
+  final String careof;
+  final String street;
+  final String addLine2;
+  final String city;
+  final String district;
+  final String pin;
+  final String state;
+  final String country;
+
+  EmpAddressData({required this.addressTypeText, required this.careof, required this.street,
+    required this.addLine2, required this.city, required this.district,
+    required this.pin, required this.state, required this.country});
+
+  factory EmpAddressData.fromJson(Map<String, dynamic> json) {
+    return EmpAddressData(
+      addressTypeText: json['addressTypeText'],
+      careof: json['careof'],
+      street: json['street'],
+      addLine2: json['addLine2'],
+      city: json['city'],
+      district: json['district'],
+      pin: json['pin'],
+      state: json['state'],
+      country: json['country'],
+    );
+  }
+}
+class EmpTrainingData{
+  final String startDate;
+  final String endDate;
+  final String training_desc;
+  final String TRAINING_NAME;
+  final String MAN_DAYS;
+  final String TRAINER_NAME;
+  final String VENUE_DETAILS;
+
+  EmpTrainingData({required this.startDate, required this.endDate, required this.training_desc,
+    required this.TRAINING_NAME, required this.MAN_DAYS, required this.TRAINER_NAME, required this.VENUE_DETAILS});
+
+  factory EmpTrainingData.fromJson(Map<String, dynamic> json) {
+    return EmpTrainingData(
+      startDate: json['startDate'],
+      endDate: json['endDate'],
+      training_desc: json['training_desc'],
+      TRAINING_NAME: json['TRAINING_NAME'],
+      MAN_DAYS: json['MAN_DAYS'],
+      TRAINER_NAME: json['TRAINER_NAME'],
+      VENUE_DETAILS: json['VENUE_DETAILS'],
+    );
+  }
+}
+class EmpDependentData{
+  final String dependentName;
+  final String dependentGender;
+  final String dependentDOB;
+  final String dependentRelationship;
+  final String dependentDate;
+
+  EmpDependentData({required this.dependentName, required this.dependentGender, required this.dependentDOB,
+    required this.dependentRelationship,required this.dependentDate});
+
+  factory EmpDependentData.fromJson(Map<String, dynamic> json) {
+    return EmpDependentData(
+      dependentName: json['dependentName'],
+      dependentGender: json['dependentGender'],
+      dependentDOB: json['dependentDOB'],
+      dependentRelationship: json['dependentRelationship'],
+      dependentDate: json['dependentDate'],
+    );
+  }
+}
+class EmpNomineeData{
+  final String benefitName;
+  final String startDate;
+  final String nomineeName;
+  final String nomineeRelationship;
+  final String nomineeShare;
+
+  EmpNomineeData({required this.benefitName, required this.startDate, required this.nomineeName,
+    required this.nomineeRelationship,required this.nomineeShare});
+
+  factory EmpNomineeData.fromJson(Map<String, dynamic> json) {
+    return EmpNomineeData(
+      benefitName: json['benefitName'],
+      startDate: json['startDate'],
+      nomineeName: json['nomineeName'],
+      nomineeRelationship: json['nomineeRelationship'],
+      nomineeShare: json['nomineeShare'],
+    );
+  }
+}
 
 
 

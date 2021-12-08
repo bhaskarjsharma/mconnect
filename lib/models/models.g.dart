@@ -397,3 +397,94 @@ class AppNotificationAdapter extends TypeAdapter<AppNotification> {
           runtimeType == other.runtimeType &&
           typeId == other.typeId;
 }
+
+class EmpProfileDataAdapter extends TypeAdapter<EmpProfileData> {
+  @override
+  final int typeId = 8;
+
+  @override
+  EmpProfileData read(BinaryReader reader) {
+    final numOfFields = reader.readByte();
+    final fields = <int, dynamic>{
+      for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
+    };
+    return EmpProfileData(
+      emp_no: fields[0] as String?,
+      emp_name: fields[1] as String?,
+      emp_desg: fields[2] as String?,
+      emp_grade: fields[3] as String?,
+      emp_dept: fields[4] as String?,
+      emp_discipline: fields[5] as String?,
+      emp_location: fields[6] as String?,
+      emp_unit: fields[7] as String?,
+      emp_email: fields[8] as String?,
+      emp_mobileNo: fields[9] as String?,
+      emp_intercom: fields[10] as String?,
+      emp_intercomResidence: fields[11] as String?,
+      emp_DOB: fields[12] as String?,
+      emp_gender: fields[14] as String?,
+      emp_bloodgroup: fields[15] as String?,
+      emp_DOJ: fields[13] as String?,
+      addressData: (fields[16] as List).cast<EmpAddressData>(),
+      trainingData: (fields[17] as List).cast<EmpTrainingData>(),
+      dependentData: (fields[18] as List).cast<EmpDependentData>(),
+      nomineeData: (fields[19] as List).cast<EmpNomineeData>(),
+    );
+  }
+
+  @override
+  void write(BinaryWriter writer, EmpProfileData obj) {
+    writer
+      ..writeByte(20)
+      ..writeByte(0)
+      ..write(obj.emp_no)
+      ..writeByte(1)
+      ..write(obj.emp_name)
+      ..writeByte(2)
+      ..write(obj.emp_desg)
+      ..writeByte(3)
+      ..write(obj.emp_grade)
+      ..writeByte(4)
+      ..write(obj.emp_dept)
+      ..writeByte(5)
+      ..write(obj.emp_discipline)
+      ..writeByte(6)
+      ..write(obj.emp_location)
+      ..writeByte(7)
+      ..write(obj.emp_unit)
+      ..writeByte(8)
+      ..write(obj.emp_email)
+      ..writeByte(9)
+      ..write(obj.emp_mobileNo)
+      ..writeByte(10)
+      ..write(obj.emp_intercom)
+      ..writeByte(11)
+      ..write(obj.emp_intercomResidence)
+      ..writeByte(12)
+      ..write(obj.emp_DOB)
+      ..writeByte(13)
+      ..write(obj.emp_DOJ)
+      ..writeByte(14)
+      ..write(obj.emp_gender)
+      ..writeByte(15)
+      ..write(obj.emp_bloodgroup)
+      ..writeByte(16)
+      ..write(obj.addressData)
+      ..writeByte(17)
+      ..write(obj.trainingData)
+      ..writeByte(18)
+      ..write(obj.dependentData)
+      ..writeByte(19)
+      ..write(obj.nomineeData);
+  }
+
+  @override
+  int get hashCode => typeId.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is EmpProfileDataAdapter &&
+          runtimeType == other.runtimeType &&
+          typeId == other.typeId;
+}
