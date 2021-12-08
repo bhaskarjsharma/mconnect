@@ -126,6 +126,15 @@ class AppDrawerState extends State<AppDrawer> {
             },
           ),
           ListTile(
+            leading: Icon(Icons.home,color: Colors.blueAccent, size:25),
+            title: const Text('TFA'),
+            onTap: () {
+              //Navigator.pushNamed(context, homeRoute);
+              //to prevent multiple back press, close all views and go to home
+              Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (BuildContext context) => TwoFactorAuth()), (Route<dynamic> route) => false);
+            },
+          ),
+          ListTile(
             leading: Icon(Icons.manage_accounts,color: Colors.deepOrange, size:25),
             title: const Text('Profile'),
             onTap: () {
@@ -520,6 +529,8 @@ class AppDrawerState extends State<AppDrawer> {
   Future<void> logout() async {
     await prefs.clear();
     await storage.deleteAll();
+    Hive.close();
+    Hive.deleteFromDisk();
     Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (BuildContext context) => Login()), (Route<dynamic> route) => false);
   }
 }
@@ -533,7 +544,7 @@ class _UserProfileState extends State<UserProfile>{
   late Future<APIResponseData> _apiResponseData;
   late DioClient _dio;
   late var _endpointProvider;
-  late Employee _profileData;
+  late EmpProfileData _profileData;
 
   @override
   void initState(){
@@ -547,7 +558,7 @@ class _UserProfileState extends State<UserProfile>{
         _apiResponseData.then((result) {
           if(result.isAuthenticated && result.status){
             setState(() {
-              _profileData = Employee.fromJson(jsonDecode(result.data ?? ''));
+              _profileData = EmpProfileData.fromJson(jsonDecode(result.data ?? ''));
               isLoading = false;
             });
             userProfileBox.add(_profileData);
@@ -565,7 +576,7 @@ class _UserProfileState extends State<UserProfile>{
     }
     else{
       setState((){
-        _profileData = userProfileBox.getAt(0) as Employee;
+        _profileData = userProfileBox.getAt(0) as EmpProfileData;
         isLoading = false;
       });
     }
@@ -614,9 +625,9 @@ class _UserProfileState extends State<UserProfile>{
                     _apiResponseData = _endpointProvider.fetchUserProfile();
                     _apiResponseData.then((result) async {
                       if(result.isAuthenticated && result.status){
-                        _profileData = Employee.fromJson(jsonDecode(result.data ?? ''));
-                        var userProfileBox = await Hive.openBox<Employee>('userProfile');
-                        userProfileBox.clear();
+                        _profileData = EmpProfileData.fromJson(jsonDecode(result.data ?? ''));
+                        final userProfileBox = Hive.box('userProfile');
+                        userProfileBox.deleteAt(0);
                         userProfileBox.add(_profileData);
                         setState(() {
                           isLoading = false;
@@ -685,6 +696,16 @@ class _UserProfileState extends State<UserProfile>{
                   Align(
                     alignment: Alignment.centerLeft,
                     child: Text(designation + " (" + discipline +")",
+                      style: TextStyle(
+                        fontWeight: FontWeight.w400,
+                        fontSize: 18,
+                        color:textColor,
+                      ),
+                    ),
+                  ),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text('${_profileData.emp_bloodgroup}',
                       style: TextStyle(
                         fontWeight: FontWeight.w400,
                         fontSize: 18,

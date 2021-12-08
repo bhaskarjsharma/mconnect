@@ -113,6 +113,7 @@ void main() async{
   Hive.registerAdapter(NewsContentAdapter());
   Hive.registerAdapter(HospCrLtrMasterDataAdapter());
   Hive.registerAdapter(AppNotificationAdapter());
+  Hive.registerAdapter(EmpProfileDataAdapter());
 
   await Hive.openBox<NewsContent>('newsContent');
   await Hive.openBox<Employee>('employeeList');
@@ -121,6 +122,7 @@ void main() async{
   await Hive.openBox<ITACMasterData>('itacMaster');
   await Hive.openBox<HospCrLtrMasterData>('hospCrLtrMaster');
   await Hive.openBox<AppNotification>('appNotifications');
+  await Hive.openBox('userProfile');
 
   //Firebase configs start
   await Firebase.initializeApp();

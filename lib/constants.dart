@@ -40,6 +40,7 @@ const String claRoute = '/CLAApp';
 const String hraRoute = '/HRAApp';
 const String qtrAllocRoute = '/QtrAlloc';
 const String profileRoute = '/UserProfile';
+const String tfaRoute = '/TwoFactorAuth';
 
 
 

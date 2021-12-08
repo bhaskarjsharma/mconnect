@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
+import '../account.dart';
 import '../home.dart';
 import 'package:flutter_projects/models/models.dart';
 import 'package:flutter_projects/services/permissions.dart';
@@ -33,10 +35,14 @@ class ApiInterceptors extends Interceptor {
       // API token validation failed. Force Logout.
       prefs.clear();
       storage.deleteAll();
+      Hive.close();
+      Hive.deleteFromDisk();
       ScaffoldMessenger.of(navigatorKey.currentState!.context).showSnackBar(
         SnackBar(content: Text("Session expired. Please login again")),
       );
-      navigatorKey.currentState!.pushNamed('/Login');
+      //navigatorKey.currentState!.pushNamed('/Login');
+      //remove route from multiple back button
+      navigatorKey.currentState!.pushAndRemoveUntil(MaterialPageRoute(builder: (BuildContext context) => Login()), (Route<dynamic> route) => false);
     }
     else{
       return super.onResponse(response, handler);
