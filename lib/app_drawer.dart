@@ -126,15 +126,6 @@ class AppDrawerState extends State<AppDrawer> {
             },
           ),
           ListTile(
-            leading: Icon(Icons.home,color: Colors.blueAccent, size:25),
-            title: const Text('TFA'),
-            onTap: () {
-              //Navigator.pushNamed(context, homeRoute);
-              //to prevent multiple back press, close all views and go to home
-              Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (BuildContext context) => TwoFactorAuth()), (Route<dynamic> route) => false);
-            },
-          ),
-          ListTile(
             leading: Icon(Icons.manage_accounts,color: Colors.deepOrange, size:25),
             title: const Text('Profile'),
             onTap: () {

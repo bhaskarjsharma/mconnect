@@ -48,7 +48,8 @@ class NavigationRouter {
       case profileRoute:
         return MaterialPageRoute(builder: (_) => UserProfile());
       case tfaRoute:
-        return MaterialPageRoute(builder: (_) => TwoFactorAuth());
+        final args = settings.arguments as OTPauth;
+        return MaterialPageRoute(builder: (BuildContext context) => TwoFactorAuth(args.otpRecordID,args.deviceStatRecordID));
       case peopleRoute:
         final args = settings.arguments;
         return MaterialPageRoute(builder: (BuildContext context) => People(),settings: RouteSettings(arguments: args,),);

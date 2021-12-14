@@ -1,10 +1,13 @@
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:device_info_plus/device_info_plus.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:lottie/lottie.dart';
 import 'package:mobile_number/mobile_number.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'constants.dart';
@@ -30,8 +33,14 @@ class _LoginState extends State<Login> with TickerProviderStateMixin{
   final pwdController = TextEditingController();
   bool apiCall = false;
   late Future<EmployeeLoginData> _empLoginData;
-  String _mobileNumber = '';
-  List<SimCard> _simCard = <SimCard>[];
+  late DeviceInfoPlugin deviceInfo;
+  late String appBuildNumber;
+  late String appVersion;
+  late String deviceName;
+  late String deviceModel;
+  late String deviceUID;
+  // String _mobileNumber = '';
+  // List<SimCard> _simCard = <SimCard>[];
   bool access = false;
 
   late final AnimationController _controller = AnimationController(
@@ -47,38 +56,66 @@ class _LoginState extends State<Login> with TickerProviderStateMixin{
   void initState(){
     initConnectivity();
     _connectivitySubscription = _connectivity.onConnectivityChanged.listen(_updateConnectionStatus);
-    MobileNumber.listenPhonePermission((isPermissionGranted) {
-      if (isPermissionGranted) {
-        initMobileNumberState();
-      } else {}
-    });
+    deviceInfo = DeviceInfoPlugin();
+    getDeviceInfo();
+    getPackageInfo();
 
-    initMobileNumberState();
+    // MobileNumber.listenPhonePermission((isPermissionGranted) {
+    //   if (isPermissionGranted) {
+    //     initMobileNumberState();
+    //   } else {}
+    // });
+    //
+    // initMobileNumberState();
   }
-
-  Future<void> initMobileNumberState() async {
-    if (!await MobileNumber.hasPhonePermission) {
-      await MobileNumber.requestPhonePermission;
-      return;
+  getDeviceInfo() async{
+    if (Platform.isAndroid) {
+      AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
+      setState(() {
+        deviceName = androidInfo.brand!;
+        deviceModel = androidInfo.model!;
+        deviceUID = androidInfo.androidId!;
+      });
+    } else if (Platform.isIOS) {
+      IosDeviceInfo iosInfo = await deviceInfo.iosInfo;
+      setState(() {
+        deviceName = iosInfo.name!;
+        deviceModel = iosInfo.model!;
+        deviceUID = iosInfo.identifierForVendor!;
+      });
     }
-    String mobileNumber = '';
-    // Platform messages may fail, so we use a try/catch PlatformException.
-    try {
-      mobileNumber = (await MobileNumber.mobileNumber)!;
-      _simCard = (await MobileNumber.getSimCards)!;
-    } on PlatformException catch (e) {
-      debugPrint("Failed to get mobile number because of '${e.message}'");
-    }
-
-    // If the widget was removed from the tree while the asynchronous platform
-    // message was in flight, we want to discard the reply rather than calling
-    // setState to update our non-existent appearance.
-    if (!mounted) return;
-
-    setState(() {
-      _mobileNumber = mobileNumber;
+  }
+  getPackageInfo(){
+    PackageInfo.fromPlatform().then((PackageInfo packageInfo) {
+      setState(() {
+        appVersion = packageInfo.version;
+        appBuildNumber = packageInfo.buildNumber;
+      });
     });
   }
+  // Future<void> initMobileNumberState() async {
+  //   if (!await MobileNumber.hasPhonePermission) {
+  //     await MobileNumber.requestPhonePermission;
+  //     return;
+  //   }
+  //   String mobileNumber = '';
+  //   // Platform messages may fail, so we use a try/catch PlatformException.
+  //   try {
+  //     mobileNumber = (await MobileNumber.mobileNumber)!;
+  //     _simCard = (await MobileNumber.getSimCards)!;
+  //   } on PlatformException catch (e) {
+  //     debugPrint("Failed to get mobile number because of '${e.message}'");
+  //   }
+  //
+  //   // If the widget was removed from the tree while the asynchronous platform
+  //   // message was in flight, we want to discard the reply rather than calling
+  //   // setState to update our non-existent appearance.
+  //   if (!mounted) return;
+  //
+  //   setState(() {
+  //     _mobileNumber = mobileNumber;
+  //   });
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -175,40 +212,17 @@ class _LoginState extends State<Login> with TickerProviderStateMixin{
                       _isLoading = true;
                     });
 
-                    _empLoginData = authenticate(unameController.text,pwdController.text);
+                    _empLoginData = authenticate(unameController.text,pwdController.text,appBuildNumber,appVersion,
+                        deviceName,deviceModel,deviceUID);
                     _empLoginData.then((result) async {
-                      if(result.status){
-                        // read mobile number from SIM or send SMS for OTP verification to
-                        // BCPL registered mobile number
-                        //first check if primary sim mobile number on device matches with registered number
-
-                        if(Platform.isAndroid){
-                          // sim card number detection works in android only
-                          if(_mobileNumber == result.emp_mobileNo){
-                            setState((){
-                              access = true;
-                            });
-                          }
-                          else{
-                            // primary sim card number does not match. check for dual sim card numbers
-                            for(SimCard sim in _simCard){
-                              if(sim.number == result.emp_mobileNo){
-                                setState((){
-                                  access = true;
-                                });
-                                break;
-                              }
-                            }
-                          }
-                        }
-                        else if(Platform.isIOS){
-                          // for iphone initiate OTP verification
-                          setState((){
-                            access = true;
-                          });
-                        }
-
-                        if(access){
+                      if(result.otpVerReqd){
+                        //OTP verification Required. Redirect to OTP screen
+                        Navigator.pushNamed(context, tfaRoute, arguments: OTPauth(
+                            result.otpRecordID,result.deviceStatID),);
+                      }
+                      else{
+                        if(result.status){
+                          //Device already verified. Proceed to home
                           // obtain shared preferences
                           final prefs = await SharedPreferences.getInstance();
                           // set value
@@ -244,22 +258,12 @@ class _LoginState extends State<Login> with TickerProviderStateMixin{
                         }
                         else{
                           ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Device mobile number validation failed.')),
+                            const SnackBar(content: Text('Invalid Credentials. Unable to login')),
                           );
                           setState(() {
                             _isLoading = false;
-                            access = false;
                           });
                         }
-                        //Navigator.pushNamed(context, tfaRoute);
-                      }
-                      else{
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Invalid Credentials. Unable to login')),
-                        );
-                        setState(() {
-                          _isLoading = false;
-                        });
                       }
                     }).catchError( (error) {
                       Navigator.pop(context);
@@ -433,7 +437,8 @@ class _LoginState extends State<Login> with TickerProviderStateMixin{
     super.dispose();
   }
 
-  Future<EmployeeLoginData> authenticate(String uname, String pwd) async{
+  Future<EmployeeLoginData> authenticate(String uname, String pwd, String appBuildNumber,String appVersion,
+      String deviceName,String deviceModel,String deviceUID) async{
     final response = await http.post(
       Uri.parse('https://connect.bcplindia.co.in/MobileAppAPI/Login'),
       headers: <String, String>{
@@ -442,6 +447,11 @@ class _LoginState extends State<Login> with TickerProviderStateMixin{
       body: jsonEncode(<String, String>{
         'username': uname,
         'password':pwd,
+        'appBuildNumber': appBuildNumber,
+        'appVersion':appVersion,
+        'deviceName': deviceName,
+        'deviceModel':deviceModel,
+        'deviceUID': deviceUID,
       }),
     );
 
@@ -535,20 +545,18 @@ class _LoginState extends State<Login> with TickerProviderStateMixin{
 }
 
 class TwoFactorAuth extends StatefulWidget {
+  final int otpRecordID;
+  final int deviceStatRecordID;
+  TwoFactorAuth(this.otpRecordID,this.deviceStatRecordID);
+
   @override
   State<TwoFactorAuth> createState() => _TwoFactorAuthState();
 }
 class _TwoFactorAuthState extends State<TwoFactorAuth>{
-
-  //ConnectivityResult _connectionStatus = ConnectivityResult.mobile;
-  final Connectivity _connectivity = Connectivity();
-  late StreamSubscription<ConnectivityResult> _connectivitySubscription;
   bool _isLoading = false;
   var errorMsg;
-  final unameController = TextEditingController();
-  final pwdController = TextEditingController();
   bool apiCall = false;
-
+  late Future<EmployeeLoginData> _empLoginData;
   late String code;
   late bool loaded;
   late bool shake;
@@ -562,8 +570,6 @@ class _TwoFactorAuthState extends State<TwoFactorAuth>{
     loaded = true;
     shake = false;
     valid = true;
-    initConnectivity();
-    _connectivitySubscription = _connectivity.onConnectivityChanged.listen(_updateConnectionStatus);
   }
   void onCodeInput(String value) {
     setState(() {
@@ -575,24 +581,78 @@ class _TwoFactorAuthState extends State<TwoFactorAuth>{
     setState(() {
       loaded = false;
     });
-    const bool result = false; //backend call
-    setState(() {
-      loaded = true;
-      valid = result;
+    // const bool result = false; //backend call
+    _empLoginData = validateOTP(widget.otpRecordID.toString(),widget.deviceStatRecordID.toString(),code);
+    _empLoginData.then((result) async {
+      if(result.deviceVerified && result.status){
+         final prefs = await SharedPreferences.getInstance();
+         // set value
+         prefs.setBool('isLoggedIn', true);
+         // Create secure storage
+         final storage = new FlutterSecureStorage();
+         // Write value
+         await storage.write(key: 'empno', value: result.emp_no);
+         await storage.write(key: 'name', value: result.emp_name);
+         await storage.write(key: 'desg', value: result.emp_desg);
+         await storage.write(key: 'disc', value: result.emp_disc);
+         await storage.write(key: 'grade', value: result.emp_grade);
+         await storage.write(key: 'auth_token', value: result.auth_jwt);
+
+         //Set variables for first time view
+         setState(() {
+           empno = result.emp_no!;
+           user = result.emp_name!;
+           designation = result.emp_desg!;
+           discipline = result.emp_disc!;
+           grade = result.emp_grade!;
+           auth_token = result.auth_jwt!;
+         });
+
+         ScaffoldMessenger.of(context).showSnackBar(
+           SnackBar(content: Text("Welcome, ${result.emp_name}")),
+         );
+         setState(() {
+           _isLoading = false;
+         });
+
+        Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (BuildContext context) => Home()), (Route<dynamic> route) => false);
+      }
+      else{
+        setState(() {
+          _isLoading = false;
+        });
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('OTP validation failed. Unable to login')),
+        );
+      }
+    }).catchError( (error) {
+      setState(() {
+        _isLoading = false;
+      });
+      Navigator.pop(context);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Unable to connect to server")),
+      );
     });
 
-    if (valid) {
-      // do next
-    } else {
-      setState(() {
-        shake = true;
-      });
-      await Future<String>.delayed(
-          const Duration(milliseconds: 300), () => '1');
-      setState(() {
-        shake = false;
-      });
-    }
+    setState(() {
+      loaded = true;
+      //valid = result;
+    });
+
+    // if (valid) {
+    //   // do next
+    // } else {
+    //   setState(() {
+    //     shake = true;
+    //   });
+    //   await Future<String>.delayed(
+    //       const Duration(milliseconds: 300), () => '1');
+    //   setState(() {
+    //     shake = false;
+    //   });
+    // }
   }
   @override
   Widget build(BuildContext context) {
@@ -664,7 +724,7 @@ class _TwoFactorAuthState extends State<TwoFactorAuth>{
                 ),
                 Align(
                   alignment: Alignment.center,
-                  child: Text('Please enter the 6 digit pin sent to your mobile number',
+                  child: Text('Please enter the 4 digit pin sent to your mobile number',
                     textAlign: TextAlign.justify,
                     style: TextStyle(
                       fontWeight: FontWeight.w500,
@@ -676,7 +736,7 @@ class _TwoFactorAuthState extends State<TwoFactorAuth>{
                 const SizedBox(height: 20),
                 Container(
                   height: 90,
-                  width: 300,
+                  width: 250,
                   // color: Colors.amber,
                   child: Stack(
                     children: <Widget>[
@@ -687,7 +747,7 @@ class _TwoFactorAuthState extends State<TwoFactorAuth>{
                           focusNode: _textNode,
                           keyboardType: TextInputType.number,
                           onChanged: onCodeInput,
-                          maxLength: 6,
+                          maxLength: 4,
                         ),
                       ),
                       Positioned(
@@ -731,12 +791,11 @@ class _TwoFactorAuthState extends State<TwoFactorAuth>{
   @override
   void dispose() {
     // Clean up the controller when the widget is disposed.
-    _connectivitySubscription.cancel();
     super.dispose();
   }
   List<Widget> getField() {
     final List<Widget> result = <Widget>[];
-    for (int i = 1; i <= 6; i++) {
+    for (int i = 1; i <= 4; i++) {
       result.add(
           Column(
             children: <Widget>[
@@ -771,79 +830,25 @@ class _TwoFactorAuthState extends State<TwoFactorAuth>{
     return result;
   }
 
-  Future<void> initConnectivity() async {
-    late ConnectivityResult result;
-    // Platform messages may fail, so we use a try/catch PlatformException.
-    try {
-      result = await _connectivity.checkConnectivity();
-    } on PlatformException catch (e) {
-      print(e.toString());
-      return;
-    }
-    if (!mounted) {
-      return Future.value(null);
-    }
-    return _updateConnectionStatus(result);
-  }
-  Future<void> _updateConnectionStatus(ConnectivityResult result) async {
+  Future<EmployeeLoginData> validateOTP(String otpRecordID,String deviceStatRecordID, String code) async{
+    final Dio _dio = Dio();
+    final response = await _dio.post('https://connect.bcplindia.co.in/MobileAppAPI/VerifyDeviceOTP',
+        data: {'otpRecordID': otpRecordID,'deviceStatRecordID': deviceStatRecordID,'OTP':code});
 
-    if(result != ConnectivityResult.none){
-      // connectivity detected
-      if (Platform.isAndroid) {
-        // Android- check if there is actual internet connection
-        bool isDeviceConnected = false;
-        try {
-          final result = await InternetAddress.lookup('google.com');
-          if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
-            isDeviceConnected = true;
-          } else {
-            isDeviceConnected = false;
-          }
-        } on SocketException catch(_) {
-          isDeviceConnected = false;
-        }
-        //isDeviceConnected = await DataConnectionChecker().hasConnection;
-        if(isDeviceConnected){
-          setState(() {
-            connectionStatus = result;
-          });
-        }
-      } else if (Platform.isIOS) {
-        // result from default connectivity check can be updated
-        setState(() {
-          connectionStatus = result;
-        });
-      }
-    }
-    else{
-      // No connectivity
-      setState(() {
-        connectionStatus = result;
-      });
+    if (response.statusCode == 200) {
+      return EmployeeLoginData.fromJson(response.data);
+    } else {
+      print("The error message is: ${response.data}");
+      throw Exception('Failed to post data.');
     }
   }
-  Widget noConnectivityError(){
-    return Container (
-      height: MediaQuery.of(context).size.height / 1.3,
-      child: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Center(
-              child: Lottie.asset('animations/ani_no_internet.json',
-                width: 177,
-                height: 244,),
-            ),
-            Center(
-                child: Text('No Internet connection. Please check data/wifi settings',style: TextStyle(
-                  fontWeight: FontWeight.w400,fontSize: 15,),)
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+}
+
+class OTPauth {
+  final int otpRecordID;
+  final int deviceStatRecordID;
+
+  OTPauth(this.otpRecordID,this.deviceStatRecordID);
 }
 
 

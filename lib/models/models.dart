@@ -32,9 +32,14 @@ class EmployeeLoginData{
   final String? emp_grade;
   final String? emp_mobileNo;
   final String? auth_jwt;
+  final bool otpVerReqd;
+  final int deviceStatID;
+  final int  otpRecordID;
+  final bool deviceVerified;
 
-  EmployeeLoginData({required this.status, this.emp_no,  this.emp_name,  this.emp_desg,  this.emp_disc,
-    this.emp_grade,this.emp_mobileNo, this.auth_jwt});
+  EmployeeLoginData({required this.status, this.emp_no,  this.emp_name,  this.emp_desg,  this.emp_disc,this.emp_grade,
+    this.emp_mobileNo, this.auth_jwt, required this.otpVerReqd, required this.deviceStatID, required this.otpRecordID,
+    required this.deviceVerified});
   factory EmployeeLoginData.fromJson(Map<String, dynamic> json) {
     return EmployeeLoginData(
       status: json['status'],
@@ -45,6 +50,10 @@ class EmployeeLoginData{
       emp_grade: json['emp_grade'],
       emp_mobileNo: json['emp_mobileNo'],
       auth_jwt: json['auth_token'],
+      otpVerReqd: json['otpVerReqd'],
+      deviceStatID: json['deviceStatID'],
+      otpRecordID: json['otpRecordID'],
+      deviceVerified: json['deviceVerified'],
     );
   }
 }
