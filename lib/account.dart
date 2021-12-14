@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:lottie/lottie.dart';
+import 'package:mobile_number/mobile_number.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'constants.dart';
@@ -29,6 +30,9 @@ class _LoginState extends State<Login> with TickerProviderStateMixin{
   final pwdController = TextEditingController();
   bool apiCall = false;
   late Future<EmployeeLoginData> _empLoginData;
+  String _mobileNumber = '';
+  List<SimCard> _simCard = <SimCard>[];
+  bool access = false;
 
   late final AnimationController _controller = AnimationController(
     duration: Duration(seconds: 3),
@@ -43,6 +47,37 @@ class _LoginState extends State<Login> with TickerProviderStateMixin{
   void initState(){
     initConnectivity();
     _connectivitySubscription = _connectivity.onConnectivityChanged.listen(_updateConnectionStatus);
+    MobileNumber.listenPhonePermission((isPermissionGranted) {
+      if (isPermissionGranted) {
+        initMobileNumberState();
+      } else {}
+    });
+
+    initMobileNumberState();
+  }
+
+  Future<void> initMobileNumberState() async {
+    if (!await MobileNumber.hasPhonePermission) {
+      await MobileNumber.requestPhonePermission;
+      return;
+    }
+    String mobileNumber = '';
+    // Platform messages may fail, so we use a try/catch PlatformException.
+    try {
+      mobileNumber = (await MobileNumber.mobileNumber)!;
+      _simCard = (await MobileNumber.getSimCards)!;
+    } on PlatformException catch (e) {
+      debugPrint("Failed to get mobile number because of '${e.message}'");
+    }
+
+    // If the widget was removed from the tree while the asynchronous platform
+    // message was in flight, we want to discard the reply rather than calling
+    // setState to update our non-existent appearance.
+    if (!mounted) return;
+
+    setState(() {
+      _mobileNumber = mobileNumber;
+    });
   }
 
   @override
@@ -143,40 +178,80 @@ class _LoginState extends State<Login> with TickerProviderStateMixin{
                     _empLoginData = authenticate(unameController.text,pwdController.text);
                     _empLoginData.then((result) async {
                       if(result.status){
-                        Navigator.pushNamed(context, tfaRoute);
+                        // read mobile number from SIM or send SMS for OTP verification to
+                        // BCPL registered mobile number
+                        //first check if primary sim mobile number on device matches with registered number
 
-                        // obtain shared preferences
-                        final prefs = await SharedPreferences.getInstance();
-                        // set value
-                        prefs.setBool('isLoggedIn', true);
-                        // Create secure storage
-                        final storage = new FlutterSecureStorage();
-                        // Write value
-                        await storage.write(key: 'empno', value: result.emp_no);
-                        await storage.write(key: 'name', value: result.emp_name);
-                        await storage.write(key: 'desg', value: result.emp_desg);
-                        await storage.write(key: 'disc', value: result.emp_disc);
-                        await storage.write(key: 'grade', value: result.emp_grade);
-                        await storage.write(key: 'auth_token', value: result.auth_jwt);
+                        if(Platform.isAndroid){
+                          // sim card number detection works in android only
+                          if(_mobileNumber == result.emp_mobileNo){
+                            setState((){
+                              access = true;
+                            });
+                          }
+                          else{
+                            // primary sim card number does not match. check for dual sim card numbers
+                            for(SimCard sim in _simCard){
+                              if(sim.number == result.emp_mobileNo){
+                                setState((){
+                                  access = true;
+                                });
+                                break;
+                              }
+                            }
+                          }
+                        }
+                        else if(Platform.isIOS){
+                          // for iphone initiate OTP verification
+                          setState((){
+                            access = true;
+                          });
+                        }
 
-                        //Set variables for first time view
-                        setState(() {
-                          empno = result.emp_no!;
-                          user = result.emp_name!;
-                          designation = result.emp_desg!;
-                          discipline = result.emp_disc!;
-                          grade = result.emp_grade!;
-                          auth_token = result.auth_jwt!;
-                        });
+                        if(access){
+                          // obtain shared preferences
+                          final prefs = await SharedPreferences.getInstance();
+                          // set value
+                          prefs.setBool('isLoggedIn', true);
+                          // Create secure storage
+                          final storage = new FlutterSecureStorage();
+                          // Write value
+                          await storage.write(key: 'empno', value: result.emp_no);
+                          await storage.write(key: 'name', value: result.emp_name);
+                          await storage.write(key: 'desg', value: result.emp_desg);
+                          await storage.write(key: 'disc', value: result.emp_disc);
+                          await storage.write(key: 'grade', value: result.emp_grade);
+                          await storage.write(key: 'auth_token', value: result.auth_jwt);
 
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text("Welcome, ${result.emp_name}")),
-                        );
-                        setState(() {
-                          _isLoading = false;
-                        });
+                          //Set variables for first time view
+                          setState(() {
+                            empno = result.emp_no!;
+                            user = result.emp_name!;
+                            designation = result.emp_desg!;
+                            discipline = result.emp_disc!;
+                            grade = result.emp_grade!;
+                            auth_token = result.auth_jwt!;
+                          });
 
-                        //Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (BuildContext context) => Home()), (Route<dynamic> route) => false);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text("Welcome, ${result.emp_name}")),
+                          );
+                          setState(() {
+                            _isLoading = false;
+                          });
+
+                          Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (BuildContext context) => Home()), (Route<dynamic> route) => false);
+                        }
+                        else{
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('Device mobile number validation failed.')),
+                          );
+                          setState(() {
+                            _isLoading = false;
+                            access = false;
+                          });
+                        }
+                        //Navigator.pushNamed(context, tfaRoute);
                       }
                       else{
                         ScaffoldMessenger.of(context).showSnackBar(

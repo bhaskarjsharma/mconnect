@@ -60,6 +60,8 @@ dependencies:
   hive: ^2.0.4
   hive_flutter: ^1.1.0
   lottie: ^1.2.1
+  mobile_number: ^1.0.4
+  device_info_plus: ^3.1.1
 
 
 
