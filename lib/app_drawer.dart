@@ -133,6 +133,14 @@ class AppDrawerState extends State<AppDrawer> {
             },
           ),
           ListTile(
+            leading: Icon(Icons.manage_accounts,color: Colors.deepOrange, size:25),
+            title: const Text('2FA'),
+            onTap: () {
+              Navigator.pushNamedAndRemoveUntil(context,tfaRoute, (_) => false,arguments: OTPauth(
+                  1,1),);
+            },
+          ),
+          ListTile(
             leading: Icon(Icons.download,color: Colors.green, size:25),
             title: const Text('Downloads'),
             onTap: () {

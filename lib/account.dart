@@ -217,7 +217,7 @@ class _LoginState extends State<Login> with TickerProviderStateMixin{
                     _empLoginData.then((result) async {
                       if(result.otpVerReqd){
                         //OTP verification Required. Redirect to OTP screen
-                        Navigator.pushNamed(context, tfaRoute, arguments: OTPauth(
+                        Navigator.pushNamedAndRemoveUntil(context,tfaRoute, (_) => false,arguments: OTPauth(
                             result.otpRecordID,result.deviceStatID),);
                       }
                       else{
@@ -708,8 +708,8 @@ class _TwoFactorAuthState extends State<TwoFactorAuth>{
           ),) : SingleChildScrollView(
             child: Column(
               children: <Widget>[
-                Padding(
-                  padding: const EdgeInsets.only(left: 20, top: 80),
+                Container(
+                  padding: EdgeInsets.all(20),
                   child: Text(
                     'Verify your phone',
                     style: TextStyle(
@@ -719,12 +719,9 @@ class _TwoFactorAuthState extends State<TwoFactorAuth>{
                     ),
                   ),
                 ),
-                const SizedBox(
-                  height: 60,
-                ),
-                Align(
-                  alignment: Alignment.center,
-                  child: Text('Please enter the 4 digit pin sent to your mobile number',
+                Container(
+                  padding: EdgeInsets.all(20),
+                  child: Text('Please enter the 4 digit pin sent to your BCPL registered mobile number',
                     textAlign: TextAlign.justify,
                     style: TextStyle(
                       fontWeight: FontWeight.w500,
@@ -733,10 +730,9 @@ class _TwoFactorAuthState extends State<TwoFactorAuth>{
                     ),
                   ),
                 ),
-                const SizedBox(height: 20),
                 Container(
                   height: 90,
-                  width: 250,
+                  width: 200,
                   // color: Colors.amber,
                   child: Stack(
                     children: <Widget>[
@@ -745,6 +741,7 @@ class _TwoFactorAuthState extends State<TwoFactorAuth>{
                         child: TextFormField(
                           controller: _controller,
                           focusNode: _textNode,
+                          autofocus:true,
                           keyboardType: TextInputType.number,
                           onChanged: onCodeInput,
                           maxLength: 4,
@@ -763,7 +760,7 @@ class _TwoFactorAuthState extends State<TwoFactorAuth>{
                 ),
                 CupertinoButton(
                   onPressed: verifyMfaAndNext,
-                  color: Colors.grey,
+                  color: Colors.lightBlueAccent,
                   child: Text(
                     'Verify',
                     style: TextStyle(
@@ -802,13 +799,13 @@ class _TwoFactorAuthState extends State<TwoFactorAuth>{
               if (code.length >= i)
                 Padding(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 15.0,
+                    horizontal: 10.0,
                   ),
                   child: Text(
                     code[i - 1],
                     style: TextStyle(
                       color: Colors.black,
-                      fontSize: 30,
+                      fontSize: 25,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
