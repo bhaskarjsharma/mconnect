@@ -488,3 +488,205 @@ class EmpProfileDataAdapter extends TypeAdapter<EmpProfileData> {
           runtimeType == other.runtimeType &&
           typeId == other.typeId;
 }
+
+class EmpAddressDataAdapter extends TypeAdapter<EmpAddressData> {
+  @override
+  final int typeId = 9;
+
+  @override
+  EmpAddressData read(BinaryReader reader) {
+    final numOfFields = reader.readByte();
+    final fields = <int, dynamic>{
+      for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
+    };
+    return EmpAddressData(
+      addressTypeText: fields[0] as String,
+      careof: fields[1] as String,
+      street: fields[2] as String,
+      addLine2: fields[3] as String,
+      city: fields[4] as String,
+      district: fields[5] as String,
+      pin: fields[6] as String,
+      state: fields[7] as String,
+      country: fields[8] as String,
+    );
+  }
+
+  @override
+  void write(BinaryWriter writer, EmpAddressData obj) {
+    writer
+      ..writeByte(9)
+      ..writeByte(0)
+      ..write(obj.addressTypeText)
+      ..writeByte(1)
+      ..write(obj.careof)
+      ..writeByte(2)
+      ..write(obj.street)
+      ..writeByte(3)
+      ..write(obj.addLine2)
+      ..writeByte(4)
+      ..write(obj.city)
+      ..writeByte(5)
+      ..write(obj.district)
+      ..writeByte(6)
+      ..write(obj.pin)
+      ..writeByte(7)
+      ..write(obj.state)
+      ..writeByte(8)
+      ..write(obj.country);
+  }
+
+  @override
+  int get hashCode => typeId.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is EmpAddressDataAdapter &&
+          runtimeType == other.runtimeType &&
+          typeId == other.typeId;
+}
+
+class EmpTrainingDataAdapter extends TypeAdapter<EmpTrainingData> {
+  @override
+  final int typeId = 10;
+
+  @override
+  EmpTrainingData read(BinaryReader reader) {
+    final numOfFields = reader.readByte();
+    final fields = <int, dynamic>{
+      for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
+    };
+    return EmpTrainingData(
+      startDate: fields[0] as String,
+      endDate: fields[1] as String,
+      training_desc: fields[2] as String,
+      TRAINING_NAME: fields[3] as String,
+      MAN_DAYS: fields[4] as String,
+      TRAINER_NAME: fields[5] as String,
+      VENUE_DETAILS: fields[6] as String,
+    );
+  }
+
+  @override
+  void write(BinaryWriter writer, EmpTrainingData obj) {
+    writer
+      ..writeByte(7)
+      ..writeByte(0)
+      ..write(obj.startDate)
+      ..writeByte(1)
+      ..write(obj.endDate)
+      ..writeByte(2)
+      ..write(obj.training_desc)
+      ..writeByte(3)
+      ..write(obj.TRAINING_NAME)
+      ..writeByte(4)
+      ..write(obj.MAN_DAYS)
+      ..writeByte(5)
+      ..write(obj.TRAINER_NAME)
+      ..writeByte(6)
+      ..write(obj.VENUE_DETAILS);
+  }
+
+  @override
+  int get hashCode => typeId.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is EmpTrainingDataAdapter &&
+          runtimeType == other.runtimeType &&
+          typeId == other.typeId;
+}
+
+class EmpDependentDataAdapter extends TypeAdapter<EmpDependentData> {
+  @override
+  final int typeId = 11;
+
+  @override
+  EmpDependentData read(BinaryReader reader) {
+    final numOfFields = reader.readByte();
+    final fields = <int, dynamic>{
+      for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
+    };
+    return EmpDependentData(
+      dependentName: fields[0] as String,
+      dependentGender: fields[1] as String,
+      dependentDOB: fields[2] as String,
+      dependentRelationship: fields[3] as String,
+      dependentDate: fields[4] as String,
+    );
+  }
+
+  @override
+  void write(BinaryWriter writer, EmpDependentData obj) {
+    writer
+      ..writeByte(5)
+      ..writeByte(0)
+      ..write(obj.dependentName)
+      ..writeByte(1)
+      ..write(obj.dependentGender)
+      ..writeByte(2)
+      ..write(obj.dependentDOB)
+      ..writeByte(3)
+      ..write(obj.dependentRelationship)
+      ..writeByte(4)
+      ..write(obj.dependentDate);
+  }
+
+  @override
+  int get hashCode => typeId.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is EmpDependentDataAdapter &&
+          runtimeType == other.runtimeType &&
+          typeId == other.typeId;
+}
+
+class EmpNomineeDataAdapter extends TypeAdapter<EmpNomineeData> {
+  @override
+  final int typeId = 12;
+
+  @override
+  EmpNomineeData read(BinaryReader reader) {
+    final numOfFields = reader.readByte();
+    final fields = <int, dynamic>{
+      for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
+    };
+    return EmpNomineeData(
+      benefitName: fields[0] as String,
+      startDate: fields[1] as String,
+      nomineeName: fields[2] as String,
+      nomineeRelationship: fields[3] as String,
+      nomineeShare: fields[4] as String,
+    );
+  }
+
+  @override
+  void write(BinaryWriter writer, EmpNomineeData obj) {
+    writer
+      ..writeByte(5)
+      ..writeByte(0)
+      ..write(obj.benefitName)
+      ..writeByte(1)
+      ..write(obj.startDate)
+      ..writeByte(2)
+      ..write(obj.nomineeName)
+      ..writeByte(3)
+      ..write(obj.nomineeRelationship)
+      ..writeByte(4)
+      ..write(obj.nomineeShare);
+  }
+
+  @override
+  int get hashCode => typeId.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is EmpNomineeDataAdapter &&
+          runtimeType == other.runtimeType &&
+          typeId == other.typeId;
+}

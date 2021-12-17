@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:lottie/lottie.dart';
 import 'package:open_file/open_file.dart';
@@ -114,6 +115,10 @@ void main() async{
   Hive.registerAdapter(HospCrLtrMasterDataAdapter());
   Hive.registerAdapter(AppNotificationAdapter());
   Hive.registerAdapter(EmpProfileDataAdapter());
+  Hive.registerAdapter(EmpAddressDataAdapter());
+  Hive.registerAdapter(EmpTrainingDataAdapter());
+  Hive.registerAdapter(EmpDependentDataAdapter());
+  Hive.registerAdapter(EmpNomineeDataAdapter());
 
   await Hive.openBox<NewsContent>('newsContent');
   await Hive.openBox<Employee>('employeeList');
@@ -169,30 +174,52 @@ void main() async{
   storage = new FlutterSecureStorage();
   isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
   if(isLoggedIn){
-    empno = await storage.read(key: 'empno');
-    user = await storage.read(key: 'name');
-    designation = await storage.read(key: 'desg');
-    discipline = await storage.read(key: 'disc');
-    grade = await storage.read(key: 'grade');
     auth_token = await storage.read(key: 'auth_token');
-    localAuthEnabled = prefs.getBool('localBioAuth') ?? false;
+    //validate token for expiry time
+    bool hasExpired = JwtDecoder.isExpired(auth_token);
+    if(!hasExpired){
+      empno = await storage.read(key: 'empno');
+      user = await storage.read(key: 'name');
+      designation = await storage.read(key: 'desg');
+      discipline = await storage.read(key: 'disc');
+      grade = await storage.read(key: 'grade');
+      localAuthEnabled = prefs.getBool('localBioAuth') ?? false;
 
-    runApp(MaterialApp(
-      title: "Home",
-      theme: ThemeData(
+      runApp(MaterialApp(
+        title: "Home",
+        theme: ThemeData(
           appBarTheme: AppBarTheme(
             systemOverlayStyle: SystemUiOverlayStyle(statusBarColor: Colors.transparent),
             backgroundColor: Colors.transparent,
             elevation: 0,
             //backgroundColor: Color.fromRGBO(165, 231, 206, 1.0),
-              //backgroundColor: Color.fromRGBO(255, 239, 186, 1.0),
+            //backgroundColor: Color.fromRGBO(255, 239, 186, 1.0),
           ),
-      ),
-      home: Home(),
-      onGenerateRoute: NavigationRouter.generateRoute,
-      initialRoute: homeRoute,
-      navigatorKey: navigatorKey,
-    ));
+        ),
+        home: Home(),
+        onGenerateRoute: NavigationRouter.generateRoute,
+        initialRoute: homeRoute,
+        navigatorKey: navigatorKey,
+      ));
+    }
+    else{
+      prefs.clear();
+      storage.deleteAll();
+      runApp(MaterialApp(
+        theme: ThemeData(
+          appBarTheme: AppBarTheme(
+            backgroundColor: Color.fromRGBO(165, 231, 206, 1.0),
+          ),
+          textTheme: const TextTheme(
+            headline1: TextStyle(fontSize: 23.0, fontWeight: FontWeight.bold,),
+          ),
+        ),
+        title: "Login",
+        home: Login(),
+        onGenerateRoute: NavigationRouter.generateRoute,
+        initialRoute: loginRoute,
+      ));
+    }
   }
   else{
     prefs.clear();

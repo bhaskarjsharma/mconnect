@@ -580,6 +580,7 @@ class _TwoFactorAuthState extends State<TwoFactorAuth>{
   Future<void> verifyMfaAndNext() async {
     setState(() {
       loaded = false;
+      _isLoading = true;
     });
     // const bool result = false; //backend call
     _empLoginData = validateOTP(widget.otpRecordID.toString(),widget.deviceStatRecordID.toString(),code);
@@ -621,7 +622,7 @@ class _TwoFactorAuthState extends State<TwoFactorAuth>{
         setState(() {
           _isLoading = false;
         });
-        Navigator.pop(context);
+        Navigator.pushNamedAndRemoveUntil(context,loginRoute, (_) => false);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('OTP validation failed. Unable to login')),
         );
@@ -630,7 +631,7 @@ class _TwoFactorAuthState extends State<TwoFactorAuth>{
       setState(() {
         _isLoading = false;
       });
-      Navigator.pop(context);
+      Navigator.pushNamedAndRemoveUntil(context,loginRoute, (_) => false);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Unable to connect to server")),
       );
@@ -770,13 +771,13 @@ class _TwoFactorAuthState extends State<TwoFactorAuth>{
                     ),
                   ),
                 ),
-                errorMsg == null? Container(): Text(
+/*                errorMsg == null? Container(): Text(
                   "${errorMsg}",
                   style: TextStyle(
                     color: Colors.redAccent,
                     fontWeight: FontWeight.bold,
                   ),
-                ),
+                ),*/
               ],
             ),
           ) : noConnectivityError(),

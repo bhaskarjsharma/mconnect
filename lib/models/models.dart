@@ -674,15 +674,25 @@ class EmpProfileData extends HiveObject {
     );
   }
 }
-class EmpAddressData{
+@HiveType(typeId: 9)
+class EmpAddressData extends HiveObject {
+  @HiveField(0)
   final String addressTypeText;
+  @HiveField(1)
   final String careof;
+  @HiveField(2)
   final String street;
+  @HiveField(3)
   final String addLine2;
+  @HiveField(4)
   final String city;
+  @HiveField(5)
   final String district;
+  @HiveField(6)
   final String pin;
+  @HiveField(7)
   final String state;
+  @HiveField(8)
   final String country;
 
   EmpAddressData({required this.addressTypeText, required this.careof, required this.street,
@@ -703,13 +713,21 @@ class EmpAddressData{
     );
   }
 }
-class EmpTrainingData{
+@HiveType(typeId: 10)
+class EmpTrainingData extends HiveObject {
+  @HiveField(0)
   final String startDate;
+  @HiveField(1)
   final String endDate;
+  @HiveField(2)
   final String training_desc;
+  @HiveField(3)
   final String TRAINING_NAME;
+  @HiveField(4)
   final String MAN_DAYS;
+  @HiveField(5)
   final String TRAINER_NAME;
+  @HiveField(6)
   final String VENUE_DETAILS;
 
   EmpTrainingData({required this.startDate, required this.endDate, required this.training_desc,
@@ -727,11 +745,17 @@ class EmpTrainingData{
     );
   }
 }
-class EmpDependentData{
+@HiveType(typeId: 11)
+class EmpDependentData extends HiveObject {
+  @HiveField(0)
   final String dependentName;
+  @HiveField(1)
   final String dependentGender;
+  @HiveField(2)
   final String dependentDOB;
+  @HiveField(3)
   final String dependentRelationship;
+  @HiveField(4)
   final String dependentDate;
 
   EmpDependentData({required this.dependentName, required this.dependentGender, required this.dependentDOB,
@@ -747,11 +771,17 @@ class EmpDependentData{
     );
   }
 }
-class EmpNomineeData{
+@HiveType(typeId: 12)
+class EmpNomineeData extends HiveObject {
+  @HiveField(0)
   final String benefitName;
+  @HiveField(1)
   final String startDate;
+  @HiveField(2)
   final String nomineeName;
+  @HiveField(3)
   final String nomineeRelationship;
+  @HiveField(4)
   final String nomineeShare;
 
   EmpNomineeData({required this.benefitName, required this.startDate, required this.nomineeName,

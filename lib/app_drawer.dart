@@ -132,14 +132,14 @@ class AppDrawerState extends State<AppDrawer> {
               Navigator.pushNamed(context, profileRoute);
             },
           ),
-          ListTile(
+/*          ListTile(
             leading: Icon(Icons.manage_accounts,color: Colors.deepOrange, size:25),
             title: const Text('2FA'),
             onTap: () {
               Navigator.pushNamedAndRemoveUntil(context,tfaRoute, (_) => false,arguments: OTPauth(
                   1,1),);
             },
-          ),
+          ),*/
           ListTile(
             leading: Icon(Icons.download,color: Colors.green, size:25),
             title: const Text('Downloads'),
@@ -539,7 +539,7 @@ class UserProfile extends StatefulWidget {
   State<UserProfile> createState() => _UserProfileState();
 }
 class _UserProfileState extends State<UserProfile>{
-  bool isLoading = false;
+  bool isLoading = true;
   late Future<APIResponseData> _apiResponseData;
   late DioClient _dio;
   late var _endpointProvider;
@@ -562,12 +562,22 @@ class _UserProfileState extends State<UserProfile>{
             });
             userProfileBox.add(_profileData);
           }
+          else{
+            setState(() {
+              isLoading = false;
+            });
+            Navigator.pop(context);
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text("Error in data fetching")),
+            );
+          }
         });
       }
       else{
         setState(() {
           isLoading = false;
         });
+        Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text("No internet connection. Please check your settings")),
         );
@@ -667,7 +677,7 @@ class _UserProfileState extends State<UserProfile>{
           children: [
             connectionStatus != ConnectivityResult.none ? SizedBox(height:0) : noConnectivityError(),
             Expanded(
-              child: ListView(
+              child: isLoading ? waiting(context) : ListView(
                 //padding: EdgeInsets.all(10.0),
                 children: [
                   Container(
