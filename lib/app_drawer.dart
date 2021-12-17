@@ -692,42 +692,64 @@ class _UserProfileState extends State<UserProfile>{
                       ),
                     ),
                   ),
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(user,
-                      style: TextStyle(
-                        fontWeight: FontWeight.w500,
-                        fontSize: 20,
-                        color:textColor,
-                      ),
+                  Card(
+                    child: ListTile(
+                      isThreeLine: false,
+                      title: Text('${_profileData.emp_name}',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w400,
+                            fontSize: 18,
+                            color: textColor,
+                          )),
+                      subtitle: Text('${_profileData.emp_desg} (${_profileData.emp_discipline})',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w400,
+                            fontSize: 15,
+                            color: textColor,
+                          )),
                     ),
                   ),
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(designation + " (" + discipline +")",
-                      style: TextStyle(
-                        fontWeight: FontWeight.w400,
-                        fontSize: 18,
-                        color:textColor,
-                      ),
-                    ),
-                  ),
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text('${_profileData.emp_bloodgroup}',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w400,
-                        fontSize: 18,
-                        color:textColor,
-                      ),
-                    ),
-                  ),
+                  buildRow('Department','${_profileData.emp_dept}'),
+                  buildRow('Unit','${_profileData.emp_unit}'),
+                  buildRow('Location','${_profileData.emp_location}'),
+                  buildRow('Blood Group','${_profileData.emp_bloodgroup}'),
                 ],
               ),
             ),
           ],
         ),
       ),
+    );
+  }
+
+  Widget buildRow(String title, String data){
+    return Row(
+      children: <Widget>[
+        Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(5),
+            color: Colors.white,
+          ),
+          width:100,
+          padding: EdgeInsets.all(10),
+          margin: EdgeInsets.only(left:5,bottom: 5),
+          alignment: Alignment.centerLeft,
+          child: Text(title),
+        ),
+        Expanded(
+          flex: 2,
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(5),
+              color: Colors.white,
+            ),
+            padding: EdgeInsets.all(10),
+            margin: EdgeInsets.only(left:3,right:5,bottom: 5),
+            alignment: Alignment.centerLeft,
+            child: Text(data,textAlign: TextAlign.center,),
+          ),
+        ),
+      ],
     );
   }
 }
