@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:lottie/lottie.dart';
-import 'package:mobile_number/mobile_number.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'dart:async';
 import 'dart:convert';
@@ -29,16 +28,17 @@ class _LoginState extends State<Login> with TickerProviderStateMixin{
   late StreamSubscription<ConnectivityResult> _connectivitySubscription;
   bool _isLoading = false;
   var errorMsg;
+  final _loginFormKey = GlobalKey<FormState>();
   final unameController = TextEditingController();
   final pwdController = TextEditingController();
   bool apiCall = false;
   late Future<EmployeeLoginData> _empLoginData;
   late DeviceInfoPlugin deviceInfo;
-  late String appBuildNumber;
-  late String appVersion;
-  late String deviceName;
-  late String deviceModel;
-  late String deviceUID;
+  String appBuildNumber = '';
+  String appVersion = '';
+  String deviceName = '';
+  String deviceModel = '';
+  String deviceUID = '';
   // String _mobileNumber = '';
   // List<SimCard> _simCard = <SimCard>[];
   bool access = false;
@@ -57,16 +57,8 @@ class _LoginState extends State<Login> with TickerProviderStateMixin{
     initConnectivity();
     _connectivitySubscription = _connectivity.onConnectivityChanged.listen(_updateConnectionStatus);
     deviceInfo = DeviceInfoPlugin();
-    getDeviceInfo();
     getPackageInfo();
-
-    // MobileNumber.listenPhonePermission((isPermissionGranted) {
-    //   if (isPermissionGranted) {
-    //     initMobileNumberState();
-    //   } else {}
-    // });
-    //
-    // initMobileNumberState();
+    getDeviceInfo();
   }
   getDeviceInfo() async{
     if (Platform.isAndroid) {
@@ -93,29 +85,6 @@ class _LoginState extends State<Login> with TickerProviderStateMixin{
       });
     });
   }
-  // Future<void> initMobileNumberState() async {
-  //   if (!await MobileNumber.hasPhonePermission) {
-  //     await MobileNumber.requestPhonePermission;
-  //     return;
-  //   }
-  //   String mobileNumber = '';
-  //   // Platform messages may fail, so we use a try/catch PlatformException.
-  //   try {
-  //     mobileNumber = (await MobileNumber.mobileNumber)!;
-  //     _simCard = (await MobileNumber.getSimCards)!;
-  //   } on PlatformException catch (e) {
-  //     debugPrint("Failed to get mobile number because of '${e.message}'");
-  //   }
-  //
-  //   // If the widget was removed from the tree while the asynchronous platform
-  //   // message was in flight, we want to discard the reply rather than calling
-  //   // setState to update our non-existent appearance.
-  //   if (!mounted) return;
-  //
-  //   setState(() {
-  //     _mobileNumber = mobileNumber;
-  //   });
-  // }
 
   @override
   Widget build(BuildContext context) {
@@ -168,259 +137,140 @@ class _LoginState extends State<Login> with TickerProviderStateMixin{
                 ),),
               ),
             ],
-          ),) : SingleChildScrollView(
-            child: Column(
-              children: <Widget>[
-                Container(
-                  padding: EdgeInsets.all(10),
-                  child: ScaleTransition(
-                    scale: _animation,
-                    child: Image.asset('images/connect_logo.png',scale: 2),
-                  ),
-                ),
-                Container(
-                  padding: EdgeInsets.all(10),
-                  child: TextField(
-                    controller: unameController,
-                    decoration: InputDecoration(
-                      border: OutlineInputBorder(),
-
-                      labelText: 'User Name',
+          ),) :
+          SingleChildScrollView(
+            child: Form(
+              key: _loginFormKey,
+              child: Column(
+                children: <Widget>[
+                  Container(
+                    padding: EdgeInsets.all(10),
+                    child: ScaleTransition(
+                      scale: _animation,
+                      child: Image.asset('images/connect_logo.png',scale: 2),
                     ),
                   ),
-                ),
-                Container(
-                  padding: EdgeInsets.all(10),
-                  child: TextField(
-                    controller: pwdController,
-                    obscureText: true,
-                    decoration: InputDecoration(
-                      border: OutlineInputBorder(),
-                      labelText: 'Password',
+                  Container(
+                    padding: EdgeInsets.all(10),
+                    child: TextFormField(
+                      controller: unameController,
+                      decoration: InputDecoration(
+                        border: OutlineInputBorder(),
+                        labelText: 'User Name',
+                      ),
+                      validator: (text) {
+                        if (text == null || text.isEmpty) {
+                          return 'Please enter username';
+                        }
+                        return null;
+                      },
                     ),
                   ),
-                ),
-                GestureDetector(
-                  child: Lottie.asset('animations/ani_unlock.json',
-                    width: 50,
-                    height: 50,),
-                  onTap: () async{
-                    // ScaffoldMessenger.of(context).showSnackBar(
-                    //   const SnackBar(content: Text('Login In...')),
-                    // );
-                    setState(() {
-                      _isLoading = true;
-                    });
-
-                    _empLoginData = authenticate(unameController.text,pwdController.text,appBuildNumber,appVersion,
-                        deviceName,deviceModel,deviceUID);
-                    _empLoginData.then((result) async {
-                      if(result.otpVerReqd){
-                        //OTP verification Required. Redirect to OTP screen
-                        Navigator.pushNamedAndRemoveUntil(context,tfaRoute, (_) => false,arguments: OTPauth(
-                            result.otpRecordID,result.deviceStatID),);
-                      }
-                      else{
-                        if(result.status){
-                          //Device already verified. Proceed to home
-                          // obtain shared preferences
-                          final prefs = await SharedPreferences.getInstance();
-                          // set value
-                          prefs.setBool('isLoggedIn', true);
-                          // Create secure storage
-                          final storage = new FlutterSecureStorage();
-                          // Write value
-                          await storage.write(key: 'empno', value: result.emp_no);
-                          await storage.write(key: 'name', value: result.emp_name);
-                          await storage.write(key: 'desg', value: result.emp_desg);
-                          await storage.write(key: 'disc', value: result.emp_disc);
-                          await storage.write(key: 'grade', value: result.emp_grade);
-                          await storage.write(key: 'auth_token', value: result.auth_jwt);
-
-                          //Set variables for first time view
-                          setState(() {
-                            empno = result.emp_no!;
-                            user = result.emp_name!;
-                            designation = result.emp_desg!;
-                            discipline = result.emp_disc!;
-                            grade = result.emp_grade!;
-                            auth_token = result.auth_jwt!;
-                          });
-
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text("Welcome, ${result.emp_name}")),
-                          );
-                          setState(() {
-                            _isLoading = false;
-                          });
-
-                          Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (BuildContext context) => Home()), (Route<dynamic> route) => false);
+                  Container(
+                    padding: EdgeInsets.all(10),
+                    child: TextFormField(
+                      controller: pwdController,
+                      obscureText: true,
+                      decoration: InputDecoration(
+                        border: OutlineInputBorder(),
+                        labelText: 'Password',
+                      ),
+                      validator: (text) {
+                        if (text == null || text.isEmpty) {
+                          return 'Please enter password';
                         }
-                        else{
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text('Invalid Credentials. Unable to login')),
-                          );
-                          setState(() {
-                            _isLoading = false;
-                          });
-                        }
-                      }
-                    }).catchError( (error) {
-                      Navigator.pop(context);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(content: Text("Unable to connect to server")),
-                      );
-                    });
-
-/*                  EmployeeLoginData emp = await authenticate(unameController.text,pwdController.text);
-                    if(emp != null) {
-                      if(emp.status){
-                        // obtain shared preferences
-                        final prefs = await SharedPreferences.getInstance();
-                        // set value
-                        prefs.setBool('isLoggedIn', true);
-                        // Create secure storage
-                        final storage = new FlutterSecureStorage();
-                        // Write value
-                        await storage.write(key: 'empno', value: emp.emp_no);
-                        await storage.write(key: 'name', value: emp.emp_name);
-                        await storage.write(key: 'desg', value: emp.emp_desg);
-                        await storage.write(key: 'disc', value: emp.emp_disc);
-                        await storage.write(key: 'grade', value: emp.emp_grade);
-                        await storage.write(key: 'auth_token', value: emp.auth_jwt);
-
-                        //Set variables for first time view
-                        setState(() {
-                          empno = emp.emp_no!;
-                          user = emp.emp_name!;
-                          designation = emp.emp_desg!;
-                          discipline = emp.emp_disc!;
-                          grade = emp.emp_grade!;
-                          auth_token = emp.auth_jwt!;
-                        });
-
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text("Welcome, ${emp.emp_name}")),
-                        );
-                        setState(() {
-                          _isLoading = false;
-                        });
-                        Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (BuildContext context) => Home()), (Route<dynamic> route) => false);
-                      }
-                      else{
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('Invalid Credentials. Unable to login')),
-                        );
-                        setState(() {
-                          _isLoading = false;
-                        });
-                      }
-                    }
-                    else{
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Invalid Credentials. Unable to login')),
-                      );
-                      setState(() {
-                        _isLoading = false;
-                      });
-                      // showDialog(
-                      //   context: context,
-                      //   builder: (context) {
-                      //     return AlertDialog(
-                      //       // Retrieve the text the that user has entered by using the
-                      //       // TextEditingController.
-                      //       content: Text('Authentication Failed'),
-                      //     );
-                      //   },
-                      // );
-                    }*/
-                  },
-                ),
-                /*     Container(
-                padding: EdgeInsets.all(10),
-                child: ElevatedButton(
-                  child: Text('Login'),
-                  onPressed: () async{
-                    // ScaffoldMessenger.of(context).showSnackBar(
-                    //   const SnackBar(content: Text('Login In...')),
-                    // );
-                    setState(() {
-                      _isLoading = true;
-                    });
-                    EmployeeLoginData emp = await authenticate(unameController.text,pwdController.text);
-                    if(emp != null) {
-                      if(emp.status){
-                        // obtain shared preferences
-                        final prefs = await SharedPreferences.getInstance();
-                        // set value
-                        prefs.setBool('isLoggedIn', true);
-                        // Create secure storage
-                        final storage = new FlutterSecureStorage();
-                        // Write value
-                        await storage.write(key: 'empno', value: emp.emp_no);
-                        await storage.write(key: 'name', value: emp.emp_name);
-                        await storage.write(key: 'desg', value: emp.emp_desg);
-                        await storage.write(key: 'disc', value: emp.emp_disc);
-                        await storage.write(key: 'grade', value: emp.emp_grade);
-                        await storage.write(key: 'auth_token', value: emp.auth_jwt);
-
-                        //Set variables for first time view
-                        setState(() {
-                          empno = emp.emp_no!;
-                          user = emp.emp_name!;
-                          designation = emp.emp_desg!;
-                          discipline = emp.emp_disc!;
-                          grade = emp.emp_grade!;
-                          auth_token = emp.auth_jwt!;
-                        });
-
-                        ScaffoldMessenger.of(context).showSnackBar(
-                           SnackBar(content: Text("Welcome, ${emp.emp_name}")),
-                        );
-                        setState(() {
-                          _isLoading = false;
-                        });
-                        Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (BuildContext context) => Home()), (Route<dynamic> route) => false);
-                      }
-                      else{
-                         ScaffoldMessenger.of(context).showSnackBar(
-                           const SnackBar(content: Text('Invalid Credentials. Unable to login')),
-                         );
-                         setState(() {
-                           _isLoading = false;
-                         });
-                      }
-                    }
-                    else{
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Invalid Credentials. Unable to login')),
-                      );
-                      setState(() {
-                        _isLoading = false;
-                      });
-                      // showDialog(
-                      //   context: context,
-                      //   builder: (context) {
-                      //     return AlertDialog(
-                      //       // Retrieve the text the that user has entered by using the
-                      //       // TextEditingController.
-                      //       content: Text('Authentication Failed'),
-                      //     );
-                      //   },
-                      // );
-                    }
-                  },
-                ),
-
-              ),*/
-                errorMsg == null? Container(): Text(
-                  "${errorMsg}",
-                  style: TextStyle(
-                    color: Colors.redAccent,
-                    fontWeight: FontWeight.bold,
+                        return null;
+                      },
+                    ),
                   ),
-                ),
-              ],
+                  GestureDetector(
+                    child: Lottie.asset('animations/ani_unlock.json',
+                      width: 50,
+                      height: 50,),
+                    onTap: () async{
+                      // ScaffoldMessenger.of(context).showSnackBar(
+                      //   const SnackBar(content: Text('Login In...')),
+                      // );
+                      if (_loginFormKey.currentState!.validate()) {
+                        setState(() {
+                          _isLoading = true;
+                        });
+                        _empLoginData = authenticate(unameController.text,pwdController.text,appBuildNumber,appVersion,
+                            deviceName,deviceModel,deviceUID);
+                        _empLoginData.then((result) async {
+                          if(result.otpVerReqd){
+                            //OTP verification Required. Redirect to OTP screen
+                            Navigator.pushNamedAndRemoveUntil(context,tfaRoute, (_) => false,arguments: OTPauth(
+                                result.otpRecordID,result.deviceStatID),);
+                          }
+                          else{
+                            if(result.status){
+                              //Device already verified. Proceed to home
+                              // obtain shared preferences
+                              final prefs = await SharedPreferences.getInstance();
+                              // set value
+                              prefs.setBool('isLoggedIn', true);
+                              // Create secure storage
+                              final storage = new FlutterSecureStorage();
+                              // Write value
+                              await storage.write(key: 'empno', value: result.emp_no);
+                              await storage.write(key: 'name', value: result.emp_name);
+                              await storage.write(key: 'desg', value: result.emp_desg);
+                              await storage.write(key: 'disc', value: result.emp_disc);
+                              await storage.write(key: 'grade', value: result.emp_grade);
+                              await storage.write(key: 'auth_token', value: result.auth_jwt);
+
+                              //Set variables for first time view
+                              setState(() {
+                                empno = result.emp_no!;
+                                user = result.emp_name!;
+                                designation = result.emp_desg!;
+                                discipline = result.emp_disc!;
+                                grade = result.emp_grade!;
+                                auth_token = result.auth_jwt!;
+                              });
+
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text("Welcome, ${result.emp_name}")),
+                              );
+                              setState(() {
+                                _isLoading = false;
+                              });
+
+                              Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (BuildContext context) => Home()), (Route<dynamic> route) => false);
+                            }
+                            else{
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('Invalid Credentials. Unable to login')),
+                              );
+                              setState(() {
+                                _isLoading = false;
+                              });
+                            }
+                          }
+                        }).catchError( (error) {
+                          Navigator.pop(context);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text("Unable to connect to server")),
+                          );
+                        });
+                      }
+                      else{
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text("Please enter username and password")),
+                        );
+                      }
+                    },
+                  ),
+                  errorMsg == null? Container(): Text(
+                    "${errorMsg}",
+                    style: TextStyle(
+                      color: Colors.redAccent,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ) : noConnectivityError(),
         ),
@@ -557,6 +407,7 @@ class _TwoFactorAuthState extends State<TwoFactorAuth>{
   var errorMsg;
   bool apiCall = false;
   late Future<EmployeeLoginData> _empLoginData;
+  final _otpFormKey = GlobalKey<FormState>();
   late String code;
   late bool loaded;
   late bool shake;
@@ -707,70 +558,87 @@ class _TwoFactorAuthState extends State<TwoFactorAuth>{
               ),
             ],
           ),) : SingleChildScrollView(
-            child: Column(
-              children: <Widget>[
-                Container(
-                  padding: EdgeInsets.all(20),
-                  child: Text(
-                    'Verify your phone',
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontSize: 20,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
-                Container(
-                  padding: EdgeInsets.all(20),
-                  child: Text('Please enter the 4 digit pin sent to your BCPL registered mobile number',
-                    textAlign: TextAlign.justify,
-                    style: TextStyle(
-                      fontWeight: FontWeight.w500,
-                      fontSize: 16,
-                      color:textColor,
-                    ),
-                  ),
-                ),
-                Container(
-                  height: 90,
-                  width: 200,
-                  // color: Colors.amber,
-                  child: Stack(
-                    children: <Widget>[
-                      Opacity(
-                        opacity: 0.0,
-                        child: TextFormField(
-                          controller: _controller,
-                          focusNode: _textNode,
-                          autofocus:true,
-                          keyboardType: TextInputType.number,
-                          onChanged: onCodeInput,
-                          maxLength: 4,
-                        ),
+            child: Form(
+              key: _otpFormKey,
+              child: Column(
+                children: <Widget>[
+                  Container(
+                    padding: EdgeInsets.all(20),
+                    child: Text(
+                      'Verify your phone',
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w700,
                       ),
-                      Positioned(
-                        bottom: 40,
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: getField(),
-                        ),
-                      )
-                    ],
-                  ),
-                ),
-                CupertinoButton(
-                  onPressed: verifyMfaAndNext,
-                  color: Colors.lightBlueAccent,
-                  child: Text(
-                    'Verify',
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w800,
                     ),
                   ),
-                ),
+                  Container(
+                    padding: EdgeInsets.all(20),
+                    child: Text('Please enter the 4 digit pin sent to your BCPL registered mobile number',
+                      textAlign: TextAlign.justify,
+                      style: TextStyle(
+                        fontWeight: FontWeight.w500,
+                        fontSize: 16,
+                        color:textColor,
+                      ),
+                    ),
+                  ),
+                  Container(
+                    height: 90,
+                    width: 200,
+                    // color: Colors.amber,
+                    child: Stack(
+                      children: <Widget>[
+                        Opacity(
+                          opacity: 0.0,
+                          child: TextFormField(
+                            controller: _controller,
+                            focusNode: _textNode,
+                            autofocus:true,
+                            keyboardType: TextInputType.number,
+                            onChanged: onCodeInput,
+                            maxLength: 4,
+                            validator: (text) {
+                              if (text == null || text.isEmpty) {
+                                return "Please enter the 4 digit OTP";
+                              }
+                              return null;
+                            },
+                          ),
+                        ),
+                        Positioned(
+                          bottom: 40,
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: getField(),
+                          ),
+                        )
+                      ],
+                    ),
+                  ),
+                  CupertinoButton(
+                    onPressed: (){
+                      if (_otpFormKey.currentState!.validate()) {
+                        verifyMfaAndNext();
+                      }
+                      else{
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text("Please enter the 4 digit OTP")),
+                        );
+                      }
+                    },
+                    color: Colors.lightBlueAccent,
+                    child: Text(
+                      'Verify',
+                      style: TextStyle(
+                        color: Colors.black,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ),
 /*                errorMsg == null? Container(): Text(
                   "${errorMsg}",
                   style: TextStyle(
@@ -778,7 +646,8 @@ class _TwoFactorAuthState extends State<TwoFactorAuth>{
                     fontWeight: FontWeight.bold,
                   ),
                 ),*/
-              ],
+                ],
+              ),
             ),
           ) : noConnectivityError(),
         ),
