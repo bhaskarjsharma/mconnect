@@ -54,11 +54,11 @@ class _LoginState extends State<Login> with TickerProviderStateMixin{
 
   @override
   void initState(){
-    initConnectivity();
-    _connectivitySubscription = _connectivity.onConnectivityChanged.listen(_updateConnectionStatus);
     deviceInfo = DeviceInfoPlugin();
     getPackageInfo();
     getDeviceInfo();
+    initConnectivity();
+    _connectivitySubscription = _connectivity.onConnectivityChanged.listen(_updateConnectionStatus);
   }
   getDeviceInfo() async{
     if (Platform.isAndroid) {

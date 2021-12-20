@@ -562,14 +562,19 @@ class HomeState extends State<Home>  {
                                                   if(result.isAuthenticated && result.status){
                                                     final parsed = jsonDecode(result.data ?? '').cast<Map<String, dynamic>>();
                                                     setState(() {
+                                                      peopleData =  parsed.map<Employee>((json) => Employee.fromJson(json)).toList();
+                                                    });
+                                                    if(empNameContrl.text == '' && _empUnit == '' && _empDisc == '' && _empBldGrp == ''){
+                                                      //update hive only if no filter was selected
+                                                      employeeBox.addAll(peopleData);
+                                                    }
+                                                    setState(() {
                                                       empNameContrl.text = '';
                                                       _empUnit = '';
                                                       _empDisc = '';
                                                       _empBldGrp = '';
-                                                      peopleData =  parsed.map<Employee>((json) => Employee.fromJson(json)).toList();
                                                       isLoading = false;
                                                     });
-                                                    employeeBox.addAll(peopleData);
                                                     Navigator.pop(context);
                                                     Navigator.pushNamed(context, peopleRoute, arguments: peopleData,);
                                                   }
@@ -771,12 +776,17 @@ class HomeState extends State<Home>  {
                                                     if(result.isAuthenticated && result.status){
                                                       final parsed = jsonDecode(result.data ?? '').cast<Map<String, dynamic>>();
                                                       setState(() {
+                                                        documentList =  parsed.map<Document>((json) => Document.fromJson(json)).toList();
+                                                      });
+                                                      if(docNameContrl.text == ''){
+                                                        documentsBox.addAll(documentList);
+                                                      }
+                                                      setState(() {
                                                         docNameContrl.text = '';
                                                         _documentCategory = '';
-                                                        documentList =  parsed.map<Document>((json) => Document.fromJson(json)).toList();
                                                         isLoading = false;
                                                       });
-                                                      documentsBox.addAll(documentList);
+
                                                       Navigator.pop(context);
                                                       Navigator.pushNamed(context, documentsRoute, arguments: documentList,);
                                                     }

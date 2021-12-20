@@ -504,6 +504,28 @@ class AppNotification extends HiveObject{
           .map<AppNotification>((item) => AppNotification.fromJson(item))
           .toList();
 }
+class Quizes{
+  final int QuizID;
+  final String title;
+  final String StartTime;
+  final String EndTime;
+  final int timeDuration;
+  final int noOfQns;
+
+  QuizData({required this.QuizID, required this.title, required this.StartTime,
+    required this.EndTime,required this.timeDuration,required this.noOfQns});
+
+  factory QuizData.fromJson(Map<String, dynamic> json) {
+    return QuizData(
+      QuizID: json['QuizID'],
+      title: json['title'],
+      StartTime: json['StartTime'],
+      EndTime: json['EndTime'],
+      timeDuration: json['timeDuration'],
+      noOfQns: json['noOfQns'],
+    );
+  }
+}
 class QuizData{
   final int QuizID;
   final String title;
@@ -563,8 +585,8 @@ class AnswerChoiceData{
 }
 class QuizRespnse{
   final int QuizID;
-  final DateTime QuizStartTime;
-  final DateTime QuizEndTime;
+  final String QuizStartTime;
+  final String QuizEndTime;
   final List<QuestionAnswer> answer;
 
   QuizRespnse({required this.QuizID, required this.QuizStartTime, required this.QuizEndTime,
@@ -598,6 +620,11 @@ class QuestionAnswer{
       AnswerId: json['AnswerId'],
     );
   }
+  Map<String, dynamic> toJson() =>
+      {
+        'QuestionId': QuestionId,
+        'AnswerId': AnswerId,
+      };
 }
 @HiveType(typeId: 8)
 class EmpProfileData extends HiveObject {

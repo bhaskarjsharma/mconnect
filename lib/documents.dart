@@ -271,6 +271,13 @@ class _DocumentsState extends State<Documents>{
           _progress = 0.0;
           _downloadPerc = '';
         });
+
+        if(result['isSuccess'] != null){
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("File downloaded. Open Downloads or check Notification")),
+          );
+        }
+
         await showNotification(result);
       }
     }

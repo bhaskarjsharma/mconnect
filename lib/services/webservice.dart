@@ -65,7 +65,18 @@ class EndPointProvider{
     }
   }
   Future<APIResponseData> fetchQuizes() async{
-    final response = await _client.get('https://connect.bcplindia.co.in/MobileAppAPI/StartQuiz');
+    final response = await _client.get('https://connect.bcplindia.co.in/MobileAppAPI/GetQuizes');
+
+    if (response.statusCode == 200) {
+      return APIResponseData.fromJson(response.data);
+    } else {
+      print("The error message is: ${response.data}");
+      throw Exception('Data transfer error');
+    }
+  }
+  Future<APIResponseData> startQuiz(String quizID) async{
+    final response = await _client.post('https://connect.bcplindia.co.in/MobileAppAPI/StartQuiz',
+        data: {'quizID': quizID});
 
     if (response.statusCode == 200) {
       return APIResponseData.fromJson(response.data);
@@ -75,11 +86,12 @@ class EndPointProvider{
     }
   }
   Future<APIResponseData> postQuizResponse(var quizData) async{
+    String data = jsonEncode(quizData);
     final response = await _client.post('https://connect.bcplindia.co.in/MobileAppAPI/SaveQuizResponse',
       options: Options(headers: {
         HttpHeaders.contentTypeHeader: "application/json; charset=UTF-8",
       }),
-      data: jsonEncode(quizData),);
+      data: data,);
 
     if (response.statusCode == 200) {
       return APIResponseData.fromJson(response.data);

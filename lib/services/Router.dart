@@ -75,7 +75,8 @@ class NavigationRouter {
         final args = settings.arguments;
         return MaterialPageRoute(builder: (BuildContext context) => QuizDetail(),settings: RouteSettings(arguments: args,),);
       case quizStartRoute:
-        final args = settings.arguments as QuizData;
+        //final args = settings.arguments as QuizData;
+        final args = settings.arguments as int;
         return MaterialPageRoute(builder: (BuildContext context) => QuizStart(args));
       case aboutAppRoute:
         return MaterialPageRoute(builder: (_) => AboutApp());

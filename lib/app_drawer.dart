@@ -122,6 +122,7 @@ class AppDrawerState extends State<AppDrawer> {
             onTap: () {
               //Navigator.pushNamed(context, homeRoute);
               //to prevent multiple back press, close all views and go to home
+              Navigator.pop(context);
               Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (BuildContext context) => Home()), (Route<dynamic> route) => false);
             },
           ),
@@ -129,6 +130,7 @@ class AppDrawerState extends State<AppDrawer> {
             leading: Icon(Icons.manage_accounts,color: Colors.deepOrange, size:25),
             title: const Text('Profile'),
             onTap: () {
+              Navigator.pop(context);
               Navigator.pushNamed(context, profileRoute);
             },
           ),
@@ -144,6 +146,7 @@ class AppDrawerState extends State<AppDrawer> {
             leading: Icon(Icons.download,color: Colors.green, size:25),
             title: const Text('Downloads'),
             onTap: () {
+              Navigator.pop(context);
               Navigator.pushNamed(context, downloadsRoute);
             },
           ),
@@ -713,6 +716,23 @@ class _UserProfileState extends State<UserProfile>{
                   buildRow('Unit','${_profileData.emp_unit}'),
                   buildRow('Location','${_profileData.emp_location}'),
                   buildRow('Blood Group','${_profileData.emp_bloodgroup}'),
+  /*                Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      ElevatedButton(
+                          onPressed: (){},
+                          child: Text('Addresses'),
+                      ),
+                      ElevatedButton(
+                        onPressed: (){},
+                        child: Text('Trainings'),
+                      ),
+                      ElevatedButton(
+                        onPressed: (){},
+                        child: Text('Nominees'),
+                      )
+                    ],
+                  ),*/
                 ],
               ),
             ),
@@ -722,7 +742,7 @@ class _UserProfileState extends State<UserProfile>{
     );
   }
 
-  Widget buildRow(String title, String data){
+  Row buildRow(String title, String data){
     return Row(
       children: <Widget>[
         Container(
