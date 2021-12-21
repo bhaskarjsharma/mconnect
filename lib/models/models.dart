@@ -505,6 +505,7 @@ class AppNotification extends HiveObject{
           .map<AppNotification>((item) => AppNotification.fromJson(item))
           .toList();
 }
+
 @JsonSerializable()
 class QuizData{
   final int QuizID;

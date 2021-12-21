@@ -278,6 +278,9 @@ class _QuizStartState extends State<QuizStart>{
     DioClient _dio = new DioClient();
     _endpointProvider = new EndPointProvider(_dio.init());
     if(connectionStatus != ConnectivityResult.none){
+      setState(() {
+        isLoading = true;
+      });
       _apiResponseData = _endpointProvider.startQuiz(widget.quizID.toString());
       _apiResponseData.then((result) {
         if(result.isAuthenticated && result.status){
@@ -291,12 +294,30 @@ class _QuizStartState extends State<QuizStart>{
           quizStartTime = DateTime.now();
           startTimer();
         }
+        else{
+          Navigator.pop(context);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('${result.error_details}')),
+          );
+          setState(() {
+            isLoading = false;
+          });
+        }
+      }).catchError( (error) {
+        setState(() {
+          isLoading = false;
+        });
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Error in data fetching")),
+        );
       });
     }
     else{
       setState(() {
         isLoading = false;
       });
+      Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("No internet connection. Please check your settings")),
       );
@@ -391,6 +412,7 @@ class _QuizStartState extends State<QuizStart>{
           ): Column(
             children: [
               connectionStatus != ConnectivityResult.none ? SizedBox(height:0) : noConnectivityError(),
+              isLoading? waiting(context) :
               Center(
                 child: Text('Question',
                   style: TextStyle(
