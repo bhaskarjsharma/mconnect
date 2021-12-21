@@ -1,6 +1,7 @@
 
 import 'dart:convert';
 import 'package:hive/hive.dart';
+import 'package:json_annotation/json_annotation.dart';
 part 'models.g.dart';
 
 class APIResponseData{
@@ -504,28 +505,7 @@ class AppNotification extends HiveObject{
           .map<AppNotification>((item) => AppNotification.fromJson(item))
           .toList();
 }
-class Quizes{
-  final int QuizID;
-  final String title;
-  final String StartTime;
-  final String EndTime;
-  final int timeDuration;
-  final int noOfQns;
-
-  QuizData({required this.QuizID, required this.title, required this.StartTime,
-    required this.EndTime,required this.timeDuration,required this.noOfQns});
-
-  factory QuizData.fromJson(Map<String, dynamic> json) {
-    return QuizData(
-      QuizID: json['QuizID'],
-      title: json['title'],
-      StartTime: json['StartTime'],
-      EndTime: json['EndTime'],
-      timeDuration: json['timeDuration'],
-      noOfQns: json['noOfQns'],
-    );
-  }
-}
+@JsonSerializable()
 class QuizData{
   final int QuizID;
   final String title;
@@ -533,12 +513,15 @@ class QuizData{
   final String EndTime;
   final int timeDuration;
   final int noOfQns;
-  final List<QuestionData> Questions ;
+  final List<QuestionData>? Questions ;
 
   QuizData({required this.QuizID, required this.title, required this.StartTime,
-    required this.EndTime,required this.timeDuration,required this.noOfQns,required this.Questions});
+    required this.EndTime,required this.timeDuration,required this.noOfQns, this.Questions});
 
-  factory QuizData.fromJson(Map<String, dynamic> json) {
+  factory QuizData.fromJson(Map<String, dynamic> json) => _$QuizDataFromJson(json);
+  Map<String, dynamic> toJson() => _$QuizDataToJson(this);
+
+/*  factory QuizData.fromJson(Map<String, dynamic> json) {
     return QuizData(
       QuizID: json['QuizID'],
       title: json['title'],
@@ -548,8 +531,9 @@ class QuizData{
       noOfQns: json['noOfQns'],
       Questions: (json['Questions'] as List).map((e) => QuestionData.fromJson(e)).toList(),
     );
-  }
+  }*/
 }
+@JsonSerializable()
 class QuestionData{
   final int QuestionId;
   final String QuestionText;
@@ -559,29 +543,35 @@ class QuestionData{
 QuestionData({required this.QuestionId, required this.QuestionText, required this.AnswerId,
     required this.AnswerChoices});
 
-  factory QuestionData.fromJson(Map<String, dynamic> json) {
+  factory QuestionData.fromJson(Map<String, dynamic> json) => _$QuestionDataFromJson(json);
+  Map<String, dynamic> toJson() => _$QuestionDataToJson(this);
+
+/*  factory QuestionData.fromJson(Map<String, dynamic> json) {
     return QuestionData(
       QuestionId: json['QuestionId'],
       QuestionText: json['QuestionText'],
       AnswerId: json['AnswerId'],
       AnswerChoices: (json['AnswerChoices'] as List).map((e) => AnswerChoiceData.fromJson(e)).toList(),
     );
-  }
+  }*/
 }
+@JsonSerializable()
 class AnswerChoiceData{
   final int AnswerChoiceID ;
   final int choiceNo ;
   final String AnswerText ;
 
   AnswerChoiceData({required this.AnswerChoiceID, required this.choiceNo, required this.AnswerText});
+  factory AnswerChoiceData.fromJson(Map<String, dynamic> json) => _$AnswerChoiceDataFromJson(json);
+  Map<String, dynamic> toJson() => _$AnswerChoiceDataToJson(this);
 
-  factory AnswerChoiceData.fromJson(Map<String, dynamic> json) {
+/*  factory AnswerChoiceData.fromJson(Map<String, dynamic> json) {
     return AnswerChoiceData(
       AnswerChoiceID: json['AnswerChoiceID'],
       choiceNo: json['choiceNo'],
       AnswerText: json['AnswerText'],
     );
-  }
+  }*/
 }
 class QuizRespnse{
   final int QuizID;

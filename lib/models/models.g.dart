@@ -690,3 +690,60 @@ class EmpNomineeDataAdapter extends TypeAdapter<EmpNomineeData> {
           runtimeType == other.runtimeType &&
           typeId == other.typeId;
 }
+
+// **************************************************************************
+// JsonSerializableGenerator
+// **************************************************************************
+
+QuizData _$QuizDataFromJson(Map<String, dynamic> json) => QuizData(
+      QuizID: json['QuizID'] as int,
+      title: json['title'] as String,
+      StartTime: json['StartTime'] as String,
+      EndTime: json['EndTime'] as String,
+      timeDuration: json['timeDuration'] as int,
+      noOfQns: json['noOfQns'] as int,
+      Questions: (json['Questions'] as List<dynamic>?)
+          ?.map((e) => QuestionData.fromJson(e as Map<String, dynamic>))
+          .toList(),
+    );
+
+Map<String, dynamic> _$QuizDataToJson(QuizData instance) => <String, dynamic>{
+      'QuizID': instance.QuizID,
+      'title': instance.title,
+      'StartTime': instance.StartTime,
+      'EndTime': instance.EndTime,
+      'timeDuration': instance.timeDuration,
+      'noOfQns': instance.noOfQns,
+      'Questions': instance.Questions,
+    };
+
+QuestionData _$QuestionDataFromJson(Map<String, dynamic> json) => QuestionData(
+      QuestionId: json['QuestionId'] as int,
+      QuestionText: json['QuestionText'] as String,
+      AnswerId: json['AnswerId'] as int,
+      AnswerChoices: (json['AnswerChoices'] as List<dynamic>)
+          .map((e) => AnswerChoiceData.fromJson(e as Map<String, dynamic>))
+          .toList(),
+    );
+
+Map<String, dynamic> _$QuestionDataToJson(QuestionData instance) =>
+    <String, dynamic>{
+      'QuestionId': instance.QuestionId,
+      'QuestionText': instance.QuestionText,
+      'AnswerId': instance.AnswerId,
+      'AnswerChoices': instance.AnswerChoices,
+    };
+
+AnswerChoiceData _$AnswerChoiceDataFromJson(Map<String, dynamic> json) =>
+    AnswerChoiceData(
+      AnswerChoiceID: json['AnswerChoiceID'] as int,
+      choiceNo: json['choiceNo'] as int,
+      AnswerText: json['AnswerText'] as String,
+    );
+
+Map<String, dynamic> _$AnswerChoiceDataToJson(AnswerChoiceData instance) =>
+    <String, dynamic>{
+      'AnswerChoiceID': instance.AnswerChoiceID,
+      'choiceNo': instance.choiceNo,
+      'AnswerText': instance.AnswerText,
+    };
