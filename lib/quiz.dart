@@ -261,7 +261,7 @@ class _QuizStartState extends State<QuizStart>{
   Color ansColor = Colors.white;
   late Future<APIResponseData> _apiResponseData;
   late var _endpointProvider;
-  bool isLoading = false;
+  bool isLoading = true;
 
   late QuizData quizData;
   late QuestionData question;
@@ -278,15 +278,11 @@ class _QuizStartState extends State<QuizStart>{
     DioClient _dio = new DioClient();
     _endpointProvider = new EndPointProvider(_dio.init());
     if(connectionStatus != ConnectivityResult.none){
-      setState(() {
-        isLoading = true;
-      });
       _apiResponseData = _endpointProvider.startQuiz(widget.quizID.toString());
       _apiResponseData.then((result) {
         if(result.isAuthenticated && result.status){
-          final parsed = jsonDecode(result.data ?? '').cast<Map<String, dynamic>>();
           setState(() {
-            quizData =  parsed.map<QuizData>((json) => QuizData.fromJson(json)).toList();
+            quizData = QuizData.fromJson(jsonDecode(result.data ?? ''));
             question = quizData.Questions!.elementAt(qnsId);
             duration = Duration(seconds: quizData.timeDuration);
             isLoading = false;
@@ -295,13 +291,13 @@ class _QuizStartState extends State<QuizStart>{
           startTimer();
         }
         else{
+          setState(() {
+            isLoading = false;
+          });
           Navigator.pop(context);
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('${result.error_details}')),
           );
-          setState(() {
-            isLoading = false;
-          });
         }
       }).catchError( (error) {
         setState(() {
@@ -387,34 +383,12 @@ class _QuizStartState extends State<QuizStart>{
             ),),
           ),
           //endDrawer: AppDrawer(),
-          body: isLoading ? Container(
-            height: MediaQuery.of(context).size.height / 1.3,
-            child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  //CircularProgressIndicator(),
-                  Center(
-                    child: Lottie.asset('animations/ani_loading_hexa.json',
-                      width: 200,
-                      height: 200,),
-                  ),
-                  Container(
-                    padding: EdgeInsets.all(10),
-                    child:Text('Please wait. Submitting quiz responses',style: TextStyle(
-                      fontWeight: FontWeight.w500,fontSize: 16,),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ): Column(
+          body: isLoading ? waiting(context): Column(
             children: [
               connectionStatus != ConnectivityResult.none ? SizedBox(height:0) : noConnectivityError(),
               isLoading? waiting(context) :
               Center(
-                child: Text('Question',
+                child: Text('Question ${qnsId + 1} of ${quizData.noOfQns}',
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
@@ -549,7 +523,7 @@ class _QuizStartState extends State<QuizStart>{
                                         var width = MediaQuery.of(context).size.width;
 
                                         return Container(
-                                          height: height - (height/2.5),
+                                          height: height - (height/3),
                                           width: width - (width/4),
                                           child: isLoading ? Container(
                                             height: MediaQuery.of(context).size.height / 1.3,
@@ -649,8 +623,8 @@ class _QuizStartState extends State<QuizStart>{
           setState(() {
             isLoading = false;
           });
-          Navigator.pop(context);
-          Navigator.pushNamed(context, homeRoute);
+          //Navigator.pop(context);
+          Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (BuildContext context) => Home()), (Route<dynamic> route) => false);
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text("Quiz response submitted successfully")),
           );
@@ -659,8 +633,8 @@ class _QuizStartState extends State<QuizStart>{
         setState(() {
           isLoading = false;
         });
-        Navigator.pop(context);
-        Navigator.pushNamed(context, homeRoute);
+        //Navigator.pop(context);
+        Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (BuildContext context) => Home()), (Route<dynamic> route) => false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text("Error in submitting quiz data")),
         );

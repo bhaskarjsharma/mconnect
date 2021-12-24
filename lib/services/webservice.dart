@@ -176,8 +176,19 @@ class EndPointProvider{
       throw Exception('Failed to retrieve data.');
     }
   }
-  Future<APIResponseData> fetchAttendanceData(String fromDate, String toDate) async{
+  Future<APIResponseData> fetchBioPunchData(String fromDate, String toDate) async{
     final response = await _client.post('https://connect.bcplindia.co.in/MobileAppAPI/BiometricPunchData',
+        data: {'fromDate': fromDate, 'toDate': toDate});
+
+    if (response.statusCode == 200) {
+      return APIResponseData.fromJson(response.data);
+    } else {
+      print("The error message is: ${response.data}");
+      throw Exception('Failed to retrieve data.');
+    }
+  }
+  Future<APIResponseData> fetchAttendanceData(String fromDate, String toDate) async{
+    final response = await _client.post('https://connect.bcplindia.co.in/MobileAppAPI/AttendanceData',
         data: {'fromDate': fromDate, 'toDate': toDate});
 
     if (response.statusCode == 200) {

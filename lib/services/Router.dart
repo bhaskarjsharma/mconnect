@@ -47,6 +47,7 @@ class NavigationRouter {
         return MaterialPageRoute(builder: (_) => QtrAlloc());
       case profileRoute:
         return MaterialPageRoute(builder: (_) => UserProfile());
+
       case tfaRoute:
         final args = settings.arguments as OTPauth;
         return MaterialPageRoute(builder: (BuildContext context) => TwoFactorAuth(args.otpRecordID,args.deviceStatRecordID));
@@ -62,6 +63,9 @@ class NavigationRouter {
       case shiftRosterRoute:
         final args = settings.arguments;
         return MaterialPageRoute(builder: (BuildContext context) => ShiftRosterView(),settings: RouteSettings(arguments: args,),);
+      case bioPunchRoute:
+        final args = settings.arguments;
+        return MaterialPageRoute(builder: (BuildContext context) => BiometricPunchView(),settings: RouteSettings(arguments: args,),);
       case attendanceRoute:
         final args = settings.arguments;
         return MaterialPageRoute(builder: (BuildContext context) => AttendanceView(),settings: RouteSettings(arguments: args,),);

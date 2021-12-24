@@ -292,22 +292,63 @@ class ShiftRoster{
     );
   }
 }
-class AttendanceData{
+@JsonSerializable()
+class BioPunchData{
   final String date;
   final String punchDate;
   final String punchTime;
   final String deviceName;
 
-  AttendanceData({required this.date,required this.punchDate, required this.punchTime, required this.deviceName});
+  BioPunchData({required this.date,required this.punchDate, required this.punchTime, required this.deviceName});
 
-  factory AttendanceData.fromJson(Map<String, dynamic> json) {
-    return AttendanceData(
-      date: json['date'],
-      punchDate: json['punchDate'],
-      punchTime: json['punchTime'],
-      deviceName: json['deviceName'],
-    );
-  }
+  factory BioPunchData.fromJson(Map<String, dynamic> json) => _$BioPunchDataFromJson(json);
+  Map<String, dynamic> toJson() => _$BioPunchDataToJson(this);
+}
+@JsonSerializable()
+class AttendanceData{
+  final String Pernr;
+  final String Begda;
+  final String Endda;
+  final int absent_count;
+  final int first_abs_count;
+  final int second_abs_count;
+  final int in_miss_count;
+  final int out_miss_count;
+  final int in_late_count;
+  final int out_early_count;
+  final int in_relax_count;
+  final int out_relax_count;
+  final List<AttendanceRecords> AttndData ;
+
+  AttendanceData({required this.Pernr,required this.Begda, required this.Endda, required this.absent_count
+    , required this.first_abs_count, required this.second_abs_count, required this.in_miss_count, required this.out_miss_count
+    , required this.in_late_count, required this.out_early_count, required this.in_relax_count, required this.out_relax_count
+    ,required this.AttndData});
+
+  factory AttendanceData.fromJson(Map<String, dynamic> json) => _$AttendanceDataFromJson(json);
+  Map<String, dynamic> toJson() => _$AttendanceDataToJson(this);
+}
+@JsonSerializable()
+class AttendanceRecords{
+  final String Pernr;
+  final String Begda;
+  final String Endda;
+  final String Shift;
+  final String ShiftDt;
+  final String Attendance;
+  final String InDate;
+  final String InTime;
+  final String OutDate;
+  final String OutTime;
+  final String InTimeRelax;
+  final String OutTimeRelax;
+
+  AttendanceRecords({required this.Pernr,required this.Begda, required this.Endda, required this.Shift, required this.ShiftDt
+    , required this.Attendance, required this.InDate, required this.InTime, required this.OutDate, required this.OutTime
+    , required this.InTimeRelax, required this.OutTimeRelax});
+
+  factory AttendanceRecords.fromJson(Map<String, dynamic> json) => _$AttendanceRecordsFromJson(json);
+  Map<String, dynamic> toJson() => _$AttendanceRecordsToJson(this);
 }
 class PayrollData{
   final String Pernr;
@@ -521,18 +562,6 @@ class QuizData{
 
   factory QuizData.fromJson(Map<String, dynamic> json) => _$QuizDataFromJson(json);
   Map<String, dynamic> toJson() => _$QuizDataToJson(this);
-
-/*  factory QuizData.fromJson(Map<String, dynamic> json) {
-    return QuizData(
-      QuizID: json['QuizID'],
-      title: json['title'],
-      StartTime: json['StartTime'],
-      EndTime: json['EndTime'],
-      timeDuration: json['timeDuration'],
-      noOfQns: json['noOfQns'],
-      Questions: (json['Questions'] as List).map((e) => QuestionData.fromJson(e)).toList(),
-    );
-  }*/
 }
 @JsonSerializable()
 class QuestionData{
@@ -547,14 +576,6 @@ QuestionData({required this.QuestionId, required this.QuestionText, required thi
   factory QuestionData.fromJson(Map<String, dynamic> json) => _$QuestionDataFromJson(json);
   Map<String, dynamic> toJson() => _$QuestionDataToJson(this);
 
-/*  factory QuestionData.fromJson(Map<String, dynamic> json) {
-    return QuestionData(
-      QuestionId: json['QuestionId'],
-      QuestionText: json['QuestionText'],
-      AnswerId: json['AnswerId'],
-      AnswerChoices: (json['AnswerChoices'] as List).map((e) => AnswerChoiceData.fromJson(e)).toList(),
-    );
-  }*/
 }
 @JsonSerializable()
 class AnswerChoiceData{
@@ -566,13 +587,6 @@ class AnswerChoiceData{
   factory AnswerChoiceData.fromJson(Map<String, dynamic> json) => _$AnswerChoiceDataFromJson(json);
   Map<String, dynamic> toJson() => _$AnswerChoiceDataToJson(this);
 
-/*  factory AnswerChoiceData.fromJson(Map<String, dynamic> json) {
-    return AnswerChoiceData(
-      AnswerChoiceID: json['AnswerChoiceID'],
-      choiceNo: json['choiceNo'],
-      AnswerText: json['AnswerText'],
-    );
-  }*/
 }
 class QuizRespnse{
   final int QuizID;

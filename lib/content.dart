@@ -875,7 +875,9 @@ class _NewsDisplayState extends State<NewsDisplay> {
             width: 40,
             child: Image.asset('images/bcpl_logo.png'),
           ),
-          title: Text('Connect - News & Events'),
+          title: Text('Connect - News & Events',style: TextStyle(
+            color:appBarTextColor,
+          ),),
         ),
         endDrawer: AppDrawer(),
         body: isLoading? waiting(context) : getContentFromId(),

@@ -695,6 +695,89 @@ class EmpNomineeDataAdapter extends TypeAdapter<EmpNomineeData> {
 // JsonSerializableGenerator
 // **************************************************************************
 
+BioPunchData _$BioPunchDataFromJson(Map<String, dynamic> json) => BioPunchData(
+      date: json['date'] as String,
+      punchDate: json['punchDate'] as String,
+      punchTime: json['punchTime'] as String,
+      deviceName: json['deviceName'] as String,
+    );
+
+Map<String, dynamic> _$BioPunchDataToJson(BioPunchData instance) =>
+    <String, dynamic>{
+      'date': instance.date,
+      'punchDate': instance.punchDate,
+      'punchTime': instance.punchTime,
+      'deviceName': instance.deviceName,
+    };
+
+AttendanceData _$AttendanceDataFromJson(Map<String, dynamic> json) =>
+    AttendanceData(
+      Pernr: json['Pernr'] as String,
+      Begda: json['Begda'] as String,
+      Endda: json['Endda'] as String,
+      absent_count: json['absent_count'] as int,
+      first_abs_count: json['first_abs_count'] as int,
+      second_abs_count: json['second_abs_count'] as int,
+      in_miss_count: json['in_miss_count'] as int,
+      out_miss_count: json['out_miss_count'] as int,
+      in_late_count: json['in_late_count'] as int,
+      out_early_count: json['out_early_count'] as int,
+      in_relax_count: json['in_relax_count'] as int,
+      out_relax_count: json['out_relax_count'] as int,
+      AttndData: (json['AttndData'] as List<dynamic>)
+          .map((e) => AttendanceRecords.fromJson(e as Map<String, dynamic>))
+          .toList(),
+    );
+
+Map<String, dynamic> _$AttendanceDataToJson(AttendanceData instance) =>
+    <String, dynamic>{
+      'Pernr': instance.Pernr,
+      'Begda': instance.Begda,
+      'Endda': instance.Endda,
+      'absent_count': instance.absent_count,
+      'first_abs_count': instance.first_abs_count,
+      'second_abs_count': instance.second_abs_count,
+      'in_miss_count': instance.in_miss_count,
+      'out_miss_count': instance.out_miss_count,
+      'in_late_count': instance.in_late_count,
+      'out_early_count': instance.out_early_count,
+      'in_relax_count': instance.in_relax_count,
+      'out_relax_count': instance.out_relax_count,
+      'AttndData': instance.AttndData,
+    };
+
+AttendanceRecords _$AttendanceRecordsFromJson(Map<String, dynamic> json) =>
+    AttendanceRecords(
+      Pernr: json['Pernr'] as String,
+      Begda: json['Begda'] as String,
+      Endda: json['Endda'] as String,
+      Shift: json['Shift'] as String,
+      ShiftDt: json['ShiftDt'] as String,
+      Attendance: json['Attendance'] as String,
+      InDate: json['InDate'] as String,
+      InTime: json['InTime'] as String,
+      OutDate: json['OutDate'] as String,
+      OutTime: json['OutTime'] as String,
+      InTimeRelax: json['InTimeRelax'] as String,
+      OutTimeRelax: json['OutTimeRelax'] as String,
+    );
+
+Map<String, dynamic> _$AttendanceRecordsToJson(AttendanceRecords instance) =>
+    <String, dynamic>{
+      'Pernr': instance.Pernr,
+      'Begda': instance.Begda,
+      'Endda': instance.Endda,
+      'Shift': instance.Shift,
+      'ShiftDt': instance.ShiftDt,
+      'Attendance': instance.Attendance,
+      'InDate': instance.InDate,
+      'InTime': instance.InTime,
+      'OutDate': instance.OutDate,
+      'OutTime': instance.OutTime,
+      'InTimeRelax': instance.InTimeRelax,
+      'OutTimeRelax': instance.OutTimeRelax,
+    };
+
 QuizData _$QuizDataFromJson(Map<String, dynamic> json) => QuizData(
       QuizID: json['QuizID'] as int,
       title: json['title'] as String,

@@ -54,6 +54,7 @@ class HomeState extends State<Home>  {
   final _documentFormKey = GlobalKey<FormState>();
   final _paySlipFormKey = GlobalKey<FormState>();
   final _claimsFormKey = GlobalKey<FormState>();
+  final _bioPunchFormKey = GlobalKey<FormState>();
   final _attendanceFormKey = GlobalKey<FormState>();
   final _itacFormKey = GlobalKey<FormState>();
 
@@ -68,6 +69,11 @@ class HomeState extends State<Home>  {
   final monthContrl = TextEditingController();
   final yearContrl = TextEditingController();
   late DateTime payslipSelectedDate;
+
+  final bioPunchFromDateContrl = TextEditingController();
+  final bioPunchToDateContrl = TextEditingController();
+  DateTime bioPunchSelectedFromDate = DateTime.now();
+  DateTime bioPunchSelectedToDate = DateTime.now();
 
   final attendanceFromDateContrl = TextEditingController();
   final attendanceToDateContrl = TextEditingController();
@@ -85,7 +91,8 @@ class HomeState extends State<Home>  {
   late List<Document> documentList;
   late List<ClaimData> claimsData;
   late List<PayrollData> payrollData;
-  late List<AttendanceData> attendanceData;
+  late List<BioPunchData> bioPunchData;
+  late AttendanceData attendanceData;
 
   late List<String> empUnitList;
   late List<String> empDiscList;
@@ -372,11 +379,10 @@ class HomeState extends State<Home>  {
                   makeDashboardItem("Disha",const Icon(Icons.stream,size:30, color:Colors.teal),Colors.teal,dishaRoute),
                   makeDashboardItem("Payslips", const Icon(ConnectAppIcon.rupee_sign,size:30, color:Colors.orange),Colors.cyan,payslipRoute),
                   makeDashboardItem("Birthdays & Anniversaries",const Icon(Icons.celebration,size:30, color:Colors.red),Colors.red,birthdayRoute),
-                  makeDashboardItem("Punch Time",const Icon(Icons.fingerprint,size:30, color:Colors.red),Colors.deepPurple,attendanceRoute),
+                  makeDashboardItem("Punch Time",const Icon(Icons.fingerprint,size:30, color:Colors.red),Colors.deepPurple,bioPunchRoute),
+                  makeDashboardItem("Attendance",const Icon(Icons.pending_actions,size:30, color:Colors.indigo),Colors.indigo,attendanceRoute),
                   makeDashboardItem("Leave Quota",const Icon(Icons.info,size:30, color:Colors.cyan),Colors.orange,leaveQuotaRoute),
                   makeDashboardItem("Holiday List",const Icon(ConnectAppIcon.calendar,size:30, color:Colors.brown),Colors.brown,holidayListRoute),
-
-
                   //makeDashboardItem("Shift Roster",const Icon(ConnectAppIcon.calendar_alt,size:30, color:Colors.teal),Colors.teal,shiftRosterRoute),
                   makeDashboardItem("View Claims",const Icon(Icons.receipt,size:30, color:Colors.deepPurple),Colors.red,homeRoute),
                   //makeDashboardItem("Regularise Attendance",const Icon(Icons.schedule,size:30, color:Colors.deepPurple),Colors.red,homeRoute),
@@ -900,7 +906,6 @@ class HomeState extends State<Home>  {
 
                                     children: <Widget>[
                                       Container(
-
                                         padding: EdgeInsets.all(10),
                                         child: Center(child: Text('View Payslip',
                                             style: TextStyle(
@@ -917,6 +922,12 @@ class HomeState extends State<Home>  {
                                             border: OutlineInputBorder(),
                                             labelText: 'Payroll Period',
                                           ),
+                                          validator: (value) {
+                                            if (value == null || value.isEmpty) {
+                                              return 'Please enter period';
+                                            }
+                                            return null;
+                                          },
                                           onTap: (){
                                             // Below line stops keyboard from appearing
                                             FocusScope.of(context).requestFocus(new FocusNode());
@@ -1054,23 +1065,23 @@ class HomeState extends State<Home>  {
                                             isLoading = true;
                                           });
                                           DateTime valDate = DateTime.now();
-                                          _apiResponseData = _endpointProvider.fetchAttendanceData(DateFormat('yyyy-MM-dd').format(valDate),DateFormat('yyyy-MM-dd').format(valDate));
+                                          _apiResponseData = _endpointProvider.fetchBioPunchData(DateFormat('yyyy-MM-dd').format(valDate),DateFormat('yyyy-MM-dd').format(valDate));
                                           _apiResponseData.then((result) {
                                             if(result.isAuthenticated && result.status){
                                               final parsed = jsonDecode(result.data ?? '').cast<Map<String, dynamic>>();
                                               setState(() {
-                                                attendanceFromDateContrl.text = '';
-                                                attendanceToDateContrl.text = '';
-                                                attendanceData =  parsed.map<AttendanceData>((json) => AttendanceData.fromJson(json)).toList();
+                                                bioPunchFromDateContrl.text = '';
+                                                bioPunchToDateContrl.text = '';
+                                                bioPunchData =  parsed.map<BioPunchData>((json) => BioPunchData.fromJson(json)).toList();
                                                 isLoading = false;
                                                 Navigator.pop(context);
-                                                Navigator.pushNamed(context, attendanceRoute, arguments: attendanceData,);
+                                                Navigator.pushNamed(context, bioPunchRoute, arguments: bioPunchData,);
                                               });
                                             }
                                             else{
                                               setState(() {
-                                                attendanceFromDateContrl.text = '';
-                                                attendanceToDateContrl.text = '';
+                                                bioPunchFromDateContrl.text = '';
+                                                bioPunchToDateContrl.text = '';
                                                 isLoading = false;
                                               });
                                               Navigator.pop(context);
@@ -1080,8 +1091,8 @@ class HomeState extends State<Home>  {
                                             }
                                           }).catchError( (error) {
                                             setState(() {
-                                              attendanceFromDateContrl.text = '';
-                                              attendanceToDateContrl.text = '';
+                                              bioPunchFromDateContrl.text = '';
+                                              bioPunchToDateContrl.text = '';
                                               isLoading = false;
                                             });
                                             Navigator.pop(context);
@@ -1105,14 +1116,297 @@ class HomeState extends State<Home>  {
                                           });
                                           DateTime fromDate = DateTime.now().subtract(Duration(days: 7));
                                           DateTime toDate = DateTime.now();
-                                          _apiResponseData = _endpointProvider.fetchAttendanceData(DateFormat('yyyy-MM-dd').format(fromDate),DateFormat('yyyy-MM-dd').format(toDate));
+                                          _apiResponseData = _endpointProvider.fetchBioPunchData(DateFormat('yyyy-MM-dd').format(fromDate),DateFormat('yyyy-MM-dd').format(toDate));
                                           _apiResponseData.then((result) {
                                             if(result.isAuthenticated && result.status){
                                               final parsed = jsonDecode(result.data ?? '').cast<Map<String, dynamic>>();
                                               setState(() {
+                                                bioPunchFromDateContrl.text = '';
+                                                bioPunchToDateContrl.text = '';
+                                                bioPunchData =  parsed.map<BioPunchData>((json) => BioPunchData.fromJson(json)).toList();
+                                                isLoading = false;
+                                                Navigator.pop(context);
+                                                Navigator.pushNamed(context, bioPunchRoute, arguments: bioPunchData,);
+                                              });
+                                            }
+                                            else{
+                                              setState(() {
+                                                bioPunchFromDateContrl.text = '';
+                                                bioPunchToDateContrl.text = '';
+                                                isLoading = false;
+                                              });
+                                              Navigator.pop(context);
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                SnackBar(content: Text("Error in data fetching")),
+                                              );
+                                            }
+                                          }).catchError( (error) {
+                                            setState(() {
+                                              bioPunchFromDateContrl.text = '';
+                                              bioPunchToDateContrl.text = '';
+                                              isLoading = false;
+                                            });
+                                            Navigator.pop(context);
+                                            ScaffoldMessenger.of(context).showSnackBar(
+                                              SnackBar(content: Text("Error in data fetching")),
+                                            );
+                                          });
+                                        },
+                                        child: const Text('Last 7 days'),
+                                      ),
+                                      ElevatedButton(
+                                        style: ElevatedButton.styleFrom(
+                                          padding: const EdgeInsets.symmetric(horizontal: 10),
+                                          primary: Colors.teal,
+                                          shape: RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.circular(50)),
+                                        ),
+                                        onPressed: () {
+                                          setState(() {
+                                            isLoading = true;
+                                          });
+                                          DateTime fromDate = new DateTime(DateTime.now().year,DateTime.now().month,1);
+                                          DateTime toDate = DateTime.now();
+                                          _apiResponseData = _endpointProvider.fetchBioPunchData(DateFormat('yyyy-MM-dd').format(fromDate),DateFormat('yyyy-MM-dd').format(toDate));
+                                          _apiResponseData.then((result) {
+                                            if(result.isAuthenticated && result.status){
+                                              final parsed = jsonDecode(result.data ?? '').cast<Map<String, dynamic>>();
+                                              setState(() {
+                                                bioPunchFromDateContrl.text = '';
+                                                bioPunchToDateContrl.text = '';
+                                                bioPunchData =  parsed.map<BioPunchData>((json) => BioPunchData.fromJson(json)).toList();
+                                                isLoading = false;
+                                                Navigator.pop(context);
+                                                Navigator.pushNamed(context, bioPunchRoute, arguments: bioPunchData,);
+                                              });
+                                            }
+                                            else{
+                                              setState(() {
+                                                bioPunchFromDateContrl.text = '';
+                                                bioPunchToDateContrl.text = '';
+                                                isLoading = false;
+                                              });
+                                              Navigator.pop(context);
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                SnackBar(content: Text("Error in data fetching")),
+                                              );
+                                            }
+                                          }).catchError( (error) {
+                                            setState(() {
+                                              bioPunchFromDateContrl.text = '';
+                                              bioPunchToDateContrl.text = '';
+                                              isLoading = false;
+                                            });
+                                            Navigator.pop(context);
+                                            ScaffoldMessenger.of(context).showSnackBar(
+                                              SnackBar(content: Text("Error in data fetching")),
+                                            );
+                                          });
+                                        },
+                                        child: const Text('Current Month'),
+                                      ),
+                                    ],
+                                  ),
+                                  divider(),
+                                  Form(
+                                    key: _bioPunchFormKey,
+                                    child: Container(
+                                      margin: EdgeInsets.symmetric(vertical: 20),
+                                      child:Column(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        crossAxisAlignment: CrossAxisAlignment.center,
+
+                                        children: <Widget>[
+                                          Container(
+                                            padding: const EdgeInsets.all(10.0),
+                                            child: Text('Check for other period'),
+                                          ),
+                                          Container(
+                                            padding: const EdgeInsets.all(10.0),
+                                            child: TextFormField(
+                                              controller: bioPunchFromDateContrl,
+                                              decoration: InputDecoration(
+                                                border: OutlineInputBorder(),
+                                                labelText: 'From Date',
+                                              ),
+                                              onTap: (){
+                                                // Below line stops keyboard from appearing
+                                                FocusScope.of(context).requestFocus(new FocusNode());
+                                                _selectDate(context,bioPunchSelectedFromDate,bioPunchFromDateContrl);
+                                              },
+                                              // The validator receives the text that the user has entered.
+                                              validator: (value) {
+                                                if (value == null || value.isEmpty) {
+                                                  return 'Please enter From Date';
+                                                }
+                                                return null;
+                                              },
+                                            ),
+                                          ),
+                                          Container(
+                                            padding: const EdgeInsets.all(10.0),
+                                            child: TextFormField(
+                                              controller: bioPunchToDateContrl,
+                                              decoration: InputDecoration(
+                                                border: OutlineInputBorder(),
+                                                labelText: 'To Date',
+                                              ),
+                                              onTap: (){
+                                                // Below line stops keyboard from appearing
+                                                FocusScope.of(context).requestFocus(new FocusNode());
+                                                _selectDate(context,bioPunchSelectedToDate,bioPunchToDateContrl);
+                                              },
+                                              // The validator receives the text that the user has entered.
+                                              validator: (value) {
+                                                if (value == null || value.isEmpty) {
+                                                  return 'Please enter To Date';
+                                                }
+                                                return null;
+                                              },
+                                            ),
+                                          ),
+                                          Container(
+                                            padding: const EdgeInsets.all(10.0),
+                                            child: Row(
+                                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                              children: [
+                                                ElevatedButton(
+                                                  onPressed: () {
+                                                    // Validate returns true if the form is valid, or false otherwise.
+                                                    if (_bioPunchFormKey.currentState!.validate()) {
+                                                      setState(() {
+                                                        isLoading = true;
+                                                      });
+
+                                                      _apiResponseData = _endpointProvider.fetchBioPunchData(bioPunchFromDateContrl.text,bioPunchToDateContrl.text);
+                                                      _apiResponseData.then((result) {
+                                                        if(result.isAuthenticated && result.status){
+                                                          final parsed = jsonDecode(result.data ?? '').cast<Map<String, dynamic>>();
+                                                          setState(() {
+                                                            bioPunchFromDateContrl.text = '';
+                                                            bioPunchToDateContrl.text = '';
+                                                            bioPunchData =  parsed.map<BioPunchData>((json) => BioPunchData.fromJson(json)).toList();
+                                                            isLoading = false;
+                                                            Navigator.pop(context);
+                                                            Navigator.pushNamed(context, bioPunchRoute, arguments: bioPunchData,);
+                                                          });
+                                                        }
+                                                        else{
+                                                          setState(() {
+                                                            bioPunchFromDateContrl.text = '';
+                                                            bioPunchToDateContrl.text = '';
+                                                            isLoading = false;
+                                                          });
+                                                          Navigator.pop(context);
+                                                          ScaffoldMessenger.of(context).showSnackBar(
+                                                            SnackBar(content: Text("Error in data fetching")),
+                                                          );
+                                                        }
+                                                      }).catchError( (error) {
+                                                        setState(() {
+                                                          bioPunchFromDateContrl.text = '';
+                                                          bioPunchToDateContrl.text = '';
+                                                          isLoading = false;
+                                                        });
+                                                        Navigator.pop(context);
+                                                        ScaffoldMessenger.of(context).showSnackBar(
+                                                          SnackBar(content: Text("Error in data fetching")),
+                                                        );
+                                                      });
+                                                    }
+                                                  },
+                                                  child: const Text('Show biometric data'),
+                                                ),
+                                                ElevatedButton(
+                                                  onPressed: () {
+                                                    setState(() {
+                                                      bioPunchFromDateContrl.text = '';
+                                                      bioPunchToDateContrl.text = '';
+                                                    });
+                                                    Navigator.pop(context);
+                                                  },
+                                                  child: const Text('Cancel'),
+                                                  style: ButtonStyle(
+                                                    backgroundColor: MaterialStateProperty.all(Colors.red),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
+                      );
+                    },
+                  );
+                },
+              );
+            }
+            else{
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text("No internet connection. Please check your settings")),
+              );
+            }
+          }
+          else if(title == "Attendance"){
+            if(connectionStatus != ConnectivityResult.none){
+              showDialog(
+                context: context,
+                builder: (context){
+                  return StatefulBuilder(
+                    builder: (context, setState){
+                      return AlertDialog (
+                        insetPadding: EdgeInsets.all(0),
+                        content: Builder(
+                          builder: (context) {
+                            // Get available height and width of the build area of this widget. Make a choice depending on the size.
+                            var height = MediaQuery.of(context).size.height;
+                            var width = MediaQuery.of(context).size.width;
+
+                            return Container(
+                              height: height - (height/2.3),
+                              width: width - (width/4),
+                              child: isLoading ? waiting(context) : Column(
+                                children:[
+                                  Container(
+                                    padding: const EdgeInsets.all(10.0),
+                                    child: Center(child: Text('View Attendance Data',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.w800,
+                                          fontSize: 20,
+                                          color: Colors.blue[500],
+                                        ))) ,
+                                  ),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                    children:[
+                                      ElevatedButton(
+                                        style: ElevatedButton.styleFrom(
+                                          padding: const EdgeInsets.symmetric(horizontal: 10),
+                                          primary: Colors.blueGrey,
+                                          shape: RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.circular(50)),
+                                        ),
+                                        onPressed: () {
+                                          setState(() {
+                                            isLoading = true;
+                                          });
+                                          DateTime fromDate = DateTime.now().subtract(Duration(days: 7));
+                                          DateTime toDate = DateTime.now();
+                                          _apiResponseData = _endpointProvider.fetchAttendanceData(DateFormat('yyyy-MM-dd').format(fromDate),DateFormat('yyyy-MM-dd').format(toDate));
+                                          _apiResponseData.then((result) {
+                                            if(result.isAuthenticated && result.status){
+                                              setState(() {
                                                 attendanceFromDateContrl.text = '';
                                                 attendanceToDateContrl.text = '';
-                                                attendanceData =  parsed.map<AttendanceData>((json) => AttendanceData.fromJson(json)).toList();
+                                                attendanceData = AttendanceData.fromJson(jsonDecode(result.data ?? ''));
                                                 isLoading = false;
                                                 Navigator.pop(context);
                                                 Navigator.pushNamed(context, attendanceRoute, arguments: attendanceData,);
@@ -1159,11 +1453,10 @@ class HomeState extends State<Home>  {
                                           _apiResponseData = _endpointProvider.fetchAttendanceData(DateFormat('yyyy-MM-dd').format(fromDate),DateFormat('yyyy-MM-dd').format(toDate));
                                           _apiResponseData.then((result) {
                                             if(result.isAuthenticated && result.status){
-                                              final parsed = jsonDecode(result.data ?? '').cast<Map<String, dynamic>>();
                                               setState(() {
                                                 attendanceFromDateContrl.text = '';
                                                 attendanceToDateContrl.text = '';
-                                                attendanceData =  parsed.map<AttendanceData>((json) => AttendanceData.fromJson(json)).toList();
+                                                attendanceData = AttendanceData.fromJson(jsonDecode(result.data ?? ''));
                                                 isLoading = false;
                                                 Navigator.pop(context);
                                                 Navigator.pushNamed(context, attendanceRoute, arguments: attendanceData,);
@@ -1270,11 +1563,10 @@ class HomeState extends State<Home>  {
                                                       _apiResponseData = _endpointProvider.fetchAttendanceData(attendanceFromDateContrl.text,attendanceToDateContrl.text);
                                                       _apiResponseData.then((result) {
                                                         if(result.isAuthenticated && result.status){
-                                                          final parsed = jsonDecode(result.data ?? '').cast<Map<String, dynamic>>();
                                                           setState(() {
                                                             attendanceFromDateContrl.text = '';
                                                             attendanceToDateContrl.text = '';
-                                                            attendanceData =  parsed.map<AttendanceData>((json) => AttendanceData.fromJson(json)).toList();
+                                                            attendanceData = AttendanceData.fromJson(jsonDecode(result.data ?? ''));
                                                             isLoading = false;
                                                             Navigator.pop(context);
                                                             Navigator.pushNamed(context, attendanceRoute, arguments: attendanceData,);
@@ -1304,7 +1596,7 @@ class HomeState extends State<Home>  {
                                                       });
                                                     }
                                                   },
-                                                  child: const Text('Show biometric data'),
+                                                  child: const Text('Show attendance data'),
                                                 ),
                                                 ElevatedButton(
                                                   onPressed: () {

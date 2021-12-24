@@ -12,6 +12,7 @@ const String leaveQuotaRoute = '/LeaveQuota';
 const String holidayListRoute = '/Holidays';
 const String shiftRosterRoute = '/ShiftRosterView';
 const String shiftRosterListRoute = '/ShiftRosterList';
+const String bioPunchRoute = '/BiometricPunchView';
 const String attendanceRoute = '/AttendanceView';
 const String attendanceListRoute = '/AttendanceList';
 const String payslipRoute = '/Payslip';

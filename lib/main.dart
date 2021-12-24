@@ -449,6 +449,9 @@ Future onSelectNotification(String? json) async {
       navigatorKey.currentState!.pushNamed('/NotificationView');
     }
   }
+  else if(obj['contentType'] == 'AppUpdate'){
+    navigatorKey.currentState!.pushNamed('/AboutApp');
+  }
   else{
     navigatorKey.currentState!.pushNamed('/NotificationView');
   }

@@ -1499,6 +1499,9 @@ class _NotificationViewState extends State<NotificationView>{
                                 );
                               }
                             }
+                            else if(items.getAt(index)!.contentType == 'AppUpdate'){
+                              Navigator.pushNamed(context, aboutAppRoute);
+                            }
                           },
                         ),
                       );
