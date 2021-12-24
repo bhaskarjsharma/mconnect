@@ -277,20 +277,15 @@ class HolidayList extends HiveObject{
     );
   }
 }
+@JsonSerializable()
 class ShiftRoster{
   final String date;
   final String shift;
-  final bool approved;
+  final String approved;
 
   ShiftRoster({required this.date,required this.shift, required this.approved});
-
-  factory ShiftRoster.fromJson(Map<String, dynamic> json) {
-    return ShiftRoster(
-      date: json['date'],
-      shift: json['shift'],
-      approved: json['approved'],
-    );
-  }
+  factory ShiftRoster.fromJson(Map<String, dynamic> json) => _$ShiftRosterFromJson(json);
+  Map<String, dynamic> toJson() => _$ShiftRosterToJson(this);
 }
 @JsonSerializable()
 class BioPunchData{

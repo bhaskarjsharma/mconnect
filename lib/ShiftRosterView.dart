@@ -58,7 +58,7 @@ class _ShiftRosterViewState extends State<ShiftRosterView>{
           children: [
             Container(
               decoration: BoxDecoration(
-                color:Color.fromRGBO(165, 231, 206, 1.0),
+                //color:Color.fromRGBO(165, 231, 206, 1.0),
               ),
               height: 40.0,
               child: Row(

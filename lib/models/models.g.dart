@@ -695,6 +695,19 @@ class EmpNomineeDataAdapter extends TypeAdapter<EmpNomineeData> {
 // JsonSerializableGenerator
 // **************************************************************************
 
+ShiftRoster _$ShiftRosterFromJson(Map<String, dynamic> json) => ShiftRoster(
+      date: json['date'] as String,
+      shift: json['shift'] as String,
+      approved: json['approved'] as String,
+    );
+
+Map<String, dynamic> _$ShiftRosterToJson(ShiftRoster instance) =>
+    <String, dynamic>{
+      'date': instance.date,
+      'shift': instance.shift,
+      'approved': instance.approved,
+    };
+
 BioPunchData _$BioPunchDataFromJson(Map<String, dynamic> json) => BioPunchData(
       date: json['date'] as String,
       punchDate: json['punchDate'] as String,

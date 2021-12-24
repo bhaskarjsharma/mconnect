@@ -22,6 +22,7 @@ import 'main.dart';
 import 'models/models.dart';
 import 'package:path/path.dart' as path;
 import 'package:flutter_form_builder/flutter_form_builder.dart';
+import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:local_auth/local_auth.dart';
 
 class Home extends StatefulWidget {
