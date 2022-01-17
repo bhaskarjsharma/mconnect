@@ -49,10 +49,12 @@
 		</array>
 		<key>UIViewControllerBasedStatusBarAppearance</key>
 		<false/>
+		<key>kTCCServiceMediaLibrary</key>
+        <string>Allow access to media library</string>
 		<key>NSPhotoLibraryUsageDescription</key>
-		<string>Allow access to photo library</string>
+		<string>Allow access to photo library to pick images for applying medical credit letter, apply address change, NOC etc</string>
 		<key>NSCameraUsageDescription</key>
-		<string>Allow access to camera to capture photos</string>
+		<string>Allow access to camera to capture photos for applying medical credit letter, apply address change, NOC etc</string>
 		<key>NSFaceIDUsageDescription</key>
 		<string>Allow access to Face ID to enable additional security</string>
 		<key>UIStatusBarHidden</key>

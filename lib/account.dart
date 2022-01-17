@@ -289,7 +289,14 @@ class _LoginState extends State<Login> with TickerProviderStateMixin{
 
   Future<EmployeeLoginData> authenticate(String uname, String pwd, String appBuildNumber,String appVersion,
       String deviceName,String deviceModel,String deviceUID) async{
-    final response = await http.post(
+    final Dio _dio = Dio();
+    final response = await _dio.post('https://connect.bcplindia.co.in/MobileAppAPI/Login',
+      data: {'username': uname, 'password': pwd,'appBuildNumber': appBuildNumber, 'appVersion': appVersion,
+        'deviceName': deviceName,
+        'deviceModel':deviceModel,
+        'deviceUID': deviceUID,},);
+
+/*    final response = await http.post(
       Uri.parse('https://connect.bcplindia.co.in/MobileAppAPI/Login'),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
@@ -303,19 +310,19 @@ class _LoginState extends State<Login> with TickerProviderStateMixin{
         'deviceModel':deviceModel,
         'deviceUID': deviceUID,
       }),
-    );
+    );*/
 
     if (response.statusCode == 200) {
       // If the server did return a 200 OK response,
       // then parse the JSON.
-      return EmployeeLoginData.fromJson(jsonDecode(response.body));
+      return EmployeeLoginData.fromJson(response.data);
     } else {
       // If the server did not return a 200 OK response,
       setState(() {
         _isLoading = false;
       });
-      errorMsg = response.body;
-      print("The error message is: ${response.body}");
+      errorMsg = response.data;
+      print("The error message is: ${response.data}");
       throw Exception('Failed to authenticate.');
     }
   }

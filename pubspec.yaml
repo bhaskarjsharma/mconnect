@@ -34,26 +34,26 @@ dependencies:
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   #cupertino_icons: ^1.0.2
-  http: ^0.13.3
+#  http: ^0.13.3
   shared_preferences: ^2.0.8
-  url_launcher: ^6.0.12
-  flutter_html: ^2.1.2
-  share_plus: ^3.0.4
-  dio: ^4.0.0
-  path_provider: ^2.0.5
-  permission_handler: ^8.1.6
-  cached_network_image: ^3.1.0
-  flutter_local_notifications: ^8.2.0
-  open_file: ^3.2.1
-  mat_month_picker_dialog: ^1.0.0
-  intl: ^0.17.0
+  url_launcher: ^6.0.12 # to launch call, sms, url function
+  flutter_html: ^2.1.2  # to display raw html content for news/events/announcements
+  share_plus: ^3.0.4    # to share contacts
+  dio: ^4.0.0           # networking
+  path_provider: ^2.0.5 # to get file storage paths
+  permission_handler: ^8.1.6  # to ask permissions for various functions
+  cached_network_image: ^3.1.0  # cache images downloaded from network with placeholder
+  flutter_local_notifications: ^9.2.0 # to display local notifications for file download etc
+  open_file: ^3.2.1 # call native APP to open files
+  mat_month_picker_dialog: ^1.0.0 # month picker format for payslip
+  intl: ^0.17.0 # internationalization and localization facilities for dates
   flutter_launcher_icons: ^0.9.2
   package_info_plus: ^1.2.0
   flutter_secure_storage: ^5.0.2
   horizontal_data_table: ^3.5.0
   connectivity_plus: ^2.0.2
   flutter_form_builder: ^7.0.0
-  image_picker: ^0.8.4+2
+  image_picker: ^0.8.4+2  # pick image from gallery or camera for uploading
   firebase_messaging: ^11.2.4
   firebase_core: ^1.7.0
   local_auth: ^1.1.8

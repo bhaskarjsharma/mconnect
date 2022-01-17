@@ -50,7 +50,7 @@ class HomeState extends State<Home>  {
   String notTitle = '';
   String notBody = '';
 
-  late  FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
+  //late  FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
   final _peopleFormKey = GlobalKey<FormState>();
   final _documentFormKey = GlobalKey<FormState>();
   final _paySlipFormKey = GlobalKey<FormState>();
@@ -124,6 +124,7 @@ class HomeState extends State<Home>  {
   void initState(){
     //OpenHiveBox();
     super.initState();
+    _requestPermissions();
     _dio = new DioClient();
     _endpointProvider = new EndPointProvider(_dio.init());
     initConnectivity();
@@ -178,7 +179,16 @@ class HomeState extends State<Home>  {
     await Hive.openBox<HospCrLtrMasterData>('hospCrLtrMaster');
     await Hive.openBox<AppNotification>('appNotifications');
   }*/
-
+  void _requestPermissions() {
+    flutterLocalNotificationsPlugin
+        .resolvePlatformSpecificImplementation<
+        IOSFlutterLocalNotificationsPlugin>()
+        ?.requestPermissions(
+      alert: true,
+      badge: true,
+      sound: true,
+    );
+  }
   void registerNotification() async {
 
     NotificationSettings settings = await messaging.requestPermission(

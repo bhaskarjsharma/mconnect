@@ -48,8 +48,12 @@ final LocalAuthentication localAuth = LocalAuthentication();
 late FirebaseMessaging messaging;
 /// Create a [AndroidNotificationChannel] for heads up notifications
 late AndroidNotificationChannel channel;
+
+/// FlutterLocalNotificationsPlugin Config Starts ******************************************************
 /// Initialize the [FlutterLocalNotificationsPlugin] package.
-late FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
+final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+
+/// FlutterLocalNotificationsPlugin Config Ends ******************************************************
 
 /// Define a top-level named handler which background/terminated messages will
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
@@ -138,7 +142,6 @@ void main() async{
   channel = const AndroidNotificationChannel(
     'high_importance_channel', // id
     'High Importance Notifications', // title
-    'This channel is used for important notifications.', // description
     importance: Importance.max,
   );
   /// Update the iOS foreground notification presentation options to allow
@@ -151,14 +154,48 @@ void main() async{
   );
   // Firebase configs end
 
-  flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
-  await flutterLocalNotificationsPlugin
+  /// FlutterLocalNotificationsPlugin Config Starts ******************************************************
+
+  const AndroidInitializationSettings initializationSettingsAndroid =
+  AndroidInitializationSettings('@mipmap/ic_launcher');
+  final IOSInitializationSettings initializationSettingsIOS = IOSInitializationSettings();
+  /* final IOSInitializationSettings initializationSettingsIOS =
+  IOSInitializationSettings(
+      requestAlertPermission: false,
+      requestBadgePermission: false,
+      requestSoundPermission: false,
+      onDidReceiveLocalNotification: (
+          int id,
+          String? title,
+          String? body,
+          String? payload,
+          ) async {
+        didReceiveLocalNotificationSubject.add(
+          ReceivedNotification(
+            id: id,
+            title: title,
+            body: body,
+            payload: payload,
+          ),
+        );
+      });*/
+
+  final InitializationSettings initializationSettings = InitializationSettings(
+    android: initializationSettingsAndroid,
+    iOS: initializationSettingsIOS,
+  );
+  await flutterLocalNotificationsPlugin.initialize(initializationSettings,
+      onSelectNotification: onSelectNotification);
+
+  /// FlutterLocalNotificationsPlugin Config Ends ******************************************************
+
+/*  await flutterLocalNotificationsPlugin
       .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
       ?.createNotificationChannel(channel);
   final android = AndroidInitializationSettings('@mipmap/ic_launcher');
   final iOS = IOSInitializationSettings();
   final initSettings = InitializationSettings(android: android, iOS: iOS);
-  flutterLocalNotificationsPlugin.initialize(initSettings, onSelectNotification: onSelectNotification);
+  flutterLocalNotificationsPlugin.initialize(initSettings, onSelectNotification: onSelectNotification);*/
 
   prefs = await SharedPreferences.getInstance();
   themePrefs = await SharedPreferences.getInstance(); //different shared pref for theme data which will not be cleared during logout
@@ -388,7 +425,16 @@ class Init {
 }*/
 
 Future<void> showNotification(Map<String, dynamic> notificationMessage) async {
-  final android = AndroidNotificationDetails(
+  const AndroidNotificationDetails android =
+  AndroidNotificationDetails('channel id','channel name',
+      channelDescription: 'your channel description',
+      importance: Importance.max,
+      priority: Priority.high,
+      playSound: true,
+      enableVibration: true,
+      ticker: 'ticker');
+
+/*  final android = AndroidNotificationDetails(
     'channel id',
     'channel name',
     'channel description',
@@ -396,7 +442,7 @@ Future<void> showNotification(Map<String, dynamic> notificationMessage) async {
     importance: Importance.max,
     playSound: true,
     enableVibration: true,
-  );
+  );*/
   final iOS = IOSNotificationDetails();
   final platform = NotificationDetails(android: android, iOS: iOS);
   final json = jsonEncode(notificationMessage);

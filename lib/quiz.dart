@@ -40,12 +40,16 @@ class _QuizViewState extends State<QuizView>{
             isLoading = false;
           });
         }
+        else{
+          Navigator.pop(context);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("No active quiz present at the moment")),
+          );
+        }
       });
     }
     else{
-      setState(() {
-        isLoading = false;
-      });
+      Navigator.pop(context);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("No internet connection. Please check your settings")),
       );
