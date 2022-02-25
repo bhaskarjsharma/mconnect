@@ -74,6 +74,7 @@ flutter_icons:
   image_path_ios: "images/bcpl_icon_white_bg.png"
   android: true # can specify file name here e.g. "ic_launcher"
   ios: true # can specify file name here e.g. "My-Launcher-Icon"
+  remove_alpha_ios: true
 
 
 dev_dependencies:
