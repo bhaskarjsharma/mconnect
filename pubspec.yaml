@@ -70,8 +70,8 @@ dependencies:
 
   
 flutter_icons:
-  image_path_android: "images/bcpl_logo.png"
-  image_path_ios: "images/bcpl_logo.png"
+  image_path_android: "images/bcpl_icon_white_bg.png"
+  image_path_ios: "images/bcpl_icon_white_bg.png"
   android: true # can specify file name here e.g. "ic_launcher"
   ios: true # can specify file name here e.g. "My-Launcher-Icon"
 
