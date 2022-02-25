@@ -1,7 +1,7 @@
 // !$*UTF8*$!
 {
 	archiveVersion = 1;
-	classes = {PRODUCT_BUNDLE_IDENTIFIER
+	classes = {
 	};
 	objectVersion = 46;
 	objects = {
