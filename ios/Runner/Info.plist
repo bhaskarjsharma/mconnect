@@ -79,6 +79,8 @@
 		<string>Allow access to camera to capture photos for applying medical credit letter, apply address change, NOC etc</string>
 		<key>NSFaceIDUsageDescription</key>
 		<string>Allow access to Face ID to enable additional security</string>
+		<key>NSAppleMusicUsageDescription</key>
+        <string>This permission is not needed by the app, but it is required by an underlying API</string>
 		<key>UIStatusBarHidden</key>
 		<true/>
 	</dict>
