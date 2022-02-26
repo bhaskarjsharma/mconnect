@@ -124,6 +124,7 @@ flutter:
     - animations/ani_robot.json
     - animations/ani_download.json
     - animations/ani_empty.json
+    - images/AppIcon.png
   #   - images/a_dot_ham.jpeg
 
 
