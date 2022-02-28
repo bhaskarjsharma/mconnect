@@ -7,7 +7,7 @@
 		<key>CFBundleExecutable</key>
 		<string>$(EXECUTABLE_NAME)</string>
 		<key>CFBundleIconName</key>
-        <string>AppIcon</string>
+        <string>Icon-App-76x76@1x.png</string>
         <key>CFBundleIconFiles</key>
         <array>
             <string>Icon-App-20x20@1x.png</string>

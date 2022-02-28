@@ -67,8 +67,6 @@ dependencies:
 
 
 
-
-  
 flutter_icons:
   image_path_android: "images/AppIcon.png"
   image_path_ios: "images/AppIcon.png"
