@@ -1,89 +1,89 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
-<dict>
-	<key>CFBundleDevelopmentRegion</key>
-	<string>$(DEVELOPMENT_LANGUAGE)</string>
-	<key>CFBundleExecutable</key>
-	<string>$(EXECUTABLE_NAME)</string>
-	<key>CFBundleIconName</key>
-	<string>Icon-App-76x76@1x.png</string>
-	<key>CFBundleIconFiles</key>
-	<array>
-		<string>Icon-App-20x20@1x.png</string>
-		<string>Icon-App-20x20@2x.png</string>
-		<string>Icon-App-20x20@3x.png</string>
-		<string>Icon-App-29x29@1x.png</string>
-		<string>Icon-App-29x29@2x.png</string>
-		<string>Icon-App-29x29@3x.png</string>
-		<string>Icon-App-40x40@1x.png</string>
-		<string>Icon-App-40x40@2x.png</string>
-		<string>Icon-App-40x40@3x.png</string>
-		<string>Icon-App-60x60@2x.png</string>
-		<string>Icon-App-60x60@3x.png</string>
+	<dict>
+		<key>CFBundleDevelopmentRegion</key>
+		<string>$(DEVELOPMENT_LANGUAGE)</string>
+		<key>CFBundleExecutable</key>
+		<string>$(EXECUTABLE_NAME)</string>
+		<key>CFBundleIconName</key>
 		<string>Icon-App-76x76@1x.png</string>
-		<string>Icon-App-76x76@2x.png</string>
-		<string>Icon-App-83.5x83.5@2x.png</string>
-		<string>Icon-App-1024x1024@1x.png</string>
-	</array>
-	<key>CFBundleIdentifier</key>
-	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
-	<key>CFBundleInfoDictionaryVersion</key>
-	<string>6.0</string>
-	<key>CFBundleName</key>
-	<string>BCPL Connect</string>
-	<key>CFBundleDisplayName</key>
-	<string>BCPL Connect</string>
-	<key>CFBundlePackageType</key>
-	<string>APPL</string>
-	<key>CFBundleShortVersionString</key>
-	<string>$(FLUTTER_BUILD_NAME)</string>
-	<key>CFBundleSignature</key>
-	<string>????</string>
-	<key>CFBundleVersion</key>
-	<string>$(FLUTTER_BUILD_NUMBER)</string>
-	<key>LSRequiresIPhoneOS</key>
-	<true/>
-	<key>UILaunchStoryboardName</key>
-	<string>LaunchScreen</string>
-	<key>UIMainStoryboardFile</key>
-	<string>Main</string>
-	<key>UISupportedInterfaceOrientations</key>
-	<array>
-		<string>UIInterfaceOrientationPortrait</string>
-		<string>UIInterfaceOrientationLandscapeLeft</string>
-		<string>UIInterfaceOrientationLandscapeRight</string>
-	</array>
-	<key>LSApplicationQueriesSchemes</key>
-	<array>
-		<string>https</string>
-		<string>http</string>
-		<string>tel</string>
-		<string>sms</string>
-		<string>mailto</string>
-	</array>
-	<key>UISupportedInterfaceOrientations~ipad</key>
-	<array>
-		<string>UIInterfaceOrientationPortrait</string>
-		<string>UIInterfaceOrientationPortraitUpsideDown</string>
-		<string>UIInterfaceOrientationLandscapeLeft</string>
-		<string>UIInterfaceOrientationLandscapeRight</string>
-	</array>
-	<key>UIViewControllerBasedStatusBarAppearance</key>
-	<false/>
-	<key>kTCCServiceMediaLibrary</key>
-	<string>Allow access to media library</string>
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Allow access to photo library to pick images for applying medical credit letter, apply address change, NOC etc</string>
-	<key>NSCameraUsageDescription</key>
-	<string>Allow access to camera to capture photos for applying medical credit letter, apply address change, NOC etc</string>
-	<key>NSFaceIDUsageDescription</key>
-	<string>Allow access to Face ID to enable additional security</string>
-	<key>NSAppleMusicUsageDescription</key>
-	<string>This permission is not needed by the app, but it is required by an underlying API</string>
-	<key>UIStatusBarHidden</key>
-	<true/>
-	<key>FirebaseAppDelegateProxyEnabled</key>
-	<false/>
-</dict>
+		<key>CFBundleIconFiles</key>
+		<array>
+			<string>Icon-App-20x20@1x.png</string>
+			<string>Icon-App-20x20@2x.png</string>
+			<string>Icon-App-20x20@3x.png</string>
+			<string>Icon-App-29x29@1x.png</string>
+			<string>Icon-App-29x29@2x.png</string>
+			<string>Icon-App-29x29@3x.png</string>
+			<string>Icon-App-40x40@1x.png</string>
+			<string>Icon-App-40x40@2x.png</string>
+			<string>Icon-App-40x40@3x.png</string>
+			<string>Icon-App-60x60@2x.png</string>
+			<string>Icon-App-60x60@3x.png</string>
+			<string>Icon-App-76x76@1x.png</string>
+			<string>Icon-App-76x76@2x.png</string>
+			<string>Icon-App-83.5x83.5@2x.png</string>
+			<string>Icon-App-1024x1024@1x.png</string>
+		</array>
+		<key>CFBundleIdentifier</key>
+		<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+		<key>CFBundleInfoDictionaryVersion</key>
+		<string>6.0</string>
+		<key>CFBundleName</key>
+		<string>BCPL Connect</string>
+		<key>CFBundleDisplayName</key>
+		<string>BCPL Connect</string>
+		<key>CFBundlePackageType</key>
+		<string>APPL</string>
+		<key>CFBundleShortVersionString</key>
+		<string>$(FLUTTER_BUILD_NAME)</string>
+		<key>CFBundleSignature</key>
+		<string>????</string>
+		<key>CFBundleVersion</key>
+		<string>$(FLUTTER_BUILD_NUMBER)</string>
+		<key>LSRequiresIPhoneOS</key>
+		<true/>
+		<key>UILaunchStoryboardName</key>
+		<string>LaunchScreen</string>
+		<key>UIMainStoryboardFile</key>
+		<string>Main</string>
+		<key>UISupportedInterfaceOrientations</key>
+		<array>
+			<string>UIInterfaceOrientationPortrait</string>
+			<string>UIInterfaceOrientationLandscapeLeft</string>
+			<string>UIInterfaceOrientationLandscapeRight</string>
+		</array>
+		<key>LSApplicationQueriesSchemes</key>
+		<array>
+			<string>https</string>
+			<string>http</string>
+			<string>tel</string>
+			<string>sms</string>
+			<string>mailto</string>
+		</array>
+		<key>UISupportedInterfaceOrientations~ipad</key>
+		<array>
+			<string>UIInterfaceOrientationPortrait</string>
+			<string>UIInterfaceOrientationPortraitUpsideDown</string>
+			<string>UIInterfaceOrientationLandscapeLeft</string>
+			<string>UIInterfaceOrientationLandscapeRight</string>
+		</array>
+		<key>UIViewControllerBasedStatusBarAppearance</key>
+		<false/>
+		<key>kTCCServiceMediaLibrary</key>
+		<string>Allow access to media library</string>
+		<key>NSPhotoLibraryUsageDescription</key>
+		<string>Allow access to photo library to pick images for applying medical credit letter, apply address change, NOC etc</string>
+		<key>NSCameraUsageDescription</key>
+		<string>Allow access to camera to capture photos for applying medical credit letter, apply address change, NOC etc</string>
+		<key>NSFaceIDUsageDescription</key>
+		<string>Allow access to Face ID to enable additional security</string>
+		<key>NSAppleMusicUsageDescription</key>
+		<string>This permission is not needed by the app, but it is required by an underlying API</string>
+		<key>UIStatusBarHidden</key>
+		<true/>
+		<key>FirebaseAppDelegateProxyEnabled</key>
+		<false/>
+	</dict>
 </plist>

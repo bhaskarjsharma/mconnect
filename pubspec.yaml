@@ -130,7 +130,7 @@ flutter_native_splash:
   # Only one parameter can be used, color and background_image cannot both be set.
   color: "#FFFFFF"
   #background_image: "assets/background.png"
-  image: images/bcpl_logo_big.png
+  image: images/AppIcon.png
   #image_dark: assets/splash-invert.png
   android: true
   ios: true
