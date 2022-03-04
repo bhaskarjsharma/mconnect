@@ -4,6 +4,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:form_builder_validators/localization/l10n.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:local_auth/local_auth.dart';
@@ -237,6 +238,9 @@ void main() async{
         onGenerateRoute: NavigationRouter.generateRoute,
         initialRoute: homeRoute,
         navigatorKey: navigatorKey,
+        localizationsDelegates: [
+          FormBuilderLocalizations.delegate,
+        ],
       ));
     }
     else{
@@ -255,6 +259,9 @@ void main() async{
         home: Login(),
         onGenerateRoute: NavigationRouter.generateRoute,
         initialRoute: loginRoute,
+        localizationsDelegates: [
+          FormBuilderLocalizations.delegate,
+        ],
       ));
     }
   }
@@ -274,6 +281,9 @@ void main() async{
       home: Login(),
       onGenerateRoute: NavigationRouter.generateRoute,
       initialRoute: loginRoute,
+      localizationsDelegates: [
+        FormBuilderLocalizations.delegate,
+      ],
     ));
   }
 }

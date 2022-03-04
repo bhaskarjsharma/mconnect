@@ -68,7 +68,7 @@ dependencies:
 
 
 flutter_icons:
-  image_path_android: "images/AppIcon.png"
+  image_path_android: "images/logo_padded.png"
   image_path_ios: "images/AppIcon.png"
   android: true # can specify file name here e.g. "ic_launcher"
   ios: true # can specify file name here e.g. "My-Launcher-Icon"
@@ -130,7 +130,7 @@ flutter_native_splash:
   # Only one parameter can be used, color and background_image cannot both be set.
   color: "#FFFFFF"
   #background_image: "assets/background.png"
-  image: images/AppIcon.png
+  image: images/bcpl_logo_big.png
   #image_dark: assets/splash-invert.png
   android: true
   ios: true

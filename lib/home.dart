@@ -3274,6 +3274,14 @@ class _HospitalCreditLetterState extends State<HospitalCreditLetter>{
                 color:appBarTextColor,
               ),),
               Spacer(),
+              if(Platform.isIOS)
+                IconButton(
+                  icon: Icon(Icons.arrow_back_ios),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  color: appBarTextColor,
+                ),
               IconButton(
                 icon: Icon(Icons.sync),
                 onPressed: () {

@@ -84,9 +84,25 @@ class DishaState extends State<Disha>{
             width: 40,
             child: Image.asset('images/bcpl_logo.png'),
           ),
-          title: Text('Disha',style: TextStyle(
+/*          title: Text('Disha',style: TextStyle(
             color:appBarTextColor,
-          ),),
+          ),),*/
+          title: Row(
+            children:[
+              Text('Disha',style: TextStyle(
+                color:appBarTextColor,
+              ),),
+              Spacer(),
+              if(Platform.isIOS)
+                IconButton(
+                  icon: Icon(Icons.arrow_back_ios_new),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  color: appBarTextColor,
+                ),
+            ],
+          ),
         ),
         endDrawer: AppDrawer(),
         body: Container(
