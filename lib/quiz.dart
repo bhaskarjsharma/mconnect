@@ -1,7 +1,7 @@
 
 import 'dart:async';
 import 'dart:convert';
-
+import 'dart:io';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
@@ -87,9 +87,22 @@ class _QuizViewState extends State<QuizView>{
             width: 40,
             child: Image.asset('images/bcpl_logo.png'),
           ),
-          title: Text('Connect - People',style: TextStyle(
-            color:appBarTextColor,
-          ),),
+          title: Row(
+            children:[
+              Text('Quiz',style: TextStyle(
+                color:appBarTextColor,
+              ),),
+              Spacer(),
+              if(Platform.isIOS)
+                IconButton(
+                  icon: Icon(Icons.arrow_back_ios_new),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  color: appBarTextColor,
+                ),
+            ],
+          ),
         ),
         endDrawer: AppDrawer(),
         body: isLoading? waiting(context) : ListView.builder(
@@ -150,9 +163,22 @@ class _QuizDetailState extends State<QuizDetail> {
             width: 40,
             child: Image.asset('images/bcpl_logo.png'),
           ),
-          title: Text('Quiz Details',style: TextStyle(
-            color:appBarTextColor,
-          ),),
+          title: Row(
+            children:[
+              Text('Quiz',style: TextStyle(
+                color:appBarTextColor,
+              ),),
+              Spacer(),
+              if(Platform.isIOS)
+                IconButton(
+                  icon: Icon(Icons.arrow_back_ios_new),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  color: appBarTextColor,
+                ),
+            ],
+          ),
         ),
         endDrawer: AppDrawer(),
         body: Column(
@@ -382,9 +408,22 @@ class _QuizStartState extends State<QuizStart>{
               width: 40,
               child: Image.asset('images/bcpl_logo.png'),
             ),
-            title: Text('Quiz',style: TextStyle(
-              color:appBarTextColor,
-            ),),
+            title: Row(
+              children:[
+                Text('Quiz',style: TextStyle(
+                  color:appBarTextColor,
+                ),),
+/*                Spacer(),
+                if(Platform.isIOS)
+                  IconButton(
+                    icon: Icon(Icons.arrow_back_ios_new),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    color: appBarTextColor,
+                  ),*/
+              ],
+            ),
           ),
           //endDrawer: AppDrawer(),
           body: isLoading ? waiting(context): Column(

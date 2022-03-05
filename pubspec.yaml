@@ -55,7 +55,7 @@ dependencies:
   image_picker: ^0.8.4+2  # pick image from gallery or camera for uploading
   firebase_messaging: ^11.2.4
   firebase_core: ^1.7.0
-  local_auth: ^1.1.8
+  local_auth: ^1.1.11
   hive: ^2.0.4
   hive_flutter: ^1.1.0
   lottie: ^1.2.1
@@ -64,6 +64,7 @@ dependencies:
   json_annotation: ^4.4.0
   form_builder_validators: ^7.2.0
   flutter_launcher_icons: ^0.9.2
+  upgrader: ^3.13.0
 
 
 
@@ -123,7 +124,7 @@ flutter:
     - animations/ani_download.json
     - animations/ani_empty.json
     - images/AppIcon.png
-  #   - images/a_dot_ham.jpeg
+    - images/logo_padded.png
 
 
 flutter_native_splash:

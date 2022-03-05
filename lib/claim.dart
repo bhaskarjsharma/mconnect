@@ -3,7 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:horizontal_data_table/horizontal_data_table.dart';
-
+import 'dart:io';
 import 'app_drawer.dart';
 import 'home.dart';
 import 'main.dart';
@@ -48,9 +48,22 @@ class _ClaimsState extends State<Claims>{
             width: 40,
             child: Image.asset('images/bcpl_logo.png'),
           ),
-          title: Text('Connect - Claims',style: TextStyle(
-            color:appBarTextColor,
-          ),),
+          title: Row(
+            children:[
+              Text('Claims',style: TextStyle(
+                color:appBarTextColor,
+              ),),
+              Spacer(),
+              if(Platform.isIOS)
+                IconButton(
+                  icon: Icon(Icons.arrow_back_ios_new),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  color: appBarTextColor,
+                ),
+            ],
+          ),
         ),
         endDrawer: AppDrawer(),
         body:createTable(),

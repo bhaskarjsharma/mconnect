@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
@@ -128,6 +129,14 @@ class _NewsState extends State<News>{
               color:appBarTextColor,
             ),),
             Spacer(),
+            if(Platform.isIOS)
+              IconButton(
+                icon: Icon(Icons.arrow_back_ios_new),
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                color: appBarTextColor,
+              ),
             IconButton(
               icon: Icon(Icons.sync),
               onPressed: () {
@@ -372,9 +381,22 @@ class _NewsDetailsState extends State<NewsDetails> {
           width: 40,
           child: Image.asset('images/bcpl_logo.png'),
         ),
-        title: Text('Connect - News & Events',style: TextStyle(
-          color:appBarTextColor,
-        ),),
+        title: Row(
+          children:[
+            Text('News & Events',style: TextStyle(
+              color:appBarTextColor,
+            ),),
+            Spacer(),
+            if(Platform.isIOS)
+              IconButton(
+                icon: Icon(Icons.arrow_back_ios_new),
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                color: appBarTextColor,
+              ),
+          ],
+        ),
       ),
       endDrawer: AppDrawer(),
       body: Column(
@@ -875,9 +897,22 @@ class _NewsDisplayState extends State<NewsDisplay> {
             width: 40,
             child: Image.asset('images/bcpl_logo.png'),
           ),
-          title: Text('Connect - News & Events',style: TextStyle(
-            color:appBarTextColor,
-          ),),
+          title: Row(
+            children:[
+              Text('News & Events',style: TextStyle(
+                color:appBarTextColor,
+              ),),
+              Spacer(),
+              if(Platform.isIOS)
+                IconButton(
+                  icon: Icon(Icons.arrow_back_ios_new),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  color: appBarTextColor,
+                ),
+            ],
+          ),
         ),
         endDrawer: AppDrawer(),
         body: isLoading? waiting(context) : getContentFromId(),

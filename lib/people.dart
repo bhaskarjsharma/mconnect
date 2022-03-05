@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'dart:math';
-
+import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/cupertino.dart';
@@ -84,10 +84,18 @@ class _PeopleState extends State<People>{
         ),
         title: Row(
           children:[
-            Text('Connect - People',style: TextStyle(
+            Text('People',style: TextStyle(
               color:appBarTextColor,
             ),),
             Spacer(),
+            if(Platform.isIOS)
+              IconButton(
+                icon: Icon(Icons.arrow_back_ios_new),
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                color: appBarTextColor,
+              ),
             IconButton(
               icon: Icon(Icons.sync),
               onPressed: () {
@@ -291,9 +299,22 @@ class _PeopleDetailsState extends State<PeopleDetails>{
           width: 40,
           child: Image.asset('images/bcpl_logo.png'),
         ),
-        title: Text('Connect - People',style: TextStyle(
-          color:appBarTextColor,
-        ),),
+        title: Row(
+          children:[
+            Text('People',style: TextStyle(
+              color:appBarTextColor,
+            ),),
+            Spacer(),
+            if(Platform.isIOS)
+              IconButton(
+                icon: Icon(Icons.arrow_back_ios_new),
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                color: appBarTextColor,
+              ),
+          ],
+        ),
       ),
       endDrawer: AppDrawer(),
       body: Column(
@@ -571,10 +592,18 @@ class _BirthdayState extends State<Birthday>{
           ),
           title: Row(
             children:[
-              Text('Connect - People',style: TextStyle(
+              Text('Birthdays',style: TextStyle(
                 color:appBarTextColor,
               ),),
               Spacer(),
+              if(Platform.isIOS)
+                IconButton(
+                  icon: Icon(Icons.arrow_back_ios_new),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  color: appBarTextColor,
+                ),
               IconButton(
                 icon: Icon(Icons.sync),
                 onPressed: () {

@@ -89,10 +89,18 @@ class _DocumentsState extends State<Documents>{
         ),
         title: Row(
           children:[
-            Text('Connect - Documents',style: TextStyle(
+            Text('Documents',style: TextStyle(
               color:appBarTextColor,
             ),),
             Spacer(),
+            if(Platform.isIOS)
+              IconButton(
+                icon: Icon(Icons.arrow_back_ios_new),
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                color: appBarTextColor,
+              ),
             IconButton(
               icon: Icon(Icons.sync),
               onPressed: () {
