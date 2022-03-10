@@ -18,6 +18,7 @@ import 'home.dart';
 import 'package:flutter_projects/services/Router.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+//import 'package:responsive_framework/responsive_framework.dart';
 
 import 'models/models.dart';
 
@@ -224,6 +225,19 @@ void main() async{
       localAuthEnabled = prefs.getBool('localBioAuth') ?? false;
 
       runApp(MaterialApp(
+/*        builder: (context, widget) => ResponsiveWrapper.builder(
+          ClampingScrollWrapper.builder(context, widget!),
+          defaultScale: true,
+          minWidth: 480,
+          defaultName: MOBILE,
+          breakpoints: [
+            const ResponsiveBreakpoint.autoScale(480, name: MOBILE),
+            const ResponsiveBreakpoint.resize(600, name: MOBILE),
+            const ResponsiveBreakpoint.resize(850, name: TABLET),
+            const ResponsiveBreakpoint.resize(1080, name: DESKTOP),
+          ],
+            background: Container(color: const Color(0xFFF5F5F5))
+        ),*/
         title: "Home",
         theme: ThemeData(
           appBarTheme: AppBarTheme(
@@ -269,6 +283,19 @@ void main() async{
     prefs.clear();
     storage.deleteAll();
     runApp(MaterialApp(
+/*      builder: (context, widget) => ResponsiveWrapper.builder(
+          ClampingScrollWrapper.builder(context, widget!),
+          defaultScale: true,
+          minWidth: 480,
+          defaultName: MOBILE,
+          breakpoints: [
+            const ResponsiveBreakpoint.autoScale(480, name: MOBILE),
+            const ResponsiveBreakpoint.resize(600, name: MOBILE),
+            const ResponsiveBreakpoint.resize(850, name: TABLET),
+            const ResponsiveBreakpoint.resize(1080, name: DESKTOP),
+          ],
+          background: Container(color: const Color(0xFFF5F5F5))
+      ),*/
       theme: ThemeData(
           appBarTheme: AppBarTheme(
             backgroundColor: Color.fromRGBO(165, 231, 206, 1.0),
