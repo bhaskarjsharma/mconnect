@@ -39,6 +39,7 @@ class _LoginState extends State<Login> with TickerProviderStateMixin{
   String deviceName = '';
   String deviceModel = '';
   String deviceUID = '';
+  String platform = '';
   // String _mobileNumber = '';
   // List<SimCard> _simCard = <SimCard>[];
   bool access = false;
@@ -67,6 +68,7 @@ class _LoginState extends State<Login> with TickerProviderStateMixin{
         deviceName = androidInfo.brand!;
         deviceModel = androidInfo.model!;
         deviceUID = androidInfo.androidId!;
+        platform = 'Android';
       });
     } else if (Platform.isIOS) {
       IosDeviceInfo iosInfo = await deviceInfo.iosInfo;
@@ -74,6 +76,7 @@ class _LoginState extends State<Login> with TickerProviderStateMixin{
         deviceName = iosInfo.name!;
         deviceModel = iosInfo.model!;
         deviceUID = iosInfo.identifierForVendor!;
+        platform = 'IOS';
       });
     }
   }
@@ -197,7 +200,7 @@ class _LoginState extends State<Login> with TickerProviderStateMixin{
                             _isLoading = true;
                           });
                           _empLoginData = authenticate(unameController.text,pwdController.text,appBuildNumber,appVersion,
-                              deviceName,deviceModel,deviceUID);
+                              deviceName,deviceModel,deviceUID,platform);
                           _empLoginData.then((result) async {
                             if(result.otpVerReqd){
                               //OTP verification Required. Redirect to OTP screen
@@ -242,7 +245,7 @@ class _LoginState extends State<Login> with TickerProviderStateMixin{
                               }
                               else{
                                 ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Invalid Credentials. Unable to login')),
+                                  SnackBar(content: Text('Unable to login. ${result.message}')),
                                 );
                                 setState(() {
                                   _isLoading = false;
@@ -286,17 +289,19 @@ class _LoginState extends State<Login> with TickerProviderStateMixin{
     unameController.dispose();
     pwdController.dispose();
     _connectivitySubscription.cancel();
+    _controller.dispose();
     super.dispose();
   }
 
   Future<EmployeeLoginData> authenticate(String uname, String pwd, String appBuildNumber,String appVersion,
-      String deviceName,String deviceModel,String deviceUID) async{
+      String deviceName,String deviceModel,String deviceUID, String platform) async{
     final Dio _dio = Dio();
     final response = await _dio.post('https://connect.bcplindia.co.in/MobileAppAPI/Login',
       data: {'username': uname, 'password': pwd,'appBuildNumber': appBuildNumber, 'appVersion': appVersion,
         'deviceName': deviceName,
         'deviceModel':deviceModel,
-        'deviceUID': deviceUID,},);
+        'deviceUID': deviceUID,
+        'platform': platform,},);
 
 /*    final response = await http.post(
       Uri.parse('https://connect.bcplindia.co.in/MobileAppAPI/Login'),

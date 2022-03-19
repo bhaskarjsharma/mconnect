@@ -16,6 +16,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_projects/services/webservice.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:upgrader/upgrader.dart';
 import 'dart:io' as io;
 import 'account.dart';
 import 'constants.dart';
@@ -812,6 +813,7 @@ class _AboutAppState extends State<AboutApp>{
 
   @override
   Widget build(BuildContext context) {
+    Upgrader().clearSavedSettings();
     return Container(
       decoration: BoxDecoration(
           gradient: LinearGradient(
@@ -842,33 +844,34 @@ class _AboutAppState extends State<AboutApp>{
           ),),
         ),
         endDrawer: AppDrawer(),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Center(
-                child: Lottie.asset('animations/ani_robot.json',
-                  width: 200,
-                  height: 157,),
-              ),
-              SizedBox(height: 5),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                //crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Container(
-                    width: 100,
-                    child: Text('App Name'),
-                  ),
-                  Container(
+        body: UpgradeAlert(
+          child:Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Center(
+                  child: Lottie.asset('animations/ani_robot.json',
                     width: 200,
-                    child: Text(appName),
-                  ),
-                ],
-              ),
-              //SizedBox(height: 10),
-              /* Row(
+                    height: 157,),
+                ),
+                SizedBox(height: 5),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  //crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Container(
+                      width: 100,
+                      child: Text('App Name'),
+                    ),
+                    Container(
+                      width: 200,
+                      child: Text(appName),
+                    ),
+                  ],
+                ),
+                //SizedBox(height: 10),
+                /* Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               //crossAxisAlignment: CrossAxisAlignment.center,
               children: [
@@ -883,53 +886,53 @@ class _AboutAppState extends State<AboutApp>{
 
               ],
             ),*/
-              SizedBox(height: 5),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                //crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Container(
-                    width: 100,
-                    child: Text('Version'),
-                  ),
-                  Container(
-                    width: 200,
-                    child: Text(version),
-                  ),
+                SizedBox(height: 5),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  //crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Container(
+                      width: 100,
+                      child: Text('Version'),
+                    ),
+                    Container(
+                      width: 200,
+                      child: Text(version),
+                    ),
 
-                ],
-              ),
-              SizedBox(height: 5),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                //crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Container(
-                    width: 100,
-                    child: Text('Build Number'),
-                  ),
-                  Container(
-                    width: 200,
-                    child: Text(buildNumber),
-                  ),
-                ],
-              ),
-              SizedBox(height: 5),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                //crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Container(
-                    width: 100,
-                    child: Text('Developed By'),
-                  ),
-                  Container(
-                    width: 200,
-                    child: Text('Bhaskar Jyoti Sharma, Senior Manager (IT)'),
-                  ),
-                ],
-              ),
-              SizedBox(height: 5),
+                  ],
+                ),
+                SizedBox(height: 5),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  //crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Container(
+                      width: 100,
+                      child: Text('Build Number'),
+                    ),
+                    Container(
+                      width: 200,
+                      child: Text(buildNumber),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 5),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  //crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Container(
+                      width: 100,
+                      child: Text('Developed By'),
+                    ),
+                    Container(
+                      width: 200,
+                      child: Text('Bhaskar Jyoti Sharma, Senior Manager (IT)'),
+                    ),
+                  ],
+                ),
+/*              SizedBox(height: 5),
               ElevatedButton(
                 onPressed: (){
                   if(connectionStatus != ConnectivityResult.none){
@@ -1060,7 +1063,7 @@ class _AboutAppState extends State<AboutApp>{
                   }
                 },
               ): SizedBox(height: 0),
-              Text(_downloadPerc),
+              Text(_downloadPerc),*/
 
 /*            ElevatedButton(
               onPressed: () async{
@@ -1119,7 +1122,8 @@ class _AboutAppState extends State<AboutApp>{
               child: const Text('Download update'),
             ) */
 
-            ],
+              ],
+            ),
           ),
         ),
       ),

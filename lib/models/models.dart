@@ -37,10 +37,11 @@ class EmployeeLoginData{
   final int deviceStatID;
   final int  otpRecordID;
   final bool deviceVerified;
+  final String? message;
 
   EmployeeLoginData({required this.status, this.emp_no,  this.emp_name,  this.emp_desg,  this.emp_disc,this.emp_grade,
     this.emp_mobileNo, this.auth_jwt, required this.otpVerReqd, required this.deviceStatID, required this.otpRecordID,
-    required this.deviceVerified});
+    required this.deviceVerified, this.message});
   factory EmployeeLoginData.fromJson(Map<String, dynamic> json) {
     return EmployeeLoginData(
       status: json['status'],
@@ -55,6 +56,7 @@ class EmployeeLoginData{
       deviceStatID: json['deviceStatID'],
       otpRecordID: json['otpRecordID'],
       deviceVerified: json['deviceVerified'],
+      message: json['message'],
     );
   }
 }
