@@ -1,6 +1,6 @@
 
 import 'dart:convert';
-
+import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -49,9 +49,22 @@ class _ShiftRosterViewState extends State<ShiftRosterView>{
             width: 40,
             child: Image.asset('images/bcpl_logo.png'),
           ),
-          title: Text('Shift Roster',style: TextStyle(
-            color:appBarTextColor,
-          ),),
+          title: Row(
+            children:[
+              Text('Shift Roster',style: TextStyle(
+                color:appBarTextColor,
+              ),),
+              Spacer(),
+              if(Platform.isIOS)
+                IconButton(
+                  icon: Icon(Icons.arrow_back_ios_new),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  color: appBarTextColor,
+                ),
+            ],
+          ),
         ),
         endDrawer: AppDrawer(),
         body: Column(

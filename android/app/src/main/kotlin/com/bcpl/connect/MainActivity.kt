@@ -1,4 +1,4 @@
-package com.example.flutter_projects
+package com.bcpl.connect
 
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.android.FlutterFragmentActivity

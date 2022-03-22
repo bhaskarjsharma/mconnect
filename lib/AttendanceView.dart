@@ -1,6 +1,6 @@
 
 import 'dart:convert';
-
+import 'dart:io';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -52,9 +52,22 @@ class _BiometricPunchViewState extends State<BiometricPunchView>{
             width: 40,
             child: Image.asset('images/bcpl_logo.png'),
           ),
-          title: Text('Punch Times',style: TextStyle(
-            color:appBarTextColor,
-          ),),
+          title: Row(
+            children:[
+              Text('Punch Times',style: TextStyle(
+                color:appBarTextColor,
+              ),),
+              Spacer(),
+              if(Platform.isIOS)
+                IconButton(
+                  icon: Icon(Icons.arrow_back_ios_new),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  color: appBarTextColor,
+                ),
+            ],
+          ),
         ),
         endDrawer: AppDrawer(),
         body: Column(
@@ -177,9 +190,22 @@ class _AttendanceViewState extends State<AttendanceView>{
             width: 40,
             child: Image.asset('images/bcpl_logo.png'),
           ),
-          title: Text('Attendance',style: TextStyle(
-            color:appBarTextColor,
-          ),),
+          title: Row(
+            children:[
+              Text('Attendance',style: TextStyle(
+                color:appBarTextColor,
+              ),),
+              Spacer(),
+              if(Platform.isIOS)
+                IconButton(
+                  icon: Icon(Icons.arrow_back_ios_new),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  color: appBarTextColor,
+                ),
+            ],
+          ),
         ),
         endDrawer: AppDrawer(),
         body: Column(

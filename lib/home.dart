@@ -24,6 +24,7 @@ import 'package:path/path.dart' as path;
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:local_auth/local_auth.dart';
+import 'package:upgrader/upgrader.dart';
 
 class Home extends StatefulWidget {
   @override
@@ -371,44 +372,46 @@ class HomeState extends State<Home>  {
         ),
       ),
       endDrawer: AppDrawer(),
-      body: _isAuthenticated ? Container(
-        //padding:EdgeInsets.only(top: 10),
-        child: Column(
-          children: [
-            connectionStatus != ConnectivityResult.none ? SizedBox(height:0) : noConnectivityError(),
-            Expanded(
-              child: GridView.count(
-                crossAxisCount: 3,
-                crossAxisSpacing: 5,
-                mainAxisSpacing: 5,
-                padding: EdgeInsets.all(10.0), // 3px padding all around
+      body: UpgradeAlert(
+        child: _isAuthenticated ? Container(
+          //padding:EdgeInsets.only(top: 10),
+          child: Column(
+            children: [
+              connectionStatus != ConnectivityResult.none ? SizedBox(height:0) : noConnectivityError(),
+              Expanded(
+                child: GridView.count(
+                  crossAxisCount: 3,
+                  crossAxisSpacing: 5,
+                  mainAxisSpacing: 5,
+                  padding: EdgeInsets.all(10.0), // 3px padding all around
 
-                children: <Widget>[
-                  makeDashboardItem("News & Events",const Icon(ConnectAppIcon.newspaper,size:30, color:Colors.blue),Colors.blue,newsRoute),
-                  makeDashboardItem("People",const Icon(ConnectAppIcon.users,size:30, color:Colors.pink),Colors.pink,peopleRoute),
-                  makeDashboardItem("Documents",const Icon(ConnectAppIcon.article_alt,size:30, color:Colors.green),Colors.green,documentsRoute),
-                  makeDashboardItem("Disha",const Icon(Icons.stream,size:30, color:Colors.teal),Colors.teal,dishaRoute),
-                  makeDashboardItem("Payslips", const Icon(ConnectAppIcon.rupee_sign,size:30, color:Colors.orange),Colors.cyan,payslipRoute),
-                  makeDashboardItem("Birthdays & Anniversaries",const Icon(Icons.celebration,size:30, color:Colors.red),Colors.red,birthdayRoute),
-                  makeDashboardItem("Punch Time",const Icon(Icons.fingerprint,size:30, color:Colors.red),Colors.deepPurple,bioPunchRoute),
-                  makeDashboardItem("Attendance",const Icon(Icons.pending_actions,size:30, color:Colors.indigo),Colors.indigo,attendanceRoute),
-                  makeDashboardItem("Leave Quota",const Icon(Icons.info,size:30, color:Colors.cyan),Colors.orange,leaveQuotaRoute),
-                  makeDashboardItem("Holiday List",const Icon(ConnectAppIcon.calendar,size:30, color:Colors.brown),Colors.brown,holidayListRoute),
-                  //makeDashboardItem("Shift Roster",const Icon(ConnectAppIcon.calendar_alt,size:30, color:Colors.teal),Colors.teal,shiftRosterRoute),
-                  makeDashboardItem("View Claims",const Icon(Icons.receipt,size:30, color:Colors.deepPurple),Colors.red,homeRoute),
-                  //makeDashboardItem("Regularise Attendance",const Icon(Icons.schedule,size:30, color:Colors.deepPurple),Colors.red,homeRoute),
-                  makeDashboardItem("ITAC",const Icon(Icons.computer,size:30, color:Colors.blue),Colors.red,itacRoute),
-                  //makeDashboardItem("ECOFF & Overtime",const Icon(Icons.payments,size:30, color:Colors.lime),Colors.red,ecofOTRoute),
-                  //makeDashboardItem("Hosp. Credit Letter",const Icon(Icons.medical_services,size:30, color:Colors.red),Colors.red,hosCrLtrRoute),
-                  makeDashboardItem("Quiz",const Icon(Icons.quiz,size:30, color:Colors.lime),Colors.lime,quizRoute),
+                  children: <Widget>[
+                    makeDashboardItem("News & Events",const Icon(ConnectAppIcon.newspaper,size:30, color:Colors.blue),Colors.blue,newsRoute),
+                    makeDashboardItem("People",const Icon(ConnectAppIcon.users,size:30, color:Colors.pink),Colors.pink,peopleRoute),
+                    makeDashboardItem("Documents",const Icon(ConnectAppIcon.article_alt,size:30, color:Colors.green),Colors.green,documentsRoute),
+                    makeDashboardItem("Disha",const Icon(Icons.stream,size:30, color:Colors.teal),Colors.teal,dishaRoute),
+                    makeDashboardItem("Payslips", const Icon(ConnectAppIcon.rupee_sign,size:30, color:Colors.orange),Colors.cyan,payslipRoute),
+                    makeDashboardItem("Birthdays & Anniversaries",const Icon(Icons.celebration,size:30, color:Colors.red),Colors.red,birthdayRoute),
+                    makeDashboardItem("Punch Time",const Icon(Icons.fingerprint,size:30, color:Colors.red),Colors.deepPurple,bioPunchRoute),
+                    makeDashboardItem("Attendance",const Icon(Icons.pending_actions,size:30, color:Colors.indigo),Colors.indigo,attendanceRoute),
+                    makeDashboardItem("Leave Quota",const Icon(Icons.info,size:30, color:Colors.cyan),Colors.orange,leaveQuotaRoute),
+                    makeDashboardItem("Holiday List",const Icon(ConnectAppIcon.calendar,size:30, color:Colors.brown),Colors.brown,holidayListRoute),
+                    //makeDashboardItem("Shift Roster",const Icon(ConnectAppIcon.calendar_alt,size:30, color:Colors.teal),Colors.teal,shiftRosterRoute),
+                    makeDashboardItem("View Claims",const Icon(Icons.receipt,size:30, color:Colors.deepPurple),Colors.red,homeRoute),
+                    //makeDashboardItem("Regularise Attendance",const Icon(Icons.schedule,size:30, color:Colors.deepPurple),Colors.red,homeRoute),
+                    makeDashboardItem("ITAC",const Icon(Icons.computer,size:30, color:Colors.blue),Colors.red,itacRoute),
+                    //makeDashboardItem("ECOFF & Overtime",const Icon(Icons.payments,size:30, color:Colors.lime),Colors.red,ecofOTRoute),
+                    //makeDashboardItem("Hosp. Credit Letter",const Icon(Icons.medical_services,size:30, color:Colors.red),Colors.red,hosCrLtrRoute),
+                    makeDashboardItem("Quiz",const Icon(Icons.quiz,size:30, color:Colors.lime),Colors.lime,quizRoute),
 
-                ],
+                  ],
+                ),
               ),
-            ),
 
-          ],
-        ),
-      ): Center(child:Text('Authentication not complete'),),
+            ],
+          ),
+        ): Center(child:Text('Authentication not complete'),),
+      ),
     );
   }
 
@@ -2059,6 +2062,14 @@ class _LeaveQuotaState extends State<LeaveQuotas>{
               color:appBarTextColor,
             ),),
             Spacer(),
+            if(Platform.isIOS)
+              IconButton(
+                icon: Icon(Icons.arrow_back_ios_new),
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                color: appBarTextColor,
+              ),
             IconButton(
               icon: Icon(Icons.sync),
               onPressed: () {
@@ -2282,6 +2293,14 @@ class _HolidaysState extends State<Holidays> with SingleTickerProviderStateMixin
                 color:appBarTextColor,
               ),),
               Spacer(),
+              if(Platform.isIOS)
+                IconButton(
+                  icon: Icon(Icons.arrow_back_ios_new),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  color: appBarTextColor,
+                ),
               IconButton(
                 icon: Icon(Icons.sync),
                 onPressed: () {
@@ -2509,6 +2528,14 @@ class _ITACState extends State<ITAC>{
                 color:appBarTextColor,
               ),),
               Spacer(),
+              if(Platform.isIOS)
+                IconButton(
+                  icon: Icon(Icons.arrow_back_ios_new),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  color: appBarTextColor,
+                ),
               IconButton(
                 icon: Icon(Icons.sync),
                 onPressed: () {
@@ -2791,9 +2818,22 @@ class _ECOFF_OTState extends State<ECOFF_OT>{
             width: 40,
             child: Image.asset('images/bcpl_logo.png'),
           ),
-          title: Text('ECOFF & OT',style: TextStyle(
-            color:appBarTextColor,
-          ),),
+          title: Row(
+            children:[
+              Text('Disha',style: TextStyle(
+                color:appBarTextColor,
+              ),),
+              Spacer(),
+              if(Platform.isIOS)
+                IconButton(
+                  icon: Icon(Icons.arrow_back_ios_new),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  color: appBarTextColor,
+                ),
+            ],
+          ),
         ),
         endDrawer: AppDrawer(),
         body: isLoading ? waiting(context) : ecoffOTForm(),
@@ -3274,6 +3314,14 @@ class _HospitalCreditLetterState extends State<HospitalCreditLetter>{
                 color:appBarTextColor,
               ),),
               Spacer(),
+              if(Platform.isIOS)
+                IconButton(
+                  icon: Icon(Icons.arrow_back_ios),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  color: appBarTextColor,
+                ),
               IconButton(
                 icon: Icon(Icons.sync),
                 onPressed: () {

@@ -8,7 +8,7 @@ import 'package:http/http.dart' as http;
 import 'package:lottie/lottie.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'dart:async';
-import 'dart:convert';
+import 'package:upgrader/upgrader.dart';
 import 'constants.dart';
 import 'home.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -39,6 +39,7 @@ class _LoginState extends State<Login> with TickerProviderStateMixin{
   String deviceName = '';
   String deviceModel = '';
   String deviceUID = '';
+  String platform = '';
   // String _mobileNumber = '';
   // List<SimCard> _simCard = <SimCard>[];
   bool access = false;
@@ -67,6 +68,7 @@ class _LoginState extends State<Login> with TickerProviderStateMixin{
         deviceName = androidInfo.brand!;
         deviceModel = androidInfo.model!;
         deviceUID = androidInfo.androidId!;
+        platform = 'Android';
       });
     } else if (Platform.isIOS) {
       IosDeviceInfo iosInfo = await deviceInfo.iosInfo;
@@ -74,6 +76,7 @@ class _LoginState extends State<Login> with TickerProviderStateMixin{
         deviceName = iosInfo.name!;
         deviceModel = iosInfo.model!;
         deviceUID = iosInfo.identifierForVendor!;
+        platform = 'IOS';
       });
     }
   }
@@ -120,159 +123,161 @@ class _LoginState extends State<Login> with TickerProviderStateMixin{
           ),
           ),
         ),
-        body: Center(
-          child: connectionStatus != ConnectivityResult.none ?
-          _isLoading ? SingleChildScrollView(child: Column(
-            children: <Widget>[
-              Center(
-                child: Lottie.asset('animations/ani_loading_hexa.json',
-                  width: 200,
-                  height: 200,),
-              ),
-              Container(
-                padding: EdgeInsets.all(10),
-                child:Text('Login In...',style: TextStyle(
-                  fontWeight: FontWeight.w500,
-                  fontSize: 18,
-                ),),
-              ),
-            ],
-          ),) :
-          SingleChildScrollView(
-            child: Form(
-              key: _loginFormKey,
-              child: Column(
-                children: <Widget>[
-                  Container(
-                    padding: EdgeInsets.all(10),
-                    child: ScaleTransition(
-                      scale: _animation,
-                      child: Image.asset('images/connect_logo.png',scale: 2),
-                    ),
-                  ),
-                  Container(
-                    padding: EdgeInsets.all(10),
-                    child: TextFormField(
-                      controller: unameController,
-                      decoration: InputDecoration(
-                        border: OutlineInputBorder(),
-                        labelText: 'User Name',
+        body: UpgradeAlert(
+          child:Center(
+            child: connectionStatus != ConnectivityResult.none ?
+            _isLoading ? SingleChildScrollView(child: Column(
+              children: <Widget>[
+                Center(
+                  child: Lottie.asset('animations/ani_loading_hexa.json',
+                    width: 200,
+                    height: 200,),
+                ),
+                Container(
+                  padding: EdgeInsets.all(10),
+                  child:Text('Login In...',style: TextStyle(
+                    fontWeight: FontWeight.w500,
+                    fontSize: 18,
+                  ),),
+                ),
+              ],
+            ),) :
+            SingleChildScrollView(
+              child: Form(
+                key: _loginFormKey,
+                child: Column(
+                  children: <Widget>[
+                    Container(
+                      padding: EdgeInsets.all(10),
+                      child: ScaleTransition(
+                        scale: _animation,
+                        child: Image.asset('images/connect_logo.png',scale: 2),
                       ),
-                      validator: (text) {
-                        if (text == null || text.isEmpty) {
-                          return 'Please enter username';
-                        }
-                        return null;
-                      },
                     ),
-                  ),
-                  Container(
-                    padding: EdgeInsets.all(10),
-                    child: TextFormField(
-                      controller: pwdController,
-                      obscureText: true,
-                      decoration: InputDecoration(
-                        border: OutlineInputBorder(),
-                        labelText: 'Password',
-                      ),
-                      validator: (text) {
-                        if (text == null || text.isEmpty) {
-                          return 'Please enter password';
-                        }
-                        return null;
-                      },
-                    ),
-                  ),
-                  GestureDetector(
-                    child: Lottie.asset('animations/ani_unlock.json',
-                      width: 50,
-                      height: 50,),
-                    onTap: () async{
-                      // ScaffoldMessenger.of(context).showSnackBar(
-                      //   const SnackBar(content: Text('Login In...')),
-                      // );
-                      if (_loginFormKey.currentState!.validate()) {
-                        setState(() {
-                          _isLoading = true;
-                        });
-                        _empLoginData = authenticate(unameController.text,pwdController.text,appBuildNumber,appVersion,
-                            deviceName,deviceModel,deviceUID);
-                        _empLoginData.then((result) async {
-                          if(result.otpVerReqd){
-                            //OTP verification Required. Redirect to OTP screen
-                            Navigator.pushNamedAndRemoveUntil(context,tfaRoute, (_) => false,arguments: OTPauth(
-                                result.otpRecordID,result.deviceStatID),);
+                    Container(
+                      padding: EdgeInsets.all(10),
+                      child: TextFormField(
+                        controller: unameController,
+                        decoration: InputDecoration(
+                          border: OutlineInputBorder(),
+                          labelText: 'User Name',
+                        ),
+                        validator: (text) {
+                          if (text == null || text.isEmpty) {
+                            return 'Please enter username';
                           }
-                          else{
-                            if(result.status){
-                              //Device already verified. Proceed to home
-                              // obtain shared preferences
-                              final prefs = await SharedPreferences.getInstance();
-                              // set value
-                              prefs.setBool('isLoggedIn', true);
-                              // Create secure storage
-                              final storage = new FlutterSecureStorage();
-                              // Write value
-                              await storage.write(key: 'empno', value: result.emp_no);
-                              await storage.write(key: 'name', value: result.emp_name);
-                              await storage.write(key: 'desg', value: result.emp_desg);
-                              await storage.write(key: 'disc', value: result.emp_disc);
-                              await storage.write(key: 'grade', value: result.emp_grade);
-                              await storage.write(key: 'auth_token', value: result.auth_jwt);
-
-                              //Set variables for first time view
-                              setState(() {
-                                empno = result.emp_no!;
-                                user = result.emp_name!;
-                                designation = result.emp_desg!;
-                                discipline = result.emp_disc!;
-                                grade = result.emp_grade!;
-                                auth_token = result.auth_jwt!;
-                              });
-
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text("Welcome, ${result.emp_name}")),
-                              );
-                              setState(() {
-                                _isLoading = false;
-                              });
-
-                              Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (BuildContext context) => Home()), (Route<dynamic> route) => false);
+                          return null;
+                        },
+                      ),
+                    ),
+                    Container(
+                      padding: EdgeInsets.all(10),
+                      child: TextFormField(
+                        controller: pwdController,
+                        obscureText: true,
+                        decoration: InputDecoration(
+                          border: OutlineInputBorder(),
+                          labelText: 'Password',
+                        ),
+                        validator: (text) {
+                          if (text == null || text.isEmpty) {
+                            return 'Please enter password';
+                          }
+                          return null;
+                        },
+                      ),
+                    ),
+                    GestureDetector(
+                      child: Lottie.asset('animations/ani_unlock.json',
+                        width: 50,
+                        height: 50,),
+                      onTap: () async{
+                        // ScaffoldMessenger.of(context).showSnackBar(
+                        //   const SnackBar(content: Text('Login In...')),
+                        // );
+                        if (_loginFormKey.currentState!.validate()) {
+                          setState(() {
+                            _isLoading = true;
+                          });
+                          _empLoginData = authenticate(unameController.text,pwdController.text,appBuildNumber,appVersion,
+                              deviceName,deviceModel,deviceUID,platform);
+                          _empLoginData.then((result) async {
+                            if(result.otpVerReqd){
+                              //OTP verification Required. Redirect to OTP screen
+                              Navigator.pushNamedAndRemoveUntil(context,tfaRoute, (_) => false,arguments: OTPauth(
+                                  result.otpRecordID,result.deviceStatID),);
                             }
                             else{
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('Invalid Credentials. Unable to login')),
-                              );
-                              setState(() {
-                                _isLoading = false;
-                              });
+                              if(result.status){
+                                //Device already verified. Proceed to home
+                                // obtain shared preferences
+                                final prefs = await SharedPreferences.getInstance();
+                                // set value
+                                prefs.setBool('isLoggedIn', true);
+                                // Create secure storage
+                                final storage = new FlutterSecureStorage();
+                                // Write value
+                                await storage.write(key: 'empno', value: result.emp_no);
+                                await storage.write(key: 'name', value: result.emp_name);
+                                await storage.write(key: 'desg', value: result.emp_desg);
+                                await storage.write(key: 'disc', value: result.emp_disc);
+                                await storage.write(key: 'grade', value: result.emp_grade);
+                                await storage.write(key: 'auth_token', value: result.auth_jwt);
+
+                                //Set variables for first time view
+                                setState(() {
+                                  empno = result.emp_no!;
+                                  user = result.emp_name!;
+                                  designation = result.emp_desg!;
+                                  discipline = result.emp_disc!;
+                                  grade = result.emp_grade!;
+                                  auth_token = result.auth_jwt!;
+                                });
+
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text("Welcome, ${result.emp_name}")),
+                                );
+                                setState(() {
+                                  _isLoading = false;
+                                });
+
+                                Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (BuildContext context) => Home()), (Route<dynamic> route) => false);
+                              }
+                              else{
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text('Unable to login. ${result.message}')),
+                                );
+                                setState(() {
+                                  _isLoading = false;
+                                });
+                              }
                             }
-                          }
-                        }).catchError( (error) {
-                          Navigator.pop(context);
+                          }).catchError( (error) {
+                            Navigator.pop(context);
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text("Unable to connect to server")),
+                            );
+                          });
+                        }
+                        else{
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text("Unable to connect to server")),
+                            SnackBar(content: Text("Please enter username and password")),
                           );
-                        });
-                      }
-                      else{
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text("Please enter username and password")),
-                        );
-                      }
-                    },
-                  ),
-                  errorMsg == null? Container(): Text(
-                    "${errorMsg}",
-                    style: TextStyle(
-                      color: Colors.redAccent,
-                      fontWeight: FontWeight.bold,
+                        }
+                      },
                     ),
-                  ),
-                ],
+                    errorMsg == null? Container(): Text(
+                      "${errorMsg}",
+                      style: TextStyle(
+                        color: Colors.redAccent,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ) : noConnectivityError(),
+            ) : noConnectivityError(),
+          ),
         ),
       ),
     );
@@ -284,17 +289,19 @@ class _LoginState extends State<Login> with TickerProviderStateMixin{
     unameController.dispose();
     pwdController.dispose();
     _connectivitySubscription.cancel();
+    _controller.dispose();
     super.dispose();
   }
 
   Future<EmployeeLoginData> authenticate(String uname, String pwd, String appBuildNumber,String appVersion,
-      String deviceName,String deviceModel,String deviceUID) async{
+      String deviceName,String deviceModel,String deviceUID, String platform) async{
     final Dio _dio = Dio();
     final response = await _dio.post('https://connect.bcplindia.co.in/MobileAppAPI/Login',
       data: {'username': uname, 'password': pwd,'appBuildNumber': appBuildNumber, 'appVersion': appVersion,
         'deviceName': deviceName,
         'deviceModel':deviceModel,
-        'deviceUID': deviceUID,},);
+        'deviceUID': deviceUID,
+        'platform': platform,},);
 
 /*    final response = await http.post(
       Uri.parse('https://connect.bcplindia.co.in/MobileAppAPI/Login'),

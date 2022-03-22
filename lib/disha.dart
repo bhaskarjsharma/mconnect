@@ -84,9 +84,25 @@ class DishaState extends State<Disha>{
             width: 40,
             child: Image.asset('images/bcpl_logo.png'),
           ),
-          title: Text('Disha',style: TextStyle(
+/*          title: Text('Disha',style: TextStyle(
             color:appBarTextColor,
-          ),),
+          ),),*/
+          title: Row(
+            children:[
+              Text('Disha',style: TextStyle(
+                color:appBarTextColor,
+              ),),
+              Spacer(),
+              if(Platform.isIOS)
+                IconButton(
+                  icon: Icon(Icons.arrow_back_ios_new),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  color: appBarTextColor,
+                ),
+            ],
+          ),
         ),
         endDrawer: AppDrawer(),
         body: Container(
@@ -790,9 +806,22 @@ class AddProofAppState extends State<AddProofApp>{
             width: 40,
             child: Image.asset('images/bcpl_logo.png'),
           ),
-          title: Text('Disha',style: TextStyle(
-            color:appBarTextColor,
-          ),),
+          title: Row(
+            children:[
+              Text('Disha',style: TextStyle(
+                color:appBarTextColor,
+              ),),
+              Spacer(),
+              if(Platform.isIOS)
+                IconButton(
+                  icon: Icon(Icons.arrow_back_ios_new),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  color: appBarTextColor,
+                ),
+            ],
+          ),
         ),
         endDrawer: AppDrawer(),
         body: isLoading ? waiting(context) : SingleChildScrollView(
@@ -1000,9 +1029,22 @@ class AddChangeAppState extends State<AddChangeApp>{
             width: 40,
             child: Image.asset('images/bcpl_logo.png'),
           ),
-          title: Text('Disha',style: TextStyle(
-            color:appBarTextColor,
-          ),),
+          title: Row(
+            children:[
+              Text('Disha',style: TextStyle(
+                color:appBarTextColor,
+              ),),
+              Spacer(),
+              if(Platform.isIOS)
+                IconButton(
+                  icon: Icon(Icons.arrow_back_ios_new),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  color: appBarTextColor,
+                ),
+            ],
+          ),
         ),
         endDrawer: AppDrawer(),
         body: isLoading ? waiting(context) : SingleChildScrollView(
@@ -1297,9 +1339,22 @@ class OutEmpAppState extends State<OutEmpApp>{
             width: 40,
             child: Image.asset('images/bcpl_logo.png'),
           ),
-          title: Text('Disha',style: TextStyle(
-            color:appBarTextColor,
-          ),),
+          title: Row(
+            children:[
+              Text('Disha',style: TextStyle(
+                color:appBarTextColor,
+              ),),
+              Spacer(),
+              if(Platform.isIOS)
+                IconButton(
+                  icon: Icon(Icons.arrow_back_ios_new),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  color: appBarTextColor,
+                ),
+            ],
+          ),
         ),
         endDrawer: AppDrawer(),
         body: isLoading ? waiting(context) : SingleChildScrollView(
@@ -1620,9 +1675,22 @@ class MedBenAppState extends State<MedBenApp>{
             width: 40,
             child: Image.asset('images/bcpl_logo.png'),
           ),
-          title: Text('Disha',style: TextStyle(
-            color:appBarTextColor,
-          ),),
+          title: Row(
+            children:[
+              Text('Disha',style: TextStyle(
+                color:appBarTextColor,
+              ),),
+              Spacer(),
+              if(Platform.isIOS)
+                IconButton(
+                  icon: Icon(Icons.arrow_back_ios_new),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  color: appBarTextColor,
+                ),
+            ],
+          ),
         ),
         endDrawer: AppDrawer(),
         body: isLoading ? waiting(context) : SingleChildScrollView(
@@ -1979,9 +2047,22 @@ class HighEduAppState extends State<HighEduApp>{
             width: 40,
             child: Image.asset('images/bcpl_logo.png'),
           ),
-          title: Text('Disha',style: TextStyle(
-            color:appBarTextColor,
-          ),),
+          title: Row(
+            children:[
+              Text('Disha',style: TextStyle(
+                color:appBarTextColor,
+              ),),
+              Spacer(),
+              if(Platform.isIOS)
+                IconButton(
+                  icon: Icon(Icons.arrow_back_ios_new),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  color: appBarTextColor,
+                ),
+            ],
+          ),
         ),
         endDrawer: AppDrawer(),
         body: isLoading ? waiting(context) : SingleChildScrollView(
@@ -2334,9 +2415,22 @@ class CLAAppState extends State<CLAApp>{
             width: 40,
             child: Image.asset('images/bcpl_logo.png'),
           ),
-          title: Text('Disha',style: TextStyle(
-            color:appBarTextColor,
-          ),),
+          title: Row(
+            children:[
+              Text('Disha',style: TextStyle(
+                color:appBarTextColor,
+              ),),
+              Spacer(),
+              if(Platform.isIOS)
+                IconButton(
+                  icon: Icon(Icons.arrow_back_ios_new),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  color: appBarTextColor,
+                ),
+            ],
+          ),
         ),
         endDrawer: AppDrawer(),
         body: isLoading ? waiting(context) : SingleChildScrollView(
@@ -2799,9 +2893,22 @@ class HRAAppState extends State<HRAApp>{
             width: 40,
             child: Image.asset('images/bcpl_logo.png'),
           ),
-          title: Text('Disha',style: TextStyle(
-            color:appBarTextColor,
-          ),),
+          title: Row(
+            children:[
+              Text('Disha',style: TextStyle(
+                color:appBarTextColor,
+              ),),
+              Spacer(),
+              if(Platform.isIOS)
+                IconButton(
+                  icon: Icon(Icons.arrow_back_ios_new),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  color: appBarTextColor,
+                ),
+            ],
+          ),
         ),
         endDrawer: AppDrawer(),
         body: isLoading ? waiting(context) : SingleChildScrollView(
@@ -3072,9 +3179,22 @@ class QtrAllocState extends State<QtrAlloc>{
             width: 40,
             child: Image.asset('images/bcpl_logo.png'),
           ),
-          title: Text('Disha',style: TextStyle(
-            color:appBarTextColor,
-          ),),
+          title: Row(
+            children:[
+              Text('Disha',style: TextStyle(
+                color:appBarTextColor,
+              ),),
+              Spacer(),
+              if(Platform.isIOS)
+                IconButton(
+                  icon: Icon(Icons.arrow_back_ios_new),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  color: appBarTextColor,
+                ),
+            ],
+          ),
         ),
         endDrawer: AppDrawer(),
         body: isLoading ? waiting(context) : SingleChildScrollView(
