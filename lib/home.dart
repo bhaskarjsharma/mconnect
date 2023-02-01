@@ -270,8 +270,10 @@ class HomeState extends State<Home>  {
       });
       authenticated = await localAuth.authenticate(
           localizedReason: 'Please complete the authentication to proceed',
-          useErrorDialogs: true,
-          stickyAuth: true);
+          options: const AuthenticationOptions(
+            stickyAuth: true,
+            useErrorDialogs: true,
+          ));
       setState(() {
         _isAuthenticating = false;
       });
@@ -293,9 +295,10 @@ class HomeState extends State<Home>  {
       authenticated = await localAuth.authenticate(
           localizedReason:
           'Please complete the biometric authentication to proceed',
-          useErrorDialogs: true,
-          stickyAuth: true,
-          biometricOnly: true
+          options: const AuthenticationOptions(
+            stickyAuth: true,
+            useErrorDialogs: true, biometricOnly: true
+          )
       );
       setState(() {
         _isAuthenticating = false;
@@ -370,6 +373,7 @@ class HomeState extends State<Home>  {
             )
           ],
         ),
+        automaticallyImplyLeading: true,
       ),
       endDrawer: AppDrawer(),
       body: UpgradeAlert(
@@ -2609,7 +2613,7 @@ class _ITACState extends State<ITAC>{
                     allowClear: true,
                     hint: Text('Select Request'),
                     validator: FormBuilderValidators.compose(
-                        [FormBuilderValidators.required(context)]),
+                        [FormBuilderValidators.required()]),
                     items: ITACSRType
                         .map((SRType) => DropdownMenuItem(
                       value: SRType,
@@ -2626,7 +2630,7 @@ class _ITACState extends State<ITAC>{
                     allowClear: true,
                     hint: Text('Select Location'),
                     validator: FormBuilderValidators.compose(
-                        [FormBuilderValidators.required(context)]),
+                        [FormBuilderValidators.required()]),
                     items: ITACSRLocation
                         .map((location) => DropdownMenuItem(
                       value: location,
@@ -2644,7 +2648,7 @@ class _ITACState extends State<ITAC>{
                     //onChanged: _onChanged,
                     // valueTransformer: (text) => num.tryParse(text),
                     validator: FormBuilderValidators.compose([
-                      FormBuilderValidators.required(context),
+                      FormBuilderValidators.required(),
                     ]),
                   ),
                   FormBuilderTextField(
@@ -2657,7 +2661,7 @@ class _ITACState extends State<ITAC>{
                     //onChanged: _onChanged,
                     // valueTransformer: (text) => num.tryParse(text),
                     validator: FormBuilderValidators.compose([
-                      FormBuilderValidators.required(context),
+                      FormBuilderValidators.required(),
                     ]),
                   ),
                   Row(
@@ -2874,20 +2878,20 @@ class _ECOFF_OTState extends State<ECOFF_OT>{
               autovalidateMode: AutovalidateMode.always,
               child: Column(
                 children: [
-                  FormBuilderChoiceChip(
+                  FormBuilderChoiceChip<String>(
                     name: 'request_type',
                     decoration: InputDecoration(
                       labelText: 'Request Type',
                       helperText: 'Overtime allowance is for Non-Executive cadre employees only',
                     ),
                     options: [
-                      FormBuilderFieldOption(
+                      FormBuilderChipOption(
                           value: 'ECOF', child: Text('COFF Encashment')),
-                      FormBuilderFieldOption(
+                      FormBuilderChipOption(
                           value: 'OT', child: Text('Overtime Allowance')),
                     ],
                     validator: FormBuilderValidators.compose(
-                        [FormBuilderValidators.required(context)]),
+                        [FormBuilderValidators.required()]),
                     onChanged: (String? newValue) {
                       if(newValue == 'ECOF'){
                         setState(() {
@@ -2918,7 +2922,7 @@ class _ECOFF_OTState extends State<ECOFF_OT>{
                       helperText: 'Date of Coff/Overtime',
                     ),
                     validator: FormBuilderValidators.compose(
-                        [FormBuilderValidators.required(context)]),
+                        [FormBuilderValidators.required()]),
                     lastDate: lastDateforClaim,
                     firstDate: DateTime(2019,3,1),
                     //initialTime: TimeOfDay(hour: 8, minute: 0),
@@ -2951,13 +2955,13 @@ class _ECOFF_OTState extends State<ECOFF_OT>{
                           labelText: 'Shift Type',
                         ),
                         options: [
-                          FormBuilderFieldOption(
+                          FormBuilderChipOption(
                               value: 'GEN', child: Text('General Shift')),
-                          FormBuilderFieldOption(
+                          FormBuilderChipOption(
                               value: 'ROT', child: Text('Rotational Shift')),
                         ],
                         validator: FormBuilderValidators.compose(
-                            [FormBuilderValidators.required(context)]),
+                            [FormBuilderValidators.required()]),
                       ),
                       FormBuilderChoiceChip(
                         name: 'coff_type',
@@ -2965,28 +2969,28 @@ class _ECOFF_OTState extends State<ECOFF_OT>{
                           labelText: 'ECOFF Type',
                         ),
                         options: [
-                          FormBuilderFieldOption(
+                          FormBuilderChipOption(
                               value: 'SAT', child: Text('1st/3rd/5th Saturday')),
-                          FormBuilderFieldOption(
+                          FormBuilderChipOption(
                               value: 'OTR', child: Text('GH/NH/Off Day/Double Shift')),
                         ],
                         validator: FormBuilderValidators.compose([
-                              FormBuilderValidators.required(context)
+                              FormBuilderValidators.required()
                             ]),
                       ),
-                      FormBuilderChoiceChip(
+                      FormBuilderChoiceChip<String>(
                         name: 'off_day',
                         decoration: InputDecoration(
                           labelText: 'Shift done against off day',
                         ),
                         options: [
-                          FormBuilderFieldOption(
+                          FormBuilderChipOption(
                               value: 'yes', child: Text('Yes')),
-                          FormBuilderFieldOption(
+                          FormBuilderChipOption(
                               value: 'no', child: Text('No')),
                         ],
                         validator: FormBuilderValidators.compose([
-                          FormBuilderValidators.required(context)
+                          FormBuilderValidators.required()
                         ]),
                         onChanged: (String? newValue) {
                           if(newValue == 'yes'){
@@ -3012,13 +3016,13 @@ class _ECOFF_OTState extends State<ECOFF_OT>{
                           labelText: 'ECO Count for National Holiday',
                         ),
                         options: [
-                          FormBuilderFieldOption(
+                          FormBuilderChipOption(
                               value: 'ECO', child: Text('Only ECOFF')),
-                          FormBuilderFieldOption(
+                          FormBuilderChipOption(
                               value: 'ECO_CO', child: Text('Equal ECOFF and COFF')),
                         ],
                         validator: FormBuilderValidators.compose([
-                          FormBuilderValidators.required(context)
+                          FormBuilderValidators.required()
                         ]),
                       ) : SizedBox(height:1),
                       isOffDay? FormBuilderChoiceChip(
@@ -3027,25 +3031,25 @@ class _ECOFF_OTState extends State<ECOFF_OT>{
                           labelText: 'Shift done',
                         ),
                         options: [
-                          FormBuilderFieldOption(
+                          FormBuilderChipOption(
                               value: 'A', child: Text('A')),
-                          FormBuilderFieldOption(
+                          FormBuilderChipOption(
                               value: 'B', child: Text('B')),
-                          FormBuilderFieldOption(
+                          FormBuilderChipOption(
                               value: 'C', child: Text('C')),
-                          FormBuilderFieldOption(
+                          FormBuilderChipOption(
                               value: 'AB', child: Text('AB')),
-                          FormBuilderFieldOption(
+                          FormBuilderChipOption(
                               value: 'BC', child: Text('BC')),
-                          FormBuilderFieldOption(
+                          FormBuilderChipOption(
                               value: 'AC', child: Text('AC')),
-                          FormBuilderFieldOption(
+                          FormBuilderChipOption(
                               value: 'GC', child: Text('GC')),
-                          FormBuilderFieldOption(
+                          FormBuilderChipOption(
                               value: 'ABC', child: Text('ABC')),
                         ],
                         validator: FormBuilderValidators.compose([
-                          FormBuilderValidators.required(context)
+                          FormBuilderValidators.required()
                         ]),
                       ) : SizedBox(height:1),
                       FormBuilderTextField(
@@ -3057,7 +3061,7 @@ class _ECOFF_OTState extends State<ECOFF_OT>{
                         //onChanged: _onChanged,
                         // valueTransformer: (text) => num.tryParse(text),
                         validator: FormBuilderValidators.compose([
-                          FormBuilderValidators.required(context),
+                          FormBuilderValidators.required(),
                         ]),
                       ),
                     ],
@@ -3075,9 +3079,9 @@ class _ECOFF_OTState extends State<ECOFF_OT>{
                         //onChanged: _onChanged,
                         // valueTransformer: (text) => num.tryParse(text),
                         validator: FormBuilderValidators.compose([
-                          FormBuilderValidators.required(context),
-                          FormBuilderValidators.numeric(context),
-                          FormBuilderValidators.max(context, 24),
+                          FormBuilderValidators.required(),
+                          FormBuilderValidators.numeric(),
+                          FormBuilderValidators.max(24),
                         ]),
                         keyboardType: TextInputType.number,
                       ),
@@ -3090,7 +3094,7 @@ class _ECOFF_OTState extends State<ECOFF_OT>{
                         //onChanged: _onChanged,
                         // valueTransformer: (text) => num.tryParse(text),
                         validator: FormBuilderValidators.compose([
-                          FormBuilderValidators.required(context),
+                          FormBuilderValidators.required(),
                         ]),
                       ),
                     ],
@@ -3101,7 +3105,7 @@ class _ECOFF_OTState extends State<ECOFF_OT>{
                     children: <Widget>[
                       Expanded(
                         child: MaterialButton(
-                          color: Theme.of(context).accentColor,
+                          color: Theme.of(context).colorScheme.secondary,
                           child: Text(
                             "Submit",
                             style: TextStyle(color: Colors.white),
@@ -3393,7 +3397,7 @@ class _HospitalCreditLetterState extends State<HospitalCreditLetter>{
                     allowClear: true,
                     //hint: Text('Select Name'),
                     validator: FormBuilderValidators.compose(
-                        [FormBuilderValidators.required(context)]),
+                        [FormBuilderValidators.required()]),
                     items: patient.map((patient) => DropdownMenuItem(
                       value: patient,
                       child: Text('${patient.patientName}'),
@@ -3425,7 +3429,7 @@ class _HospitalCreditLetterState extends State<HospitalCreditLetter>{
                       labelText: 'From Date',
                     ),
                     validator: FormBuilderValidators.compose(
-                        [FormBuilderValidators.required(context)]),
+                        [FormBuilderValidators.required()]),
                     //initialTime: TimeOfDay(hour: 8, minute: 0),
                      //initialValue: DateTime.now(),
                     // enabled: true,
@@ -3438,7 +3442,7 @@ class _HospitalCreditLetterState extends State<HospitalCreditLetter>{
                       labelText: 'To Date',
                     ),
                     validator: FormBuilderValidators.compose(
-                        [FormBuilderValidators.required(context)]),
+                        [FormBuilderValidators.required()]),
                     //initialTime: TimeOfDay(hour: 8, minute: 0),
                     //initialValue: DateTime.now(),
                     // enabled: true,
@@ -3452,9 +3456,9 @@ class _HospitalCreditLetterState extends State<HospitalCreditLetter>{
                     //onChanged: _onChanged,
                     // valueTransformer: (text) => num.tryParse(text),
                     validator: FormBuilderValidators.compose([
-                      FormBuilderValidators.required(context),
-                      FormBuilderValidators.numeric(context),
-                      FormBuilderValidators.max(context, 7),
+                      FormBuilderValidators.required(),
+                      FormBuilderValidators.numeric(),
+                      FormBuilderValidators.max( 7),
                     ]),
                     keyboardType: TextInputType.number,
                   ),
@@ -3464,9 +3468,9 @@ class _HospitalCreditLetterState extends State<HospitalCreditLetter>{
                       labelText: 'Outstation Facility',
                     ),
                     options: [
-                      FormBuilderFieldOption(
+                      FormBuilderChipOption(
                           value: 'Yes', child: Text('Yes')),
-                      FormBuilderFieldOption(
+                      FormBuilderChipOption(
                           value: 'No', child: Text('No')),
                     ],
                   ),
@@ -3476,9 +3480,9 @@ class _HospitalCreditLetterState extends State<HospitalCreditLetter>{
                       labelText: 'Doctor Recommendation',
                     ),
                     options: [
-                      FormBuilderFieldOption(
+                      FormBuilderChipOption(
                           value: 'Yes', child: Text('Yes')),
-                      FormBuilderFieldOption(
+                      FormBuilderChipOption(
                           value: 'No', child: Text('No')),
                     ],
                   ),
@@ -3491,7 +3495,7 @@ class _HospitalCreditLetterState extends State<HospitalCreditLetter>{
                     //onChanged: _onChanged,
                     // valueTransformer: (text) => num.tryParse(text),
                     validator: FormBuilderValidators.compose([
-                      FormBuilderValidators.required(context),
+                      FormBuilderValidators.required(),
                     ]),
                   ),
                   FormBuilderTextField(
@@ -3503,7 +3507,7 @@ class _HospitalCreditLetterState extends State<HospitalCreditLetter>{
                     //onChanged: _onChanged,
                     // valueTransformer: (text) => num.tryParse(text),
                     validator: FormBuilderValidators.compose([
-                      FormBuilderValidators.required(context),
+                      FormBuilderValidators.required(),
                     ]),
                   ),
                   FormBuilderDropdown(
@@ -3515,7 +3519,7 @@ class _HospitalCreditLetterState extends State<HospitalCreditLetter>{
                     allowClear: true,
                     //hint: Text('Empanelled institute'),
                     validator: FormBuilderValidators.compose(
-                        [FormBuilderValidators.required(context)]),
+                        [FormBuilderValidators.required()]),
                     items: hospitals.map((hospital) => DropdownMenuItem(
                       value: hospital,
                       child: Text('${hospital.hospitalName}, ${hospital.hospitalCity}, ${hospital.hospitalState}'),
@@ -3536,7 +3540,7 @@ class _HospitalCreditLetterState extends State<HospitalCreditLetter>{
                     //onChanged: _onChanged,
                     // valueTransformer: (text) => num.tryParse(text),
                     validator: FormBuilderValidators.compose([
-                      FormBuilderValidators.required(context),
+                      FormBuilderValidators.required(),
                     ]),
                   ),
                   FormBuilderTextField(
@@ -3548,14 +3552,14 @@ class _HospitalCreditLetterState extends State<HospitalCreditLetter>{
                     //onChanged: _onChanged,
                     // valueTransformer: (text) => num.tryParse(text),
                     validator: FormBuilderValidators.compose([
-                      //FormBuilderValidators.required(context),
+                      //FormBuilderValidators.required(),
                     ]),
                   ),
                   // Image Picker for Attachments
                   FormBuilderField(
                     name: "attach_files",
                     // validator: FormBuilderValidators.compose([
-                    //   FormBuilderValidators.required(context),
+                    //   FormBuilderValidators.required(),
                     // ]),
                     builder: (FormFieldState<dynamic> field) {
                       return InputDecorator(

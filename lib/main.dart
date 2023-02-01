@@ -18,7 +18,7 @@ import 'home.dart';
 import 'package:flutter_projects/services/Router.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-//import 'package:responsive_framework/responsive_framework.dart';
+import 'package:responsive_framework/responsive_framework.dart';
 
 import 'models/models.dart';
 
@@ -160,7 +160,7 @@ void main() async{
 
   const AndroidInitializationSettings initializationSettingsAndroid =
   AndroidInitializationSettings('@mipmap/ic_launcher');
-  final IOSInitializationSettings initializationSettingsIOS = IOSInitializationSettings();
+  final DarwinInitializationSettings initializationSettingsDarwin  = DarwinInitializationSettings();
   /* final IOSInitializationSettings initializationSettingsIOS =
   IOSInitializationSettings(
       requestAlertPermission: false,
@@ -184,10 +184,10 @@ void main() async{
 
   final InitializationSettings initializationSettings = InitializationSettings(
     android: initializationSettingsAndroid,
-    iOS: initializationSettingsIOS,
+    iOS: initializationSettingsDarwin ,
   );
   await flutterLocalNotificationsPlugin.initialize(initializationSettings,
-      onSelectNotification: onSelectNotification);
+      onDidReceiveNotificationResponse: onDidReceiveNotificationResponse);
 
   /// FlutterLocalNotificationsPlugin Config Ends ******************************************************
 
@@ -225,7 +225,7 @@ void main() async{
       localAuthEnabled = prefs.getBool('localBioAuth') ?? false;
 
       runApp(MaterialApp(
-/*        builder: (context, widget) => ResponsiveWrapper.builder(
+        builder: (context, widget) => ResponsiveWrapper.builder(
           ClampingScrollWrapper.builder(context, widget!),
           defaultScale: true,
           minWidth: 480,
@@ -237,7 +237,7 @@ void main() async{
             const ResponsiveBreakpoint.resize(1080, name: DESKTOP),
           ],
             background: Container(color: const Color(0xFFF5F5F5))
-        ),*/
+        ),
         title: "Home",
         theme: ThemeData(
           appBarTheme: AppBarTheme(
@@ -283,7 +283,7 @@ void main() async{
     prefs.clear();
     storage.deleteAll();
     runApp(MaterialApp(
-/*      builder: (context, widget) => ResponsiveWrapper.builder(
+      builder: (context, widget) => ResponsiveWrapper.builder(
           ClampingScrollWrapper.builder(context, widget!),
           defaultScale: true,
           minWidth: 480,
@@ -295,7 +295,7 @@ void main() async{
             const ResponsiveBreakpoint.resize(1080, name: DESKTOP),
           ],
           background: Container(color: const Color(0xFFF5F5F5))
-      ),*/
+      ),
       theme: ThemeData(
           appBarTheme: AppBarTheme(
             backgroundColor: Color.fromRGBO(165, 231, 206, 1.0),
@@ -462,7 +462,7 @@ class Init {
 }*/
 
 Future<void> showNotification(Map<String, dynamic> notificationMessage) async {
-  const AndroidNotificationDetails android =
+  const AndroidNotificationDetails androidNotificationDetails  =
   AndroidNotificationDetails('channel id','channel name',
       channelDescription: 'your channel description',
       importance: Importance.max,
@@ -470,6 +470,12 @@ Future<void> showNotification(Map<String, dynamic> notificationMessage) async {
       playSound: true,
       enableVibration: true,
       ticker: 'ticker');
+
+  const DarwinNotificationDetails iosNotificationDetails =
+  DarwinNotificationDetails(
+    categoryIdentifier: 'plainCategory',
+  );
+
 
 /*  final android = AndroidNotificationDetails(
     'channel id',
@@ -480,8 +486,10 @@ Future<void> showNotification(Map<String, dynamic> notificationMessage) async {
     playSound: true,
     enableVibration: true,
   );*/
-  final iOS = IOSNotificationDetails();
-  final platform = NotificationDetails(android: android, iOS: iOS);
+  //final iOS = IOSNotificationDetails();
+  //final platform = NotificationDetails(android: android, iOS: iOS);
+  const NotificationDetails notificationDetails =
+  NotificationDetails(android: androidNotificationDetails,iOS: iosNotificationDetails);
   final json = jsonEncode(notificationMessage);
   final isSuccess = notificationMessage['isSuccess'];
 
@@ -507,12 +515,13 @@ Future<void> showNotification(Map<String, dynamic> notificationMessage) async {
       0, // notification id
       notificationTitle,
       notificationBody,
-      platform,
+      notificationDetails,
       payload: json
   );
 }
-Future onSelectNotification(String? json) async {
+void onDidReceiveNotificationResponse(NotificationResponse notificationResponse) async {
   //  handling clicked notification
+  final String? json = notificationResponse.payload;
   final obj = jsonDecode(json!);
 
   if(obj['contentType'] == 'FileDownload'){
