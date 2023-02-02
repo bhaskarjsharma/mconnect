@@ -813,7 +813,6 @@ class _AboutAppState extends State<AboutApp>{
 
   @override
   Widget build(BuildContext context) {
-    Upgrader().clearSavedSettings();
     return Container(
       decoration: BoxDecoration(
           gradient: LinearGradient(

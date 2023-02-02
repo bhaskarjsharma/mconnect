@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -160,7 +161,7 @@ void main() async{
 
   const AndroidInitializationSettings initializationSettingsAndroid =
   AndroidInitializationSettings('@mipmap/ic_launcher');
-  final IOSInitializationSettings initializationSettingsIOS = IOSInitializationSettings();
+  final DarwinInitializationSettings  initializationSettingsDarwin  = DarwinInitializationSettings();
   /* final IOSInitializationSettings initializationSettingsIOS =
   IOSInitializationSettings(
       requestAlertPermission: false,
@@ -184,10 +185,10 @@ void main() async{
 
   final InitializationSettings initializationSettings = InitializationSettings(
     android: initializationSettingsAndroid,
-    iOS: initializationSettingsIOS,
+    iOS: initializationSettingsDarwin,
   );
   await flutterLocalNotificationsPlugin.initialize(initializationSettings,
-      onSelectNotification: onSelectNotification);
+      onDidReceiveNotificationResponse: onDidReceiveNotificationResponse);
 
   /// FlutterLocalNotificationsPlugin Config Ends ******************************************************
 
@@ -462,14 +463,29 @@ class Init {
 }*/
 
 Future<void> showNotification(Map<String, dynamic> notificationMessage) async {
-  const AndroidNotificationDetails android =
-  AndroidNotificationDetails('channel id','channel name',
-      channelDescription: 'your channel description',
-      importance: Importance.max,
-      priority: Priority.high,
-      playSound: true,
-      enableVibration: true,
-      ticker: 'ticker');
+  final json = jsonEncode(notificationMessage);
+  AndroidNotificationDetails android;
+  if(notificationMessage['contentType'] == 'EmergencySiren'){
+    const int insistentFlag = 4;
+    android = AndroidNotificationDetails('channel id','channel name',
+        channelDescription: 'your channel description',
+        importance: Importance.max,
+        priority: Priority.high,
+        playSound: true,
+        enableVibration: true,
+        ticker: 'ticker',
+        additionalFlags: Int32List.fromList(<int>[insistentFlag]));
+  }
+  else{
+    android = AndroidNotificationDetails('channel id','channel name',
+        channelDescription: 'your channel description',
+        importance: Importance.max,
+        priority: Priority.high,
+        playSound: true,
+        enableVibration: true,
+        ticker: 'ticker');
+  }
+
 
 /*  final android = AndroidNotificationDetails(
     'channel id',
@@ -480,9 +496,13 @@ Future<void> showNotification(Map<String, dynamic> notificationMessage) async {
     playSound: true,
     enableVibration: true,
   );*/
-  final iOS = IOSNotificationDetails();
-  final platform = NotificationDetails(android: android, iOS: iOS);
-  final json = jsonEncode(notificationMessage);
+
+  const DarwinNotificationDetails iosNotificationDetails =
+  DarwinNotificationDetails(
+    categoryIdentifier: 'plainCategory',
+  );
+  final platform = NotificationDetails(android: android, iOS: iosNotificationDetails);
+
   final isSuccess = notificationMessage['isSuccess'];
 
   String notificationTitle = '';
@@ -511,7 +531,8 @@ Future<void> showNotification(Map<String, dynamic> notificationMessage) async {
       payload: json
   );
 }
-Future onSelectNotification(String? json) async {
+void onDidReceiveNotificationResponse(NotificationResponse notificationResponse) async {
+  final String? json = notificationResponse.payload;
   //  handling clicked notification
   final obj = jsonDecode(json!);
 
@@ -533,6 +554,9 @@ Future onSelectNotification(String? json) async {
     }
   }
   else if(obj['contentType'] == 'AppUpdate'){
+    navigatorKey.currentState!.pushNamed('/AboutApp');
+  }
+  else if(obj['contentType'] == 'EmergencySiren'){
     navigatorKey.currentState!.pushNamed('/AboutApp');
   }
   else{

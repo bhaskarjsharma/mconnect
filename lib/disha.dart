@@ -854,26 +854,26 @@ class AddProofAppState extends State<AddProofApp>{
                           labelText: 'Certificate Type',
                           helperText: 'Certificate will be issued as per address maintained in SAP',
                         ),
-                        options: [
-                          FormBuilderFieldOption(
+                        options: const [
+                          FormBuilderChipOption(
                               value: 'Present Address', child: Text('Present Address')),
-                          FormBuilderFieldOption(
+                          FormBuilderChipOption(
                               value: 'Permanent Address', child: Text('Permanent Address')),
                         ],
                         validator: FormBuilderValidators.compose(
-                            [FormBuilderValidators.required(context)]),
+                            [FormBuilderValidators.required()]),
                       ),
                       FormBuilderTextField(
                         name: 'req_for_pur',
                         maxLines: 2,
-                        decoration: InputDecoration(
+                        decoration: const InputDecoration(
                           labelText:
                           'Required For',
                         ),
                         //onChanged: _onChanged,
                         // valueTransformer: (text) => num.tryParse(text),
                         validator: FormBuilderValidators.compose([
-                          FormBuilderValidators.required(context),
+                          FormBuilderValidators.required(),
                         ]),
                       ),
                       Row(
@@ -954,7 +954,7 @@ class AddProofAppState extends State<AddProofApp>{
                           Expanded(
                             child: MaterialButton(
                               color: Colors.red,
-                              child: Text(
+                              child: const Text(
                                 "Cancel",
                                 style: TextStyle(color: Colors.white),
                               ),
@@ -1077,14 +1077,14 @@ class AddChangeAppState extends State<AddChangeApp>{
                           labelText: 'Address Type',
                           //helperText: 'Certificate will be issued as per address maintained in SAP',
                         ),
-                        options: [
-                          FormBuilderFieldOption(
-                              value: 'Present Address', child: Text('Present Address')),
-                          FormBuilderFieldOption(
-                              value: 'Permanent Address', child: Text('Permanent Address')),
+                        options: const [
+                          FormBuilderChipOption(
+                              value: 'present_address', child: Text('Present Address')),
+                          FormBuilderChipOption(
+                              value: 'permanent_address', child: Text('Permanent Address')),
                         ],
                         validator: FormBuilderValidators.compose(
-                            [FormBuilderValidators.required(context)]),
+                            [FormBuilderValidators.required()]),
                       ),
                       FormBuilderTextField(
                         name: 'address',
@@ -1096,7 +1096,7 @@ class AddChangeAppState extends State<AddChangeApp>{
                         //onChanged: _onChanged,
                         // valueTransformer: (text) => num.tryParse(text),
                         validator: FormBuilderValidators.compose([
-                          FormBuilderValidators.required(context),
+                          FormBuilderValidators.required(),
                         ]),
                       ),
                       FormBuilderField(
@@ -1387,16 +1387,16 @@ class OutEmpAppState extends State<OutEmpApp>{
                           labelText: 'Request Type',
                           //helperText: 'Certificate will be issued as per address maintained in SAP',
                         ),
-                        options: [
-                          FormBuilderFieldOption(
-                              value: 'intimation', child: Text('Intimation of Application')),
-                          FormBuilderFieldOption(
+                        options: const [
+                          FormBuilderChipOption(
+                              value: 'Intimation', child: Text('Intimation of Application')),
+                          FormBuilderChipOption(
                               value: 'NOC', child: Text('Request for NOC')),
-                          FormBuilderFieldOption(
-                              value: 'prop_chnl', child: Text('Proper Channel Forwarding')),
+                          FormBuilderChipOption(
+                              value: 'Proper Channel Forward', child: Text('Proper Channel Forwarding')),
                         ],
                         validator: FormBuilderValidators.compose(
-                            [FormBuilderValidators.required(context)]),
+                            [FormBuilderValidators.required()]),
                       ),
                       FormBuilderTextField(
                         name: 'org_name',
@@ -1408,7 +1408,7 @@ class OutEmpAppState extends State<OutEmpApp>{
                         //onChanged: _onChanged,
                         // valueTransformer: (text) => num.tryParse(text),
                         validator: FormBuilderValidators.compose([
-                          FormBuilderValidators.required(context),
+                          FormBuilderValidators.required(),
                         ]),
                       ),
                       FormBuilderTextField(
@@ -1421,7 +1421,7 @@ class OutEmpAppState extends State<OutEmpApp>{
                         //onChanged: _onChanged,
                         // valueTransformer: (text) => num.tryParse(text),
                         validator: FormBuilderValidators.compose([
-                          FormBuilderValidators.required(context),
+                          FormBuilderValidators.required(),
                         ]),
                       ),
                       FormBuilderTextField(
@@ -1434,7 +1434,7 @@ class OutEmpAppState extends State<OutEmpApp>{
                         //onChanged: _onChanged,
                         // valueTransformer: (text) => num.tryParse(text),
                         validator: FormBuilderValidators.compose([
-                          FormBuilderValidators.required(context),
+                          FormBuilderValidators.required(),
                         ]),
                       ),
                       FormBuilderField(
@@ -1723,16 +1723,16 @@ class MedBenAppState extends State<MedBenApp>{
                           labelText: 'Request Type',
                           //helperText: 'Certificate will be issued as per address maintained in SAP',
                         ),
-                        options: [
-                          FormBuilderFieldOption(
-                              value: 'med_extension', child: Text('Extension of expired medical bill for reimbursement')),
-                          FormBuilderFieldOption(
-                              value: 'med_purchase', child: Text('Permission for medicine purchase for more than 30 days')),
-                          FormBuilderFieldOption(
-                              value: 'pres_validity', child: Text('Permission for medicine purchase after 3 days of prescription')),
+                        options: const [
+                          FormBuilderChipOption(
+                              value: 'Expired Medical Bill', child: Text('Extension of expired medical bill for reimbursement')),
+                          FormBuilderChipOption(
+                              value: 'Medicine Purchase 30 Days', child: Text('Permission for medicine purchase for more than 30 days')),
+                          FormBuilderChipOption(
+                              value: 'Medicine Purchase 3 Days', child: Text('Permission for medicine purchase after 3 days of prescription')),
                         ],
                         validator: FormBuilderValidators.compose(
-                            [FormBuilderValidators.required(context)]),
+                            [FormBuilderValidators.required()]),
                       ),
                       FormBuilderTextField(
                         name: 'reason',
@@ -1744,7 +1744,7 @@ class MedBenAppState extends State<MedBenApp>{
                         //onChanged: _onChanged,
                         // valueTransformer: (text) => num.tryParse(text),
                         validator: FormBuilderValidators.compose([
-                          FormBuilderValidators.required(context),
+                          FormBuilderValidators.required(),
                         ]),
                       ),
                       FormBuilderTextField(
@@ -1757,7 +1757,7 @@ class MedBenAppState extends State<MedBenApp>{
                         //onChanged: _onChanged,
                         // valueTransformer: (text) => num.tryParse(text),
                         validator: FormBuilderValidators.compose([
-                          FormBuilderValidators.required(context),
+                          FormBuilderValidators.required(),
                         ]),
                       ),
                       FormBuilderDateTimePicker(
@@ -1769,7 +1769,7 @@ class MedBenAppState extends State<MedBenApp>{
                           //helperText: 'Date of Coff/Overtime',
                         ),
                         validator: FormBuilderValidators.compose(
-                            [FormBuilderValidators.required(context)]),
+                            [FormBuilderValidators.required()]),
                         //lastDate: lastDateforClaim,
                         firstDate: DateTime(2019,3,1),
                         //initialTime: TimeOfDay(hour: 8, minute: 0),
@@ -1788,7 +1788,7 @@ class MedBenAppState extends State<MedBenApp>{
                         //onChanged: _onChanged,
                         // valueTransformer: (text) => num.tryParse(text),
                         validator: FormBuilderValidators.compose([
-                          FormBuilderValidators.required(context),
+                          FormBuilderValidators.required(),
                         ]),
                       ),
                       FormBuilderDateTimePicker(
@@ -1800,7 +1800,7 @@ class MedBenAppState extends State<MedBenApp>{
                           //helperText: 'Date of Coff/Overtime',
                         ),
                         validator: FormBuilderValidators.compose(
-                            [FormBuilderValidators.required(context)]),
+                            [FormBuilderValidators.required()]),
                         //lastDate: lastDateforClaim,
                         firstDate: DateTime(2019,3,1),
                         //initialTime: TimeOfDay(hour: 8, minute: 0),
@@ -2099,7 +2099,7 @@ class HighEduAppState extends State<HighEduApp>{
                         //onChanged: _onChanged,
                         // valueTransformer: (text) => num.tryParse(text),
                         validator: FormBuilderValidators.compose([
-                          FormBuilderValidators.required(context),
+                          FormBuilderValidators.required(),
                         ]),
                       ),
                       FormBuilderTextField(
@@ -2113,7 +2113,7 @@ class HighEduAppState extends State<HighEduApp>{
                         //onChanged: _onChanged,
                         // valueTransformer: (text) => num.tryParse(text),
                         validator: FormBuilderValidators.compose([
-                          FormBuilderValidators.required(context),
+                          FormBuilderValidators.required(),
                         ]),
                         keyboardType: TextInputType.number,
                       ),
@@ -2123,18 +2123,18 @@ class HighEduAppState extends State<HighEduApp>{
                           labelText: 'Course Type',
                           //helperText: 'Certificate will be issued as per address maintained in SAP',
                         ),
-                        options: [
-                          FormBuilderFieldOption(
+                        options: const [
+                          FormBuilderChipOption(
                               value: 'classroom', child: Text('Classroom Course')),
-                          FormBuilderFieldOption(
+                          FormBuilderChipOption(
                               value: 'distance', child: Text('Distance / Open Learning')),
-                          FormBuilderFieldOption(
+                          FormBuilderChipOption(
                               value: 'online', child: Text('Online Course')),
-                          FormBuilderFieldOption(
-                              value: 'multi_mode', child: Text('Combination of Classroom and Other Modes')),
+                          FormBuilderChipOption(
+                              value: 'combined', child: Text('Combination of Classroom and Other Modes')),
                         ],
                         validator: FormBuilderValidators.compose(
-                            [FormBuilderValidators.required(context)]),
+                            [FormBuilderValidators.required()]),
                       ),
                       FormBuilderTextField(
                         name: 'inst_name',
@@ -2146,7 +2146,7 @@ class HighEduAppState extends State<HighEduApp>{
                         //onChanged: _onChanged,
                         // valueTransformer: (text) => num.tryParse(text),
                         validator: FormBuilderValidators.compose([
-                          FormBuilderValidators.required(context),
+                          FormBuilderValidators.required(),
                         ]),
                       ),
                       FormBuilderTextField(
@@ -2159,7 +2159,7 @@ class HighEduAppState extends State<HighEduApp>{
                         //onChanged: _onChanged,
                         // valueTransformer: (text) => num.tryParse(text),
                         validator: FormBuilderValidators.compose([
-                          FormBuilderValidators.required(context),
+                          FormBuilderValidators.required(),
                         ]),
                       ),
                       FormBuilderChoiceChip(
@@ -2169,13 +2169,13 @@ class HighEduAppState extends State<HighEduApp>{
                           //helperText: 'Certificate will be issued as per address maintained in SAP',
                         ),
                         options: [
-                          FormBuilderFieldOption(
+                          FormBuilderChipOption(
                               value: 'Yes', child: Text('Yes')),
-                          FormBuilderFieldOption(
+                          FormBuilderChipOption(
                               value: 'No', child: Text('No')),
                         ],
                         validator: FormBuilderValidators.compose(
-                            [FormBuilderValidators.required(context)]),
+                            [FormBuilderValidators.required()]),
                       ),
                       FormBuilderField(
                         name: "attach_files",
@@ -2464,13 +2464,13 @@ class CLAAppState extends State<CLAApp>{
                           //helperText: 'Certificate will be issued as per address maintained in SAP',
                         ),
                         options: [
-                          FormBuilderFieldOption(
+                          FormBuilderChipOption(
                               value: 'New', child: Text('Fresh/New Lease')),
-                          FormBuilderFieldOption(
+                          FormBuilderChipOption(
                               value: 'Renewal', child: Text('Lease Renewal')),
                         ],
                         validator: FormBuilderValidators.compose(
-                            [FormBuilderValidators.required(context)]),
+                            [FormBuilderValidators.required()]),
                       ),
                       FormBuilderChoiceChip(
                         name: 'acc_loc',
@@ -2479,20 +2479,20 @@ class CLAAppState extends State<CLAApp>{
                           //helperText: 'Certificate will be issued as per address maintained in SAP',
                         ),
                         options: [
-                          FormBuilderFieldOption(
+                          FormBuilderChipOption(
                               value: 'Duliajan', child: Text('Duliajan')),
-                          FormBuilderFieldOption(
+                          FormBuilderChipOption(
                               value: 'Guwahati', child: Text('Guwahati')),
-                          FormBuilderFieldOption(
+                          FormBuilderChipOption(
                               value: 'Lakwa', child: Text('Lakwa/Sivsagar')),
-                          FormBuilderFieldOption(
+                          FormBuilderChipOption(
                               value: 'Lepetkata', child: Text('Lepetkata/Dibrugarh')),
-                          FormBuilderFieldOption(
+                          FormBuilderChipOption(
                               value: 'Noida/Delhi', child: Text('Noida/Delhi')),
 
                         ],
                         validator: FormBuilderValidators.compose(
-                            [FormBuilderValidators.required(context)]),
+                            [FormBuilderValidators.required()]),
                       ),
                       FormBuilderTextField(
                         name: 'acc_add',
@@ -2504,7 +2504,7 @@ class CLAAppState extends State<CLAApp>{
                         //onChanged: _onChanged,
                         // valueTransformer: (text) => num.tryParse(text),
                         validator: FormBuilderValidators.compose([
-                          FormBuilderValidators.required(context),
+                          FormBuilderValidators.required(),
                         ]),
                       ),
                       FormBuilderDateTimePicker(
@@ -2516,7 +2516,7 @@ class CLAAppState extends State<CLAApp>{
                           //helperText: 'Date of Coff/Overtime',
                         ),
                         validator: FormBuilderValidators.compose(
-                            [FormBuilderValidators.required(context)]),
+                            [FormBuilderValidators.required()]),
                         //lastDate: lastDateforClaim,
                         firstDate: DateTime(2019,3,1),
                         //initialTime: TimeOfDay(hour: 8, minute: 0),
@@ -2534,7 +2534,7 @@ class CLAAppState extends State<CLAApp>{
                           //helperText: 'Date of Coff/Overtime',
                         ),
                         validator: FormBuilderValidators.compose(
-                            [FormBuilderValidators.required(context)]),
+                            [FormBuilderValidators.required()]),
                         //lastDate: lastDateforClaim,
                         firstDate: DateTime(2019,3,1),
                         //initialTime: TimeOfDay(hour: 8, minute: 0),
@@ -2553,7 +2553,7 @@ class CLAAppState extends State<CLAApp>{
                         //onChanged: _onChanged,
                         // valueTransformer: (text) => num.tryParse(text),
                         validator: FormBuilderValidators.compose([
-                          FormBuilderValidators.required(context),
+                          FormBuilderValidators.required(),
                         ]),
                         keyboardType: TextInputType.number,
                       ),
@@ -2567,7 +2567,7 @@ class CLAAppState extends State<CLAApp>{
                         //onChanged: _onChanged,
                         // valueTransformer: (text) => num.tryParse(text),
                         validator: FormBuilderValidators.compose([
-                          FormBuilderValidators.required(context),
+                          FormBuilderValidators.required(),
                         ]),
                       ),
                       FormBuilderTextField(
@@ -2580,7 +2580,7 @@ class CLAAppState extends State<CLAApp>{
                         //onChanged: _onChanged,
                         // valueTransformer: (text) => num.tryParse(text),
                         validator: FormBuilderValidators.compose([
-                          FormBuilderValidators.required(context),
+                          FormBuilderValidators.required(),
                         ]),
                       ),
                       FormBuilderChoiceChip(
@@ -2590,13 +2590,13 @@ class CLAAppState extends State<CLAApp>{
                           //helperText: 'Certificate will be issued as per address maintained in SAP',
                         ),
                         options: [
-                          FormBuilderFieldOption(
+                          FormBuilderChipOption(
                               value: 'Yes', child: Text('Yes')),
-                          FormBuilderFieldOption(
+                          FormBuilderChipOption(
                               value: 'No', child: Text('No')),
                         ],
                         validator: FormBuilderValidators.compose(
-                            [FormBuilderValidators.required(context)]),
+                            [FormBuilderValidators.required()]),
                       ),
                       FormBuilderChoiceChip(
                         name: 'owner_dependent',
@@ -2605,13 +2605,13 @@ class CLAAppState extends State<CLAApp>{
                           //helperText: 'Certificate will be issued as per address maintained in SAP',
                         ),
                         options: [
-                          FormBuilderFieldOption(
+                          FormBuilderChipOption(
                               value: 'Yes', child: Text('Yes')),
-                          FormBuilderFieldOption(
+                          FormBuilderChipOption(
                               value: 'No', child: Text('No')),
                         ],
                         validator: FormBuilderValidators.compose(
-                            [FormBuilderValidators.required(context)]),
+                            [FormBuilderValidators.required()]),
                       ),
                       FormBuilderChoiceChip(
                         name: 'ownership_proof',
@@ -2620,15 +2620,15 @@ class CLAAppState extends State<CLAApp>{
                           //helperText: 'Certificate will be issued as per address maintained in SAP',
                         ),
                         options: [
-                          FormBuilderFieldOption(
+                          FormBuilderChipOption(
                               value: 'Sale Deed', child: Text('Sale Deed')),
-                          FormBuilderFieldOption(
+                          FormBuilderChipOption(
                               value: 'Property Tax Bill', child: Text('Property Tax Bill')),
-                          FormBuilderFieldOption(
+                          FormBuilderChipOption(
                               value: 'Water Tax Bill', child: Text('Water Tax Bill')),
                         ],
                         validator: FormBuilderValidators.compose(
-                            [FormBuilderValidators.required(context)]),
+                            [FormBuilderValidators.required()]),
                       ),
                       FormBuilderTextField(
                         name: 'sec_dep',
@@ -2640,7 +2640,7 @@ class CLAAppState extends State<CLAApp>{
                         //onChanged: _onChanged,
                         // valueTransformer: (text) => num.tryParse(text),
                         validator: FormBuilderValidators.compose([
-                          FormBuilderValidators.required(context),
+                          FormBuilderValidators.required(),
                         ]),
                         keyboardType: TextInputType.number,
                       ),
@@ -2654,7 +2654,7 @@ class CLAAppState extends State<CLAApp>{
                         //onChanged: _onChanged,
                         // valueTransformer: (text) => num.tryParse(text),
                         validator: FormBuilderValidators.compose([
-                          FormBuilderValidators.required(context),
+                          FormBuilderValidators.required(),
                         ]),
                         keyboardType: TextInputType.number,
                       ),
@@ -2699,7 +2699,7 @@ class CLAAppState extends State<CLAApp>{
                         children: <Widget>[
                           Expanded(
                             child: MaterialButton(
-                              color: Theme.of(context).accentColor,
+                              color: Theme.of(context).colorScheme.secondary,
                               child: Text(
                                 "Submit",
                                 style: TextStyle(color: Colors.white),
@@ -2942,17 +2942,17 @@ class HRAAppState extends State<HRAApp>{
                           //helperText: 'Certificate will be issued as per address maintained in SAP',
                         ),
                         options: [
-                          FormBuilderFieldOption(
-                              value: 'Own', child: Text('Own Accomodation')),
-                          FormBuilderFieldOption(
-                              value: 'Rent', child: Text('Rented Accomodation')),
-                          FormBuilderFieldOption(
-                              value: 'CLA', child: Text('Company Leased')),
-                          FormBuilderFieldOption(
-                              value: 'COA', child: Text('Company Owned')),
+                          FormBuilderChipOption(
+                              value: 'Own Accomodation', child: Text('Own Accomodation')),
+                          FormBuilderChipOption(
+                              value: 'Rented Accomodation', child: Text('Rented Accomodation')),
+                          FormBuilderChipOption(
+                              value: 'Company Leased', child: Text('Company Leased')),
+                          FormBuilderChipOption(
+                              value: 'Company Owned', child: Text('Company Owned')),
                         ],
                         validator: FormBuilderValidators.compose(
-                            [FormBuilderValidators.required(context)]),
+                            [FormBuilderValidators.required()]),
                       ),
                       FormBuilderTextField(
                         name: 'acc_addr',
@@ -2964,7 +2964,7 @@ class HRAAppState extends State<HRAApp>{
                         //onChanged: _onChanged,
                         // valueTransformer: (text) => num.tryParse(text),
                         validator: FormBuilderValidators.compose([
-                          FormBuilderValidators.required(context),
+                          FormBuilderValidators.required(),
                         ]),
                       ),
                       FormBuilderChoiceChip(
@@ -2974,13 +2974,13 @@ class HRAAppState extends State<HRAApp>{
                           //helperText: 'Certificate will be issued as per address maintained in SAP',
                         ),
                         options: [
-                          FormBuilderFieldOption(
+                          FormBuilderChipOption(
                               value: 'Yes', child: Text('Yes')),
-                          FormBuilderFieldOption(
+                          FormBuilderChipOption(
                               value: 'No', child: Text('No')),
                         ],
                         validator: FormBuilderValidators.compose(
-                            [FormBuilderValidators.required(context)]),
+                            [FormBuilderValidators.required()]),
                       ),
                       FormBuilderChoiceChip(
                         name: 'spouse_hra',
@@ -2989,13 +2989,13 @@ class HRAAppState extends State<HRAApp>{
                           //helperText: 'Certificate will be issued as per address maintained in SAP',
                         ),
                         options: [
-                          FormBuilderFieldOption(
+                          FormBuilderChipOption(
                               value: 'Yes', child: Text('Yes')),
-                          FormBuilderFieldOption(
+                          FormBuilderChipOption(
                               value: 'No', child: Text('No')),
                         ],
                         validator: FormBuilderValidators.compose(
-                            [FormBuilderValidators.required(context)]),
+                            [FormBuilderValidators.required()]),
                       ),
                       FormBuilderDateTimePicker(
                         name: 'hra_date',
@@ -3006,7 +3006,7 @@ class HRAAppState extends State<HRAApp>{
                           //helperText: 'Date of Coff/Overtime',
                         ),
                         validator: FormBuilderValidators.compose(
-                            [FormBuilderValidators.required(context)]),
+                            [FormBuilderValidators.required()]),
                         //lastDate: lastDateforClaim,
                         firstDate: DateTime(2019,3,1),
                         //initialTime: TimeOfDay(hour: 8, minute: 0),
@@ -3025,7 +3025,7 @@ class HRAAppState extends State<HRAApp>{
                         //onChanged: _onChanged,
                         // valueTransformer: (text) => num.tryParse(text),
                         validator: FormBuilderValidators.compose([
-                          FormBuilderValidators.required(context),
+                          FormBuilderValidators.required(),
                         ]),
                       ),
 
@@ -3033,7 +3033,7 @@ class HRAAppState extends State<HRAApp>{
                         children: <Widget>[
                           Expanded(
                             child: MaterialButton(
-                              color: Theme.of(context).accentColor,
+                              color: Theme.of(context).colorScheme.secondary,
                               child: Text(
                                 "Submit",
                                 style: TextStyle(color: Colors.white),
@@ -3230,7 +3230,7 @@ class QtrAllocState extends State<QtrAlloc>{
                           //helperText: 'Date of Coff/Overtime',
                         ),
                         validator: FormBuilderValidators.compose(
-                            [FormBuilderValidators.required(context)]),
+                            [FormBuilderValidators.required()]),
                         //lastDate: lastDateforClaim,
                         firstDate: DateTime(2019,3,1),
                         //initialTime: TimeOfDay(hour: 8, minute: 0),
@@ -3246,17 +3246,17 @@ class QtrAllocState extends State<QtrAlloc>{
                           //helperText: 'Certificate will be issued as per address maintained in SAP',
                         ),
                         options: [
-                          FormBuilderFieldOption(
+                          FormBuilderChipOption(
                               value: 'Own', child: Text('Own Accomodation / HRA')),
-                          FormBuilderFieldOption(
+                          FormBuilderChipOption(
                               value: 'Rent', child: Text('Rented Accomodation')),
-                          FormBuilderFieldOption(
+                          FormBuilderChipOption(
                               value: 'CLA', child: Text('Company Leased')),
-                          FormBuilderFieldOption(
+                          FormBuilderChipOption(
                               value: 'COA', child: Text('Company Owned')),
                         ],
                         validator: FormBuilderValidators.compose(
-                            [FormBuilderValidators.required(context)]),
+                            [FormBuilderValidators.required()]),
                       ),
                       FormBuilderTextField(
                         name: 'qtr_pref',
@@ -3268,14 +3268,14 @@ class QtrAllocState extends State<QtrAlloc>{
                         //onChanged: _onChanged,
                         // valueTransformer: (text) => num.tryParse(text),
                         validator: FormBuilderValidators.compose([
-                          FormBuilderValidators.required(context),
+                          FormBuilderValidators.required(),
                         ]),
                       ),
                       Row(
                         children: <Widget>[
                           Expanded(
                             child: MaterialButton(
-                              color: Theme.of(context).accentColor,
+                              color: Theme.of(context).colorScheme.secondary,
                               child: Text(
                                 "Submit",
                                 style: TextStyle(color: Colors.white),

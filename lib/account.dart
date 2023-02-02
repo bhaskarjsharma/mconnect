@@ -43,6 +43,7 @@ class _LoginState extends State<Login> with TickerProviderStateMixin{
   // String _mobileNumber = '';
   // List<SimCard> _simCard = <SimCard>[];
   bool access = false;
+  bool _isObscure = true;
 
   late final AnimationController _controller = AnimationController(
     duration: Duration(seconds: 3),
@@ -86,6 +87,11 @@ class _LoginState extends State<Login> with TickerProviderStateMixin{
         appVersion = packageInfo.version;
         appBuildNumber = packageInfo.buildNumber;
       });
+    });
+  }
+  void _togglevisibility() {
+    setState(() {
+      _isObscure = !_isObscure;
     });
   }
 
@@ -159,12 +165,24 @@ class _LoginState extends State<Login> with TickerProviderStateMixin{
                       child: TextFormField(
                         controller: unameController,
                         decoration: InputDecoration(
-                          border: OutlineInputBorder(),
+                          prefixIconConstraints: BoxConstraints(minWidth: 45),
+                          prefixIcon: Icon(
+                            Icons.person,
+                            size: 22,
+                          ),
+                          border: InputBorder.none,
+                          enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(100),
+                              borderSide: BorderSide(color: Colors.blue)),
+                          focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(100),
+                              borderSide: BorderSide(color: Colors.blue)),
                           labelText: 'User Name',
+                          hintText: 'Connect/Email Username',
                         ),
                         validator: (text) {
                           if (text == null || text.isEmpty) {
-                            return 'Please enter username';
+                            return 'Please enter your username';
                           }
                           return null;
                         },
@@ -174,10 +192,30 @@ class _LoginState extends State<Login> with TickerProviderStateMixin{
                       padding: EdgeInsets.all(10),
                       child: TextFormField(
                         controller: pwdController,
-                        obscureText: true,
+                        obscureText: _isObscure,
                         decoration: InputDecoration(
-                          border: OutlineInputBorder(),
+                          prefixIconConstraints: BoxConstraints(minWidth: 45),
+                          prefixIcon: Icon(
+                            Icons.lock,
+                            size: 22,
+                          ),
+                          suffixIcon: IconButton(
+                              icon: Icon(_isObscure ? Icons.visibility_off : Icons.visibility),
+                              onPressed : (){
+                                setState(() {
+                                  _togglevisibility();
+                                });
+                              }
+                          ),
+                          border: InputBorder.none,
+                          enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(100),
+                              borderSide: BorderSide(color: Colors.blue)),
+                          focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(100),
+                              borderSide: BorderSide(color: Colors.blue)),
                           labelText: 'Password',
+                          hintText: 'Connect/Email Password',
                         ),
                         validator: (text) {
                           if (text == null || text.isEmpty) {
