@@ -211,19 +211,23 @@ void main() async{
   statusBarBrightness = stringToBrightness(themePrefs.getString('statusBarBrightness') ?? 'dark');
 
   storage = new FlutterSecureStorage();
+  // get JWT
+  auth_token = await storage.read(key: 'auth_token');
+  // decode JWT
+  //Map<String, dynamic> decodedToken = JwtDecoder.decode(auth_token);
+  empno = await storage.read(key: 'empno');
+  user = await storage.read(key: 'name');
+  designation = await storage.read(key: 'desg');
+  discipline = await storage.read(key: 'disc');
+  grade = await storage.read(key: 'grade');
+  localAuthEnabled = prefs.getBool('localBioAuth') ?? false;
+
   isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
   if(isLoggedIn){
-    auth_token = await storage.read(key: 'auth_token');
     //validate token for expiry time
     bool hasExpired = JwtDecoder.isExpired(auth_token);
-    if(!hasExpired){
-      empno = await storage.read(key: 'empno');
-      user = await storage.read(key: 'name');
-      designation = await storage.read(key: 'desg');
-      discipline = await storage.read(key: 'disc');
-      grade = await storage.read(key: 'grade');
-      localAuthEnabled = prefs.getBool('localBioAuth') ?? false;
 
+    if(!hasExpired){
       runApp(MaterialApp(
         builder: (context, widget) => ResponsiveWrapper.builder(
           ClampingScrollWrapper.builder(context, widget!),
@@ -259,7 +263,7 @@ void main() async{
     }
     else{
       prefs.clear();
-      storage.deleteAll();
+      //storage.deleteAll();
       runApp(MaterialApp(
         theme: ThemeData(
           appBarTheme: AppBarTheme(
@@ -281,7 +285,7 @@ void main() async{
   }
   else{
     prefs.clear();
-    storage.deleteAll();
+    //storage.deleteAll();
     runApp(MaterialApp(
       builder: (context, widget) => ResponsiveWrapper.builder(
           ClampingScrollWrapper.builder(context, widget!),

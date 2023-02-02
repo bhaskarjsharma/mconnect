@@ -531,7 +531,7 @@ class AppDrawerState extends State<AppDrawer> {
 
   Future<void> logout() async {
     await prefs.clear();
-    await storage.deleteAll();
+    //await storage.deleteAll();
     Hive.close();
     Hive.deleteFromDisk();
     Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (BuildContext context) => Login()), (Route<dynamic> route) => false);

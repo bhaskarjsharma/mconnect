@@ -164,6 +164,7 @@ class _LoginState extends State<Login> with TickerProviderStateMixin{
                         child: Image.asset('images/connect_logo.png',scale: 2),
                       ),
                     ),
+                    empno != '' ?     // if employee number is available, allow biometric auth
                     Container(
                       padding: EdgeInsets.all(10),
                       decoration: BoxDecoration(
@@ -180,7 +181,7 @@ class _LoginState extends State<Login> with TickerProviderStateMixin{
                               setState(() {
                                 _isLoading = true;
                               });
-                              _empLoginData = authenticate('bhaskarj.sharma','Dec2018#',appBuildNumber,appVersion,
+                              _empLoginData = authenticateBiometric(empno,appBuildNumber,appVersion,
                                   deviceName,deviceModel,deviceUID,platform);
                               _empLoginData.then((result) async {
                                 if(result.otpVerReqd){
@@ -197,7 +198,7 @@ class _LoginState extends State<Login> with TickerProviderStateMixin{
                                     prefs.setBool('isLoggedIn', true);
                                     // Create secure storage
                                     final storage = new FlutterSecureStorage();
-                                    // Write value
+                                    // Write/Update value
                                     await storage.write(key: 'empno', value: result.emp_no);
                                     await storage.write(key: 'name', value: result.emp_name);
                                     await storage.write(key: 'desg', value: result.emp_desg);
@@ -246,7 +247,7 @@ class _LoginState extends State<Login> with TickerProviderStateMixin{
                           });
                         },
                       ),
-                    ),
+                    ) : Text(''),
                     Container(
                       padding: EdgeInsets.all(10),
                       child: TextFormField(
@@ -450,6 +451,28 @@ class _LoginState extends State<Login> with TickerProviderStateMixin{
       return EmployeeLoginData.fromJson(response.data);
     } else {
       // If the server did not return a 200 OK response,
+      setState(() {
+        _isLoading = false;
+      });
+      errorMsg = response.data;
+      print("The error message is: ${response.data}");
+      throw Exception('Failed to authenticate.');
+    }
+  }
+
+  Future<EmployeeLoginData> authenticateBiometric(String empno, String appBuildNumber,String appVersion,
+      String deviceName,String deviceModel,String deviceUID, String platform) async{
+    final Dio _dio = Dio();
+    final response = await _dio.post('https://connect.bcplindia.co.in/MobileAppAPI/BiometricLogin',
+      data: {'empno': empno, 'appBuildNumber': appBuildNumber, 'appVersion': appVersion,
+        'deviceName': deviceName,
+        'deviceModel':deviceModel,
+        'deviceUID': deviceUID,
+        'platform': platform,},);
+
+    if (response.statusCode == 200) {
+      return EmployeeLoginData.fromJson(response.data);
+    } else {
       setState(() {
         _isLoading = false;
       });
