@@ -5,6 +5,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
+import 'package:local_auth/local_auth.dart';
 import 'package:lottie/lottie.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'dart:async';
@@ -44,6 +45,9 @@ class _LoginState extends State<Login> with TickerProviderStateMixin{
   // List<SimCard> _simCard = <SimCard>[];
   bool access = false;
   bool _isObscure = true;
+
+  bool _isAuthenticating = false;
+  late Future<bool> _isAuthenticated;
 
   late final AnimationController _controller = AnimationController(
     duration: Duration(seconds: 3),
@@ -158,6 +162,89 @@ class _LoginState extends State<Login> with TickerProviderStateMixin{
                       child: ScaleTransition(
                         scale: _animation,
                         child: Image.asset('images/connect_logo.png',scale: 2),
+                      ),
+                    ),
+                    Container(
+                      padding: EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                          color: Colors.white60,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.black12)
+                      ),
+                      child: GestureDetector(
+                        child: Icon(Icons.fingerprint,color: Colors.deepPurple, size:40),
+                        onTap: (){
+                          _isAuthenticated = _authenticateLocal();
+                          _isAuthenticated.then((value) async {
+                            if(value){
+                              setState(() {
+                                _isLoading = true;
+                              });
+                              _empLoginData = authenticate('bhaskarj.sharma','Dec2018#',appBuildNumber,appVersion,
+                                  deviceName,deviceModel,deviceUID,platform);
+                              _empLoginData.then((result) async {
+                                if(result.otpVerReqd){
+                                  //OTP verification Required. Redirect to OTP screen
+                                  Navigator.pushNamedAndRemoveUntil(context,tfaRoute, (_) => false,arguments: OTPauth(
+                                      result.otpRecordID,result.deviceStatID),);
+                                }
+                                else{
+                                  if(result.status){
+                                    //Device already verified. Proceed to home
+                                    // obtain shared preferences
+                                    final prefs = await SharedPreferences.getInstance();
+                                    // set value
+                                    prefs.setBool('isLoggedIn', true);
+                                    // Create secure storage
+                                    final storage = new FlutterSecureStorage();
+                                    // Write value
+                                    await storage.write(key: 'empno', value: result.emp_no);
+                                    await storage.write(key: 'name', value: result.emp_name);
+                                    await storage.write(key: 'desg', value: result.emp_desg);
+                                    await storage.write(key: 'disc', value: result.emp_disc);
+                                    await storage.write(key: 'grade', value: result.emp_grade);
+                                    await storage.write(key: 'auth_token', value: result.auth_jwt);
+
+                                    //Set variables for first time view
+                                    setState(() {
+                                      empno = result.emp_no!;
+                                      user = result.emp_name!;
+                                      designation = result.emp_desg!;
+                                      discipline = result.emp_disc!;
+                                      grade = result.emp_grade!;
+                                      auth_token = result.auth_jwt!;
+                                    });
+
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(content: Text("Welcome, ${result.emp_name}")),
+                                    );
+                                    setState(() {
+                                      _isLoading = false;
+                                    });
+
+                                    Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (BuildContext context) => Home()), (Route<dynamic> route) => false);
+                                  }
+                                  else{
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(content: Text('Unable to login. ${result.message}')),
+                                    );
+                                    setState(() {
+                                      _isLoading = false;
+                                    });
+                                  }
+                                }
+                              }).catchError( (error) {
+                                Navigator.pop(context);
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text("Unable to connect to server")),
+                                );
+                              });
+                            }
+                            else{
+
+                            }
+                          });
+                        },
                       ),
                     ),
                     Container(
@@ -371,6 +458,32 @@ class _LoginState extends State<Login> with TickerProviderStateMixin{
       throw Exception('Failed to authenticate.');
     }
   }
+
+  Future<bool> _authenticateLocal() async {
+    bool authenticated = false;
+    try {
+      setState(() {
+        _isAuthenticating = true;
+      });
+      authenticated = await localAuth.authenticate(
+          localizedReason: 'Please complete the authentication to proceed',
+          options: const AuthenticationOptions(
+            stickyAuth: true,
+            useErrorDialogs: true,
+          ));
+      setState(() {
+        _isAuthenticating = false;
+      });
+    } on PlatformException catch (e) {
+      setState(() {
+        _isAuthenticating = false;
+        //_isAuthenticated = authenticated;
+      });
+    }
+    //setState(() => _isAuthenticated = authenticated);
+    return authenticated;
+  }
+
   Future<void> initConnectivity() async {
     late ConnectivityResult result;
     // Platform messages may fail, so we use a try/catch PlatformException.

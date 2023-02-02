@@ -854,7 +854,7 @@ class AddProofAppState extends State<AddProofApp>{
                           labelText: 'Certificate Type',
                           helperText: 'Certificate will be issued as per address maintained in SAP',
                         ),
-                        options: const [
+                        options: [
                           FormBuilderChipOption(
                               value: 'Present Address', child: Text('Present Address')),
                           FormBuilderChipOption(
@@ -866,7 +866,7 @@ class AddProofAppState extends State<AddProofApp>{
                       FormBuilderTextField(
                         name: 'req_for_pur',
                         maxLines: 2,
-                        decoration: const InputDecoration(
+                        decoration: InputDecoration(
                           labelText:
                           'Required For',
                         ),
@@ -954,7 +954,7 @@ class AddProofAppState extends State<AddProofApp>{
                           Expanded(
                             child: MaterialButton(
                               color: Colors.red,
-                              child: const Text(
+                              child: Text(
                                 "Cancel",
                                 style: TextStyle(color: Colors.white),
                               ),
@@ -1077,11 +1077,11 @@ class AddChangeAppState extends State<AddChangeApp>{
                           labelText: 'Address Type',
                           //helperText: 'Certificate will be issued as per address maintained in SAP',
                         ),
-                        options: const [
+                        options: [
                           FormBuilderChipOption(
-                              value: 'present_address', child: Text('Present Address')),
+                              value: 'Present Address', child: Text('Present Address')),
                           FormBuilderChipOption(
-                              value: 'permanent_address', child: Text('Permanent Address')),
+                              value: 'Permanent Address', child: Text('Permanent Address')),
                         ],
                         validator: FormBuilderValidators.compose(
                             [FormBuilderValidators.required()]),
@@ -1102,7 +1102,7 @@ class AddChangeAppState extends State<AddChangeApp>{
                       FormBuilderField(
                         name: "attach_files",
                         // validator: FormBuilderValidators.compose([
-                        //   FormBuilderValidators.required(context),
+                        //   FormBuilderValidators.required(),
                         // ]),
                         builder: (FormFieldState<dynamic> field) {
                           return InputDecorator(
@@ -1387,13 +1387,13 @@ class OutEmpAppState extends State<OutEmpApp>{
                           labelText: 'Request Type',
                           //helperText: 'Certificate will be issued as per address maintained in SAP',
                         ),
-                        options: const [
+                        options: [
                           FormBuilderChipOption(
-                              value: 'Intimation', child: Text('Intimation of Application')),
+                              value: 'intimation', child: Text('Intimation of Application')),
                           FormBuilderChipOption(
                               value: 'NOC', child: Text('Request for NOC')),
                           FormBuilderChipOption(
-                              value: 'Proper Channel Forward', child: Text('Proper Channel Forwarding')),
+                              value: 'prop_chnl', child: Text('Proper Channel Forwarding')),
                         ],
                         validator: FormBuilderValidators.compose(
                             [FormBuilderValidators.required()]),
@@ -1440,7 +1440,7 @@ class OutEmpAppState extends State<OutEmpApp>{
                       FormBuilderField(
                         name: "attach_files",
                         // validator: FormBuilderValidators.compose([
-                        //   FormBuilderValidators.required(context),
+                        //   FormBuilderValidators.required(),
                         // ]),
                         builder: (FormFieldState<dynamic> field) {
                           return InputDecorator(
@@ -1723,13 +1723,13 @@ class MedBenAppState extends State<MedBenApp>{
                           labelText: 'Request Type',
                           //helperText: 'Certificate will be issued as per address maintained in SAP',
                         ),
-                        options: const [
+                        options: [
                           FormBuilderChipOption(
-                              value: 'Expired Medical Bill', child: Text('Extension of expired medical bill for reimbursement')),
+                              value: 'med_extension', child: Text('Extension of expired medical bill for reimbursement')),
                           FormBuilderChipOption(
-                              value: 'Medicine Purchase 30 Days', child: Text('Permission for medicine purchase for more than 30 days')),
+                              value: 'med_purchase', child: Text('Permission for medicine purchase for more than 30 days')),
                           FormBuilderChipOption(
-                              value: 'Medicine Purchase 3 Days', child: Text('Permission for medicine purchase after 3 days of prescription')),
+                              value: 'pres_validity', child: Text('Permission for medicine purchase after 3 days of prescription')),
                         ],
                         validator: FormBuilderValidators.compose(
                             [FormBuilderValidators.required()]),
@@ -1812,7 +1812,7 @@ class MedBenAppState extends State<MedBenApp>{
                       FormBuilderField(
                         name: "attach_files",
                         // validator: FormBuilderValidators.compose([
-                        //   FormBuilderValidators.required(context),
+                        //   FormBuilderValidators.required(),
                         // ]),
                         builder: (FormFieldState<dynamic> field) {
                           return InputDecorator(
@@ -2123,7 +2123,7 @@ class HighEduAppState extends State<HighEduApp>{
                           labelText: 'Course Type',
                           //helperText: 'Certificate will be issued as per address maintained in SAP',
                         ),
-                        options: const [
+                        options: [
                           FormBuilderChipOption(
                               value: 'classroom', child: Text('Classroom Course')),
                           FormBuilderChipOption(
@@ -2131,7 +2131,7 @@ class HighEduAppState extends State<HighEduApp>{
                           FormBuilderChipOption(
                               value: 'online', child: Text('Online Course')),
                           FormBuilderChipOption(
-                              value: 'combined', child: Text('Combination of Classroom and Other Modes')),
+                              value: 'multi_mode', child: Text('Combination of Classroom and Other Modes')),
                         ],
                         validator: FormBuilderValidators.compose(
                             [FormBuilderValidators.required()]),
@@ -2180,7 +2180,7 @@ class HighEduAppState extends State<HighEduApp>{
                       FormBuilderField(
                         name: "attach_files",
                         // validator: FormBuilderValidators.compose([
-                        //   FormBuilderValidators.required(context),
+                        //   FormBuilderValidators.required(),
                         // ]),
                         builder: (FormFieldState<dynamic> field) {
                           return InputDecorator(
@@ -2661,7 +2661,7 @@ class CLAAppState extends State<CLAApp>{
                       FormBuilderField(
                         name: "attach_files",
                         // validator: FormBuilderValidators.compose([
-                        //   FormBuilderValidators.required(context),
+                        //   FormBuilderValidators.required(),
                         // ]),
                         builder: (FormFieldState<dynamic> field) {
                           return InputDecorator(
@@ -2699,7 +2699,7 @@ class CLAAppState extends State<CLAApp>{
                         children: <Widget>[
                           Expanded(
                             child: MaterialButton(
-                              color: Theme.of(context).colorScheme.secondary,
+                              color: Theme.of(context).accentColor,
                               child: Text(
                                 "Submit",
                                 style: TextStyle(color: Colors.white),
@@ -2943,13 +2943,13 @@ class HRAAppState extends State<HRAApp>{
                         ),
                         options: [
                           FormBuilderChipOption(
-                              value: 'Own Accomodation', child: Text('Own Accomodation')),
+                              value: 'Own', child: Text('Own Accomodation')),
                           FormBuilderChipOption(
-                              value: 'Rented Accomodation', child: Text('Rented Accomodation')),
+                              value: 'Rent', child: Text('Rented Accomodation')),
                           FormBuilderChipOption(
-                              value: 'Company Leased', child: Text('Company Leased')),
+                              value: 'CLA', child: Text('Company Leased')),
                           FormBuilderChipOption(
-                              value: 'Company Owned', child: Text('Company Owned')),
+                              value: 'COA', child: Text('Company Owned')),
                         ],
                         validator: FormBuilderValidators.compose(
                             [FormBuilderValidators.required()]),
@@ -3033,7 +3033,7 @@ class HRAAppState extends State<HRAApp>{
                         children: <Widget>[
                           Expanded(
                             child: MaterialButton(
-                              color: Theme.of(context).colorScheme.secondary,
+                              color: Theme.of(context).accentColor,
                               child: Text(
                                 "Submit",
                                 style: TextStyle(color: Colors.white),
@@ -3275,7 +3275,7 @@ class QtrAllocState extends State<QtrAlloc>{
                         children: <Widget>[
                           Expanded(
                             child: MaterialButton(
-                              color: Theme.of(context).colorScheme.secondary,
+                              color: Theme.of(context).accentColor,
                               child: Text(
                                 "Submit",
                                 style: TextStyle(color: Colors.white),

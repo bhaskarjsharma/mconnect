@@ -15,7 +15,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # In iOS, build-name is used as CFBundleShortVersionString while build-number used as CFBundleVersion.
 # Read more about iOS versioning at
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
-version: 1.0.1+1
+version: 1.0.0+9
 
 environment:
   sdk: ">=2.12.0 <3.0.0"
@@ -37,8 +37,8 @@ dependencies:
 #  http: ^0.13.3
   shared_preferences: ^2.0.8
   url_launcher: ^6.0.12 # to launch call, sms, url function
-  flutter_html: ^2.1.2  # to display raw html content for news/events/announcements
-  share_plus: ^4.0.10    # to share contacts
+  flutter_html: ^3.0.0-alpha.6  # to display raw html content for news/events/announcements
+  share_plus: ^4.5.3    # to share contacts
   dio: ^4.0.0           # networking
   path_provider: ^2.0.5 # to get file storage paths
   permission_handler: ^10.2.0  # to ask permissions for various functions
@@ -51,6 +51,7 @@ dependencies:
   flutter_secure_storage: ^7.0.1
   horizontal_data_table: ^4.1.4
   connectivity_plus: ^3.0.2
+  flutter_form_builder: ^7.0.0
   image_picker: ^0.8.4+2  # pick image from gallery or camera for uploading
   firebase_messaging: ^14.2.1
   firebase_core: ^2.4.1
@@ -64,9 +65,10 @@ dependencies:
   form_builder_validators: ^8.4.0
   flutter_launcher_icons: ^0.11.0
   upgrader: ^4.8.1
-  flutter_form_builder: ^7.3.1
+  responsive_framework: ^0.2.0
   connectivity_plus_web: ^1.2.5
-#  responsive_framework: ^0.1.7
+  video_player_web: ^2.0.13
+  wakelock_web: ^0.4.0
 
 
 

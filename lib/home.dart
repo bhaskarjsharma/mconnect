@@ -21,10 +21,10 @@ import 'constants.dart';
 import 'main.dart';
 import 'models/models.dart';
 import 'package:path/path.dart' as path;
+import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:upgrader/upgrader.dart';
-import 'package:flutter_form_builder/flutter_form_builder.dart';
 
 class Home extends StatefulWidget {
   @override
@@ -273,7 +273,7 @@ class HomeState extends State<Home>  {
           options: const AuthenticationOptions(
             stickyAuth: true,
             useErrorDialogs: true,
-          ),);
+          ));
       setState(() {
         _isAuthenticating = false;
       });
@@ -296,9 +296,9 @@ class HomeState extends State<Home>  {
           localizedReason:
           'Please complete the biometric authentication to proceed',
           options: const AuthenticationOptions(
-              useErrorDialogs: true,
-              stickyAuth: true,
-              biometricOnly: true)
+            stickyAuth: true,
+            useErrorDialogs: true, biometricOnly: true
+          )
       );
       setState(() {
         _isAuthenticating = false;
@@ -373,6 +373,7 @@ class HomeState extends State<Home>  {
             )
           ],
         ),
+        automaticallyImplyLeading: true,
       ),
       endDrawer: AppDrawer(),
       body: UpgradeAlert(
@@ -2967,7 +2968,7 @@ class _ECOFF_OTState extends State<ECOFF_OT>{
                         decoration: InputDecoration(
                           labelText: 'ECOFF Type',
                         ),
-                        options: const [
+                        options: [
                           FormBuilderChipOption(
                               value: 'SAT', child: Text('1st/3rd/5th Saturday')),
                           FormBuilderChipOption(
@@ -2982,7 +2983,7 @@ class _ECOFF_OTState extends State<ECOFF_OT>{
                         decoration: InputDecoration(
                           labelText: 'Shift done against off day',
                         ),
-                        options: const [
+                        options: [
                           FormBuilderChipOption(
                               value: 'yes', child: Text('Yes')),
                           FormBuilderChipOption(
@@ -3014,7 +3015,7 @@ class _ECOFF_OTState extends State<ECOFF_OT>{
                         decoration: InputDecoration(
                           labelText: 'ECO Count for National Holiday',
                         ),
-                        options: const [
+                        options: [
                           FormBuilderChipOption(
                               value: 'ECO', child: Text('Only ECOFF')),
                           FormBuilderChipOption(
@@ -3029,7 +3030,7 @@ class _ECOFF_OTState extends State<ECOFF_OT>{
                         decoration: InputDecoration(
                           labelText: 'Shift done',
                         ),
-                        options: const [
+                        options: [
                           FormBuilderChipOption(
                               value: 'A', child: Text('A')),
                           FormBuilderChipOption(
@@ -3053,7 +3054,7 @@ class _ECOFF_OTState extends State<ECOFF_OT>{
                       ) : SizedBox(height:1),
                       FormBuilderTextField(
                         name: 'remarks',
-                        decoration: const InputDecoration(
+                        decoration: InputDecoration(
                           labelText:
                           'Remarks',
                         ),
@@ -3104,7 +3105,7 @@ class _ECOFF_OTState extends State<ECOFF_OT>{
                     children: <Widget>[
                       Expanded(
                         child: MaterialButton(
-                          color: Theme.of(context).accentColor,
+                          color: Theme.of(context).colorScheme.secondary,
                           child: Text(
                             "Submit",
                             style: TextStyle(color: Colors.white),
@@ -3457,7 +3458,7 @@ class _HospitalCreditLetterState extends State<HospitalCreditLetter>{
                     validator: FormBuilderValidators.compose([
                       FormBuilderValidators.required(),
                       FormBuilderValidators.numeric(),
-                      FormBuilderValidators.max(7),
+                      FormBuilderValidators.max( 7),
                     ]),
                     keyboardType: TextInputType.number,
                   ),
@@ -3466,7 +3467,7 @@ class _HospitalCreditLetterState extends State<HospitalCreditLetter>{
                     decoration: InputDecoration(
                       labelText: 'Outstation Facility',
                     ),
-                    options: const [
+                    options: [
                       FormBuilderChipOption(
                           value: 'Yes', child: Text('Yes')),
                       FormBuilderChipOption(
@@ -3478,7 +3479,7 @@ class _HospitalCreditLetterState extends State<HospitalCreditLetter>{
                     decoration: InputDecoration(
                       labelText: 'Doctor Recommendation',
                     ),
-                    options: const [
+                    options: [
                       FormBuilderChipOption(
                           value: 'Yes', child: Text('Yes')),
                       FormBuilderChipOption(
